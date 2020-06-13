@@ -59,26 +59,41 @@
     创建hadoop集群，执行hadoop.sh
     创建包含hadoopclient的image
         运行sshd
-        spark/kylin/hbase/hive client程序包
+        sqoop/spark/kylin/hbase/hive client程序包
         移植被airflow ssh后从控制平面调用的 spark/kylin/hbase/hive client的scripts脚本
     创建包含hadoopclient pod/svc（ssh），执行hadoop_client.sh
 
 #####14，创建用作流处理历史聚合快照保存opentsdb集群，执行tsdb.sh
-    创建aws hbase集群hbase-site.xml的configMap
+    创建指向aws hbase集群hbase-site.xml的configMap
     创建tsdb image，包含
-        运行sshd
         aws hbase集群版本的hbaseclient程序包和HBASE_HOME环境变量
         opentsdb client程序包
-        移植被airflow ssh后从控制平面调用的 hbase/tsdb snap/restore/drop scripts脚本
     被airflow ssh后从控制平面调用的opentsdb 复制因子为4的pod和svc在serv/servyat命名空间删除/创建的脚本。svc包括
         ssh
         opentsdb
 
-#####15，创建保存数仓数据的kudu集群，执行kudu.sh
+#####15，定制租用aws hbase集群，
+    安装ssh服务
+    移植被airflow ssh后从控制平面调用的 hbase/tsdb 库创建脚本
+    移植被airflow ssh后从控制平面调用的 hbase/tsdb snap/restore/drop scripts脚本
+
+#####16，创建保存数仓数据的kudu集群，执行kudu.sh
     NodePort方式暴露端口供beta metabase对应的presto访问
 
-#####16，创建用作接入各种catalog的presto集群，执行presto.sh
+#####17，创建用作接入各种catalog的presto集群，执行presto.sh
     hadoopclient hive
     mqstr kafka
     mqdw kafka
     kudu
+
+#####18，创建用作新版本发布工作流集群，执行airflow.sh
+    修改批/流处理的consul入口
+    建立批/流处理的新consul入口
+    建立批/流处理的新consul配置，全部用dns.ns的方式代替原来的ip，端口用svc的端口代替
+    修改airflow dag脚本的ssh指向
+      新增tsdb的ssh conn指向aws hbase集群
+      把到hadoop(sqoop/hive/kylin)的ssh conn修改指向hadoopclient
+      把到spark的ssh conn修改指向hadoopclient
+      新增flink的ssh conn指向hadoopclient
+    清理和启动pika的脚本，移植到ssh到控制平面调用restart codis/pika脚本
+    重启tsdb的脚本，移植到ssh到控制平面调用restart tsdb集群脚本
