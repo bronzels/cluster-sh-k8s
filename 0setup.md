@@ -55,7 +55,15 @@
         codis-proxy
         codis-fe(NodePort)
 
-#####13，创建用作流处理历史聚合快照保存opentsdb集群，执行tsdb.sh
+#####13，创建airflow ssh执行b4str/streaming运行脚本的环境
+    创建hadoop集群，执行hadoop.sh
+    创建包含hadoopclient的image
+        运行sshd
+        spark/kylin/hbase/hive client程序包
+        移植被airflow ssh后从控制平面调用的 spark/kylin/hbase/hive client的scripts脚本
+    创建包含hadoopclient pod/svc（ssh），执行hadoop_client.sh
+
+#####14，创建用作流处理历史聚合快照保存opentsdb集群，执行tsdb.sh
     创建aws hbase集群hbase-site.xml的configMap
     创建tsdb image，包含
         运行sshd
@@ -66,14 +74,6 @@
         ssh
         opentsdb
 
-#####14，创建airflow ssh执行b4str/streaming运行脚本的环境
-    创建hadoop集群，执行hadoop.sh
-    创建包含hadoopclient的image
-        运行sshd
-        spark/kylin/hbase/hive client程序包
-        移植被airflow ssh后从控制平面调用的 spark/kylin/hbase/hive client的scripts脚本
-    创建包含hadoopclient pod/svc（ssh），执行hadoop_client.sh
-        
 #####15，创建保存数仓数据的kudu集群，执行kudu.sh
     NodePort方式暴露端口供beta metabase对应的presto访问
 

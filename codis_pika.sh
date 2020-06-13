@@ -1,5 +1,8 @@
 #pika
 cd ~
+rev=1.12.9
+wget -c https://dl.google.com/go/go${rev}.linux-amd64.tar.gz
+tar -xzf ~/go${rev}.linux-amd64.tar.gz
 
 rm -rf pika
 git clone https://github.com/Qihoo360/pika.git
@@ -13,10 +16,10 @@ cp $file ${file}.bk
 #sed -i 's@@@g'  $file
 sed -i 's@thread-num : 1@thread-num : 6@g'  $file
 sed -i 's@databases : 1@databases : 8@g'  $file
-sed -i 's@log-path : ./log/@log-path : ./data/log/@g'  $file
-sed -i 's@db-path : ./db/@db-path : ./data/db/@g'  $file
-sed -i 's@dump-path : ./dump/@dump-path : ./data/dump/@g'  $file
-sed -i 's@db-sync-path : ./dbsync/@db-sync-path : ./data/dbsync/@g'  $file
+sed -i 's@log-path : ./log/@log-path : /data/log/@g'  $file
+sed -i 's@db-path : ./db/@db-path : /data/db/@g'  $file
+sed -i 's@dump-path : ./dump/@dump-path : /data/dump/@g'  $file
+sed -i 's@db-sync-path : ./dbsync/@db-sync-path : /data/dbsync/@g'  $file
 
 :<<EOF
 file=Dockerfile
@@ -27,47 +30,50 @@ EOF
 
 cp ~/source.list.ubuntu.16.04 source.list
 
-rev=1.12.9
-wget -c https://dl.google.com/go/go${rev}.linux-amd64.tar.gz
-tar -xzf ~/go${rev}.linux-amd64.tar.gz
-
+cd ~/pika
 file=Dockerfile
 cp $file ${file}.bk
 cat << \EOF > ${file}
 FROM ubuntu:16.04
 MAINTAINER bronzels <bronzels@hotmail.com>
+USER root:root
 
+ENV PIKA /pika
+COPY pika /pika
+RUN ls /pika
+
+COPY ./source.list /etc/apt
 RUN apt-get update && \
     apt-get install -y build-essential git autoconf
 
-COPY ./go /go
+RUN apt-get install -y libzip-dev libsnappy-dev libprotobuf-dev protobuf-compiler bzip2 && \
+    apt-get install -y libgoogle-glog-dev
+
+WORKDIR $PIKA
+RUN make
+ENV PATH ${PIKA}/output/bin:${PATH}
+
+COPY go /go
 ENV PATH /go/bin:${PATH}
 RUN mkdir /gopath
 ENV GOPATH /gopath
 RUN mkdir -p /gopath/src/github.com/CodisLabs
 WORKDIR /gopath/src/github.com/CodisLabs
 RUN git clone https://github.com/CodisLabs/codis.git -b release3.2
-ENV CODIS  /gopath/src/github.com/CodisLabs/codis
+ENV CODIS /gopath/src/github.com/CodisLabs/codis
 WORKDIR ${CODIS}
 RUN make
 ENV PATH ${CODIS}/bin:${PATH}
 
-COPY ./source.list /etc/apt/
-RUN apt-get install -y libzip-dev libsnappy-dev libprotobuf-dev protobuf-compiler bzip2 && \
-    apt-get install -y libgoogle-glog-dev
-
-ENV PIKA  /pika
-COPY . ${PIKA}
-WORKDIR ${PIKA}
-RUN make
-ENV PATH ${PIKA}/output/bin:${PATH}
-
 EOF
 
-docker build -t master01:30500/pikadb/pika_codis:0.1 ./
+#ENTRYPOINT ["/pika/entrypoint.sh"]
+#CMD ["/pika/bin/pika", "-c", "/pika/conf/pika.conf"]
+docker build -f ~/pika/Dockerfile -t master01:30500/pikadb/pika_codis:0.1 $HOME
 docker push master01:30500/pikadb/pika_codis:0.1
 
 #codis
+cd ~
 git clone https://github.com/CodisLabs/codis.git -b release3.2
 cd ~/codis
 cp -r kubernetes kubernetes.bk
@@ -82,15 +88,20 @@ find . -name "*.yaml" | xargs sed -i 's@apps/v1beta1@apps/v1@g'
 file=codis-server.yaml
 sed -i 's@image: codis-image@image: master01:30500/pikadb/pika_codis:0.1@g' ${file}
 sed -i 's@6379@9221@g' ${file}
-sed -i 's@command: \["codis-server"\]@command: \["./output/bin/pika"\]@g' ${file}
+sed -i 's@replicas: 4@replicas: 6@g' ${file}
+sed -i 's@command: \["codis-server"\]@command: \["output/bin/pika"\]@g' ${file}
 sed -i 's@args: \[@#args: \[@g' ${file}
 #sed -i '/#args: \[/a\        workingDir: "/pika"' ${file}
-sed -i '/#args: \[/a\        args: \["-c",".\/conf\/pika.conf"\]' ${file}
+sed -i '/#args: \[/a\        args: \["-c","conf\/pika.conf"\]' ${file}
 sed -i '/  serviceName:/i\  selector:\n      matchLabels:\n        app: codis-server' ${file}
+sed -i 's@codis-admin@/codisbin/codis-admin@g' ${file}
+sed -i 's@imagePullPolicy: IfNotPresent@imagePullPolicy: Always@g' ${file}
+#"/bin/sh", "-c",
+#sed -i 's@"\/bin\/sh"\, "-c"\, @@g' ${file}
 cat << \EOF >> ${file}
         volumeMounts:
         - name: datadir
-          mountPath: /pika/data
+          mountPath: /data
   volumeClaimTemplates:
   - metadata:
       name: datadir
@@ -110,6 +121,10 @@ sed -i '/  serviceName:/i\  selector:\n      matchLabels:\n        app: codis-ha
 file=codis-service.yaml
 sed -i 's@6379@9221@g' ${file}
 cp ${file} ${file}.template
+
+file=codis-proxy.yaml
+sed -i 's@replicas: 2@replicas: 3@g' ${file}
+
 
 :<<EOF
 file=start.sh
@@ -177,7 +192,7 @@ buildup)
     wait_pod_running "${codisns}" "codis-dashboard" 1 600
     kubectl create -n ${codisns} -f codis-proxy.yaml
     kubectl create -n ${codisns} -f codis-server.yaml
-    servers=$(grep "replicas" codis-server.yaml |awk  '{print $3}')
+    servers=$(grep "replicas" codis-server.yaml |awk  '{print $2}')
     #while [ $(kubectl get pods -n ${codisns} -l app=codis-server |grep Running |wc -l) != $servers ]; do sleep 1; done;
     wait_pod_running "${codisns}" "codis-server" $servers 600
     kubectl exec -n ${codisns} -it codis-server-0 -- codis-admin  --dashboard=codis-dashboard:18080 --rebalance --confirm
@@ -240,21 +255,19 @@ file=codis-service.yaml
 cp ${file}.template ${file}
 #sed -i 's@nodePort: 31080@nodePort: 31080@g' ${file}
 
+./start.sh serv cleanup
 ./start.sh serv buildup
 
+ansible slave -m shell -a"docker images|grep pika"
+ansible slave -m shell -a"docker ps -a|grep codis"
+#kubectl exec -it codis-server-0 -n serv bash
 #kubectl get pod -n serv | awk '{print $1}' | grep codis-server | xargs kubectl describe pod -n serv
 #kubectl get pod -n serv | awk '{print $1}' | grep codis-server | xargs kubectl logs -n serv
+#kubectl exec -it codis-server-0 -n serv  -- bash
+###kubectl get pod -n serv | awk '{print $1}' | grep codis-server-0 | xargs -I CNAME  sh -c "kubectl exec -it CNAME -n serv  -- /bin/sh"
 
-#./start.sh serv cleanup
-#./start.sh serv scale-proxy 8
-#./start.sh serv scale-server 4
-
-
-
-kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.serv:11080  set fool2 bar2
-kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.serv:11080  get fool2
-kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-ha.serv:12345 set fool bar
-kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-ha.serv:12345 get fool
+kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.serv -p 19000  set fool2 bar2
+kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.serv -p 19000  get fool2
 
 #serv
 #codis-service.yaml
@@ -262,12 +275,11 @@ file=codis-service.yaml
 cp ${file}.template ${file}
 sed -i 's@nodePort: 31080@nodePort: 31081@g' ${file}
 
-sh start.sh servyat buildup
+./start.sh servyat buildup
 #./start.sh servyat cleanup
-#./start.sh servyat scale-proxy 8
-#./start.sh servyat scale-servyater 4
 
-kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.servyat:11080  set fool2 bar2
-kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.servyat:11080  get fool2
-kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-ha.servyat:12345 set fool bar
-kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-ha.servyat:12345 get fool
+kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.servyat -p 19000  set fool4 bar4
+kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.servyat -p 19000  get fool4
+
+ansible slave -m shell -a"docker images|grep pika"
+ansible slave -m shell -a"docker ps -a|grep codis"
