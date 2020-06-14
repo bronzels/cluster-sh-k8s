@@ -1,0 +1,49 @@
+#HDPHOME=~/helm-hadoop-3
+HDPHOME=~/charts/stable/hadoop
+
+cat << \EOF > $HDPHOME/templates/yarn-rm-web-svc.yaml
+# A headless service to create DNS records
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hadoop.fullname" . }}-yarn-rm-web
+  labels:
+    app: {{ include "hadoop.name" . }}
+    chart: {{ include "hadoop.chart" . }}
+    release: {{ .Release.Name }}
+    component: yarn-rm
+spec:
+  type: NodePort
+  ports:
+  - port: 8088
+    name: web
+    nodePort: 31088
+  selector:
+    app: {{ include "hadoop.name" . }}
+    release: {{ .Release.Name }}
+    component: yarn-rm
+EOF
+
+cat << \EOF > $HDPHOME/templates/hdfs-nn-web-svc.yaml
+# A headless service to create DNS records
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hadoop.fullname" . }}-hdfs-nn-web
+  labels:
+    app: {{ include "hadoop.name" . }}
+    chart: {{ include "hadoop.chart" . }}
+    release: {{ .Release.Name }}
+    component: hdfs-nn
+spec:
+  type: NodePort
+  ports:
+  - port: 9870
+    name: web
+    nodePort: 30870
+  selector:
+    app: {{ include "hadoop.name" . }}
+    release: {{ .Release.Name }}
+    component: hdfs-nn
+EOF
+

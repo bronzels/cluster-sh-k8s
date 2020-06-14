@@ -82,8 +82,9 @@ docker build -t master01:30500/codis/codis-image:0.1 ./
 docker push master01:30500/codis/codis-image:0.1
 
 cd ~/codis/kubernetes
-find . -name "*.yaml" | xargs sed -i 's@image: codis-image@image: master01:30500/codis/codis-image:0.1@g'
-find . -name "*.yaml" | xargs sed -i 's@apps/v1beta1@apps/v1@g'
+find ~/codis/kubernetes -name "*.yaml" | xargs sed -i 's@image: codis-image@image: master01:30500/codis/codis-image:0.1@g'
+find ~/codis/kubernetes -name "*.yaml"  | xargs grep "apps/v1beta1"
+find ~/codis/kubernetes -name "*.yaml" | xargs sed -i 's@apps/v1beta1@apps/v1@g'
 #./output/bin/pika -c ./conf/pika.conf
 file=codis-server.yaml
 sed -i 's@image: codis-image@image: master01:30500/pikadb/pika_codis:0.1@g' ${file}

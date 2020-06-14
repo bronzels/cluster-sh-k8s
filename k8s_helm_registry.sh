@@ -39,7 +39,7 @@ sed -i 's@type: ClusterIP@type: NodePort@g' ${file}
 sed -i 's@# nodePort:@nodePort: 30500@g' ${file}
 helm install -f values.yaml dkreg .
 #helm uninstall dkreg
-curl http://master01:30500
+curl http://master01:30500/v2/_catalog
 
 cat << \EOF > Dockerfile-testredis.yaml
 FROM redis:4.0-alpine
