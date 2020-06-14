@@ -1,31 +1,45 @@
 
 cd ~
 git clone https://github.com/chenseanxy/helm-hbase-chart.git
+rm -rf helm-hbase-chart.bk
 cp -r helm-hbase-chart helm-hbase-chart.bk
 cd ~/helm-hbase-chart
-sed -i 's@FROM chenseanxy\/hadoop:3.2.1-nolib@FROM master01:30500\/chenseanxy\/hadoop:3.2.1-nolib@g' image/Dockerfile
+
+HADOOPREV=3.1.1
+HBASEREV=2.2.5
 
 cd image
+
+file=Dockerfile
+cp ~/helm-hbase-chart.bk/image/$file $file
+sed -i 's@htrace-core-3.1.0-incubating.jar@htrace-core4-4.2.0-incubating.jar@g' Dockerfile
+sed -i "s@FROM chenseanxy\/hadoop:3.2.1-nolib@FROM master01:30500\/chenseanxy\/hadoop:${HADOOPREV}-nolib@g" Dockerfile
+
+file=Makefile
+cp ~/helm-hbase-chart.bk/image/$file $file
+sed -i "s@HADOOP_30_VERSION = 3.1.2@HADOOP_30_VERSION = ${HADOOPREV}@g" Makefile
+sed -i "s@HBASE_VERSION = 2.1.7@HBASE_VERSION = ${HBASEREV}@g" Makefile
+sed -i "s@DOCKER_REPO = chenseanxy\/hbase@DOCKER_REPO = master01:30500/chenseanxy\/hbase@g" Makefile
+wget -c http://archive.apache.org/dist/hbase/${HBASEREV}/hbase-${HBASEREV}-bin.tar.gz
 make
-sed -i 's@FROM chenseanxy\/hadoop:3.2.1-nolib@FROM master01:30500\/chenseanxy\/hadoop:3.2.1-nolib@g' Dockerfile
-docker tag hbase:2.1.7-hadoop3.1.2 master01:30500/chenseanxy/hbase:2.1.7-hadoop3.1.2
-docker push master01:30500/chenseanxy/hbase:2.1.7-hadoop3.1.2
+rm -f hbase-${HBASEREV}-bin.tar.gz
+docker images|grep "${HBASEREV}-hadoop${HADOOPREV}"
+
+docker tag hbase:${HBASEREV}-hadoop${HADOOPREV} master01:30500/chenseanxy/hbase:${HBASEREV}-hadoop${HADOOPREV}
+docker push master01:30500/chenseanxy/hbase:${HBASEREV}-hadoop${HADOOPREV}
 
 cd ~/helm-hbase-chart
 
 file=values.yaml
 cp ~/helm-hbase-chart.bk/$file $file
 sed -i '/hbaseImage: /a\pullPolicy: Always' ${file}
-sed -i 's@hbaseImage: chenseanxy\/hbase:1.4.10-hadoop3.1.2@hbaseImage: master01:30500\/chenseanxy\/hbase:2.1.7-hadoop3.1.2@g' ${file}
+sed -i "s@hbaseImage: chenseanxy\/hbase:1.4.10-hadoop3.1.2@hbaseImage: master01:30500\/chenseanxy\/hbase:${HBASEREV}-hadoop${HADOOPREV}@g" ${file}
 
 file=templates/hbase-configmap.yaml
 cp ~/helm-hbase-chart.bk/$file $file
 sed -i 's@<value>{{ template \"hbase.name\" . }}-hbase-master:16010<\/value>@<value>{{ .Release.Name }}-hbase-master:16010<\/value>@g' ${file}
-sed -i 's@<value>\/hbase<\/value>@<value>\/hbase-unsecure<\/value>@g' ${file}
+#sed -i 's@<value>\/hbase<\/value>@<value>\/hbase-unsecure<\/value>@g' ${file}
 #sed -i '/    <\/configuration>/i\      <property>\n        <name>hbase.zookeeper.property.clientPort<\/name>\n        <value>2281<\/value>\n      <\/property>' ${file}
-
-find ~/helm-hbase-chart -name "*.yaml" | xargs grep 'apps/v1beta1'
-find ~/helm-hbase-chart -name "*.yaml" | xargs sed -i 's@apps/v1beta1@apps/v1@g'
 
 function fix_statefulset_affinity(){
   myhbasefile=$1
@@ -60,12 +74,12 @@ function fix_statefulset_affinity(){
                     release: {{ .Values.hbase.hdfs.release | quote }}
                     component: hdfs-nn
 EOF
-
 file=templates/hbase-master-statefulset.yaml
 cp ~/helm-hbase-chart.bk/$file $file
 fix_statefulset_affinity "$file"
 sed -i 's@                component: hdfs-nn@                    component: hdfs-nn@g' $file
 #sed -i s's@@@g' $file
+
 :<<EOF
     spec:
       affinity:
@@ -95,8 +109,6 @@ sed -i 's@                component: hdfs-nn@                    component: hdfs
                     release: {{ .Release.Name }}
                     component: hbase-rs
 EOF
-
-
 file=templates/hbase-rs-statefulset.yaml
 cp ~/helm-hbase-chart.bk/$file $file
 fix_statefulset_affinity "$file"
@@ -128,6 +140,9 @@ spec:
     component: hbase-master
 EOF
 
+find ~/helm-hbase-chart -name "*.yaml" | xargs grep 'apps/v1beta1'
+find ~/helm-hbase-chart -name "*.yaml" | xargs sed -i 's@apps/v1beta1@apps/v1@g'
+
 #  --set hbase.zookeeper.quorum="myzk-zookeeper-0.myzk-zookeeper-headless\,myzk-zookeeper-1.myzk-zookeeper-headless\,myzk-zookeeper-2.myzk-zookeeper-headles" \
 helm install myhb -n hadoop -f values.yaml \
   --set hbase.hdfs.name="myhdp-hadoop" \
@@ -154,11 +169,13 @@ bin/hbase-daemons.sh start thrift2
 kubectl get pod -n hadoop -o wide
 kubectl get pvc -n hadoop -o wide
 kubectl get svc -n hadoop -o wide
+
 EOF
 
 :<<EOF
 kubectl exec -it myhb-hbase-master-0 -n hadoop bash
   bin/hbase shell
+    status
     list
 
 kubectl -n hadoop run test-python3 -ti --image=python:3.7 --rm=true --restart=Never -- bash

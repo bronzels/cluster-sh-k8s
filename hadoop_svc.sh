@@ -1,5 +1,5 @@
-#HDPHOME=~/helm-hadoop-3
-HDPHOME=~/charts/stable/hadoop
+HDPHOME=~/helm-hadoop-3
+#HDPHOME=~/charts/stable/hadoop
 
 cat << \EOF > $HDPHOME/templates/yarn-rm-web-svc.yaml
 # A headless service to create DNS records
@@ -38,7 +38,7 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - port: 9870
+  - port: 50070
     name: web
     nodePort: 30870
   selector:
@@ -46,4 +46,5 @@ spec:
     release: {{ .Release.Name }}
     component: hdfs-nn
 EOF
+sed -i 's@- port: 50070@- port: 9870@g' $HDPHOME/templates/hdfs-nn-web-svc.yaml
 

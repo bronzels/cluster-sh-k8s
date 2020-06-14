@@ -2,20 +2,25 @@
 cd ~
 
 git clone https://github.com/chenseanxy/helm-hadoop-3.git
+rm -rf helm-hadoop-3.bk
 cp -r helm-hadoop-3 helm-hadoop-3.bk
 
-cp -r charts/stable/hadoop charts/stable/hadoop.bk
-
 HDPHOME=~/helm-hadoop-3
+HADOOPREV=3.1.1
 
 cd $HDPHOME
 
 cd image
+sed -i 's@HADOOP_30_VERSION = 3.2.1@HADOOP_30_VERSION = 3.1.1@g' Makefile
 make
-docker tag hadoop:3.2.1-nolib master01:30500/chenseanxy/hadoop:3.2.1-nolib
+rm image/hadoop-${HADOOPREV}.tar.gz #helm install错误kubernetes Error: create: failed to create: Request entity too large: limit is 3145728
+docker tag hadoop:${HADOOPREV}-nolib master01:30500/chenseanxy/hadoop:${HADOOPREV}-nolib
+docker push master01:30500/chenseanxy/hadoop:${HADOOPREV}-nolib
 
 cd $HDPHOME
 sed -i 's@repository: chenseanxy/hadoop@repository: master01:30500/chenseanxy/hadoop@g' values.yaml
+sed -i "s@tag: 3.2.1-nolib@tag: ${HADOOPREV}-nolib@g" values.yaml
+sed -i "s@hadoopVersion: 3.2.1@hadoopVersion: ${HADOOPREV}@g" values.yaml
 sed -i 's@pullPolicy: IfNotPresent@pullPolicy: Always@g' values.yaml
 
 find $HDPHOME -name "*.yaml" | xargs grep "apps/v1beta1"
@@ -27,13 +32,11 @@ sed -i '/  serviceName:/i\  selector:\n      matchLabels:\n        app: {{ inclu
 sed -i '/  serviceName:/i\  selector:\n      matchLabels:\n        app: {{ include "hadoop.name" . }}' templates/hdfs-nn-statefulset.yaml
 
 file=templates/hadoop-configmap.yaml
-#cp ../helm-hadoop-3.bk/$file $file
-sed -i 's@<value>{{ include \"hadoop.fullname\" . }}-yarn-rm<\/value>@<value>{{ include \"hadoop.fullname\" . }}-yarn-rm-0<\/value>@g' $file
-#sed -i 's@curl -sf http:\/\/{{ include \"hadoop.fullname\" . }}-yarn-rm@curl -sf http:\/\/{{ include \"hadoop.fullname\" . }}-yarn-rm-0@g' $file
-#sed -i 's@{{ include \"hadoop.fullname\" \. }}-yarn-rm-0\.{{ include \"hadoop.fullname\" \. }}-yarn-rm@{{ include \"hadoop.fullname\" \. }}-yarn-rm-0@g' $file
+cp ../helm-hadoop-3.bk/$file $file
 #sed -i 's@@@g' $file
 
-rm -f templates/hdfs-dn-statefulset.yaml
+file=templates/hdfs-dn-statefulset.yaml
+cp ../helm-hadoop-3.bk/$file $file
 cat << \EOF > templates/hdfs-dn-statefulset.yaml
 apiVersion: apps/v1
 kind: StatefulSet
