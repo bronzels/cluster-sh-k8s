@@ -300,8 +300,10 @@ chmod a+x ${file}
 
 chmod a+x ${file}
 
+:<<EOF
 kubectl get pod -n mqstr-mysqlsrctest | grep myconn | awk '{print $1}'
 kubectl exec -it myconn-5fd6f987bc-kd4vz -n mqstr-mysqlsrctest bash
+EOF
 
 kubectl run curl-json --image=radial/busyboxplus:curl --restart=Never --rm -- curl myconn-mysqlsrctest-svc
 kubectl run curl-avro --image=radial/busyboxplus:curl --restart=Never --rm -- curl myconn-mysqlsrctest-svc

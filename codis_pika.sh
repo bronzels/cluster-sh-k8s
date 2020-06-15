@@ -204,7 +204,7 @@ buildup)
     kubectl exec -n ${codisns} -it codis-dashboard-0 -- redis-cli -h codis-proxy -p 19000 PING
     if [ $? != 0 ]; then
         echo "buildup codis cluster with problems, plz check it!!"
-    fi
+    ficluster-sh-k8s
     ;;
 
 ### 扩容／缩容 codis proxy
@@ -261,12 +261,13 @@ cp ${file}.template ${file}
 
 ansible slave -m shell -a"docker images|grep pika"
 ansible slave -m shell -a"docker ps -a|grep codis"
-#kubectl exec -it codis-server-0 -n serv bash
-#kubectl get pod -n serv | awk '{print $1}' | grep codis-server | xargs kubectl describe pod -n serv
-#kubectl get pod -n serv | awk '{print $1}' | grep codis-server | xargs kubectl logs -n serv
-#kubectl exec -it codis-server-0 -n serv  -- bash
-###kubectl get pod -n serv | awk '{print $1}' | grep codis-server-0 | xargs -I CNAME  sh -c "kubectl exec -it CNAME -n serv  -- /bin/sh"
-
+:<<EOF
+kubectl exec -it codis-server-0 -n serv bash
+kubectl get pod -n serv | awk '{print $1}' | grep codis-server | xargs kubectl describe pod -n serv
+kubectl get pod -n serv | awk '{print $1}' | grep codis-server | xargs kubectl logs -n serv
+kubectl exec -it codis-server-0 -n serv  -- bash
+  kubectl get pod -n serv | awk '{print $1}' | grep codis-server-0 | xargs -I CNAME  sh -c "kubectl exec -it CNAME -n serv  -- /bin/sh"
+EOF
 kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.serv -p 19000  set fool2 bar2
 kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.serv -p 19000  get fool2
 

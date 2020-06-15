@@ -6,22 +6,33 @@ rm -rf helm-hadoop-3.bk
 cp -r helm-hadoop-3 helm-hadoop-3.bk
 
 HDPHOME=~/helm-hadoop-3
-HADOOPREV=3.1.1
+HADOOPREV=3.2.1
 
 cd $HDPHOME
 
 cd image
-sed -i 's@HADOOP_30_VERSION = 3.2.1@HADOOP_30_VERSION = 3.1.1@g' Makefile
+
+file=Dockerfile
+cp ~/helm-hadoop-3.bk/image/$file $file
+sed -i '/ENV HADOOP_PREFIX/a\    HADOOP_HOME=/usr/local/hadoop' ${file}
+sed -i '/    YARN_CONF_DIR/a\    YARN_HOME=/usr/local/hadoop' ${file}
+
+file=Makefile
+cp ~/helm-hadoop-3.bk/image/$file $file
+sed -i "s@HADOOP_30_VERSION = 3.2.1@HADOOP_30_VERSION = ${HADOOPREV}@g" ${file}
 make
-rm image/hadoop-${HADOOPREV}.tar.gz #helm install错误kubernetes Error: create: failed to create: Request entity too large: limit is 3145728
+#helm install错误kubernetes Error: create: failed to create: Request entity too large: limit is 3145728
+rm hadoop-${HADOOPREV}.tar.gz
 docker tag hadoop:${HADOOPREV}-nolib master01:30500/chenseanxy/hadoop:${HADOOPREV}-nolib
 docker push master01:30500/chenseanxy/hadoop:${HADOOPREV}-nolib
 
 cd $HDPHOME
-sed -i 's@repository: chenseanxy/hadoop@repository: master01:30500/chenseanxy/hadoop@g' values.yaml
-sed -i "s@tag: 3.2.1-nolib@tag: ${HADOOPREV}-nolib@g" values.yaml
-sed -i "s@hadoopVersion: 3.2.1@hadoopVersion: ${HADOOPREV}@g" values.yaml
-sed -i 's@pullPolicy: IfNotPresent@pullPolicy: Always@g' values.yaml
+file=values.yaml
+cp ~/helm-hadoop-3.bk/$file $file
+sed -i 's@repository: chenseanxy/hadoop@repository: master01:30500/chenseanxy/hadoop@g' ${file}
+sed -i "s@tag: 3.2.1-nolib@tag: ${HADOOPREV}-nolib@g" ${file}
+sed -i "s@hadoopVersion: 3.2.1@hadoopVersion: ${HADOOPREV}@g" ${file}
+sed -i 's@pullPolicy: IfNotPresent@pullPolicy: Always@g' ${file}
 
 find $HDPHOME -name "*.yaml" | xargs grep "apps/v1beta1"
 find $HDPHOME -name "*.yaml" | xargs sed -i 's@apps/v1beta1@apps/v1@g'
