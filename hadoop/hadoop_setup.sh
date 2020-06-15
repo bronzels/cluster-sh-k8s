@@ -123,7 +123,10 @@ NOTES:
    kubectl exec -n hadoop -it myhdp-hadoop-yarn-rm-0 -- /usr/local/hadoop/bin/mapred job -list
 
 6. This chart can also be used with the zeppelin chart
-    helm install --namespace hadoop --set hadoop.useConfigMap=true,hadoop.configMapName=myhdp-hadoop stable/zeppelin
+    helm install --namespace hadoop --set hadoohelm install myhv -n hadoop \
+  --set conf.hadoopConfigMap=myhdp-hadoop \
+  gradiant/hive --version 0.1.3
+p.useConfigMap=true,hadoop.configMapName=myhdp-hadoop stable/zeppelin
 
 7. You can scale the number of yarn nodes like this:
    helm upgrade myhdp --set yarn.nodeManager.replicas=4 stable/hadoop
