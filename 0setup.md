@@ -6,21 +6,21 @@
 
 #####2，每台新加入集群机器，设置用户/口令，设置sshd，每台服务器root用户下，单独执行manual_each.sh
 
-#####3，新建集群，在1台同时用作操作平面的和k8s master01的服务器上，设置ansible环境，执行ansible_cp.sh
+#####3，新建集群，在1台同时用作操作平面的和k8s master01的服务器上，设置ansible环境，执行ansible/ansible_cp.sh
     以下操作无特殊说明都在操作台master01服务器上ubuntu用户下执行
 
 #####4，新建集群
     给集群安装docker，执行docker.sh
-    给集群安装k8s，执行k8s.sh，
+    给集群安装k8s，执行k8s/k8s.sh，
     masters/slaves加入集群：    
         或者，全新安装，把k8s.sh的kubeadm init之后如下提示后的kubeadam join，生成的key：
             You can now join any number of control-plane nodes by copying certificate authorities
                          and service account keys on each node and then running the following as root:
         或者，长时间以后有新masters/slaves新加入集群，执行k8s.sh的kubeadm token create新的key：
-        copy到k8s_masters/k8s_slaves脚本。
-            给集群设置控制平面以外多master加入集群，执行k8s_masters.sh
-            给集群设置slaves加入集群，执行k8s_slaves.sh
-    给集群设置helm/docker repo，测试新开发dockerfile能正确启动pod/svc，执行k8s_helm_registry.sh
+        copy到k8s/k8s_masters，k8s//k8s_slaves脚本。
+            给集群设置控制平面以外多master加入集群，执行k8s/k8s_masters.sh
+            给集群设置slaves加入集群，执行k8s/k8s_slaves.sh
+    给集群设置helm/docker repo，测试新开发dockerfile能正确启动pod/svc，执行k8s/k8s_helm_registry.sh
     给集群安装k8s dashboard，，执行k8s_dash.sh
     如果后续集群软件安装错误无法恢复，停止卸载k8s，删除所有容器，执行k8s_remove.sh
 

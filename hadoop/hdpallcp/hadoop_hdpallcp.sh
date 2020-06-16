@@ -4,6 +4,7 @@ rm -rf ${MYHOME}
 
 unzip hdpallcp.zip
 
+#mkdir -p ${MYHOME}/image
 cd ${MYHOME}/image
 
 #spark/sqoop/hbase are all with both folder with rev and soft link
@@ -40,9 +41,20 @@ cp /tmp/kafka.tar.gz ./
 HADOOPREV=3.2.1
 HBASEREV=2.2.2
 
+
+RUN gpg --keyserver pgp.mit.edu --recv-keys AA8E81B4331F7F50
+RUN gpg --export AA8E81B4331F7F50 | apt-key add -
+
+#cp ~/sources.list.debian.8 ./sources.list
 file=Dockerfile.hdpallcp
 cat << \EOF > ${file}
-FROM master01:30500/chenseanxy/hbase:(HBASEREV)-hadoop(HADOOPREV)
+FROM master01:30500/chenseanxy/hbase-ubu16ssh:(HBASEREV)-hadoop(HADOOPREV)
+
+EOF
+sed -i "s@(HBASEREV)@${HBASEREV}@g" ${file}
+sed -i "s@(HADOOPREV)@${HADOOPREV}@g" ${file}
+docker build -f Dockerfile.hdpallcp -t master01:30500/bronzels/hdpallcp:0.1 ./
+
 
 # Add libs
 ADD zookeeper.tar.gz /usr/local
@@ -63,6 +75,15 @@ ENV HADOOP_HOME=/usr/local/hadoop \
 ENV MYHOME=/usr/local
 
 ENV PATH=${PATH}:$JAVA_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$HADOOP_HOME/lib:$HBASE_HOME/bin:$HIVE_HOME/bin:$SPARK_HOME/bin:$SQOOP_HOME/bin:{ZOOKEEPER_HOME}/bin:{MYHOME}/kafka/bin
+
+RUN cat /etc/issue
+RUN uname -r
+RUN apt-get install -y ssh
+
+RUN groupadd -g 500 -r hive
+RUN useradd --comment "Hive user" -u 500 --shell /bin/bash -M -r -g hive hive
+RUN groupadd supergroup
+RUN usermod -a -G supergroup hive
 
 WORKDIR ${MYHOME}
 EOF

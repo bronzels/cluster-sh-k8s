@@ -175,18 +175,32 @@ docker images|grep "${HBASEREV}-hadoop${HADOOPREV}"
 #docker images|grep "${HBASEREV}-hadoop${HADOOPREV}"|awk '{print $3}'|xargs docker rmi -f
 docker images|grep hbase|awk '{print $3}'|xargs docker rmi -f
 ansible slave -m shell -a"docker images|grep hbase|awk '{print \$3}'|xargs docker rmi -f"
+docker images|grep hbase
 
 file=Makefile
 cp ~/helm-hbase-chart.bk/image/$file $file
 sed -i "s@HADOOP_30_VERSION = 3.1.2@HADOOP_30_VERSION = ${HADOOPREV}@g" $file
 sed -i "s@HBASE_VERSION = 2.1.7@HBASE_VERSION = ${HBASEREV}@g" $file
 sed -i "s@DOCKER_REPO = chenseanxy\/hbase@DOCKER_REPO = master01:30500/chenseanxy\/hbase@g" $file
+
 wget -c http://archive.apache.org/dist/hbase/${HBASEREV}/hbase-${HBASEREV}-bin.tar.gz
 make
 rm -f hbase-${HBASEREV}-bin.tar.gz
 
 docker tag hbase:${HBASEREV}-hadoop${HADOOPREV} master01:30500/chenseanxy/hbase:${HBASEREV}-hadoop${HADOOPREV}
 docker push master01:30500/chenseanxy/hbase:${HBASEREV}-hadoop${HADOOPREV}
+
+sed i 's@30500\/chenseanxy\/hadoop@30500\/chenseanxy\/hadoop-ubu16ssh@g' Dockerfile
+
+wget -c http://archive.apache.org/dist/hbase/${HBASEREV}/hbase-${HBASEREV}-bin.tar.gz
+cp Makefile Makefile-ubu16ssh
+sed 's@$$(DOCKER) build -t hbase@$(DOCKER) build -t hbase-ubu16ssh@g' Makefile-ubu16ssh
+make -f Makefile-ubu16ssh
+rm -f hbase-${HBASEREV}-bin.tar.gz
+
+docker tag hbase-ubu16ssh:${HBASEREV}-hadoop${HADOOPREV} master01:30500/chenseanxy/hbase-ubu16ssh:${HBASEREV}-hadoop${HADOOPREV}
+docker push master01:30500/chenseanxy/hbase-ubu16ssh:${HBASEREV}-hadoop${HADOOPREV}
+
 docker images|grep "${HBASEREV}-hadoop${HADOOPREV}"
 
 cd ~/helm-hbase-chart
@@ -377,7 +391,7 @@ http://master01:31010
 EOF
 
 :<<EOF
-kubectl -n hadoop run test-ubuntu -ti --image=ubuntu --rm=true --restart=Never -- bash
+kubectl -n hadoop run test-ubuntu -ti --image=ubuntu:16.04 --rm=true --restart=Never -- bash
 EOF
 cat << \EOF > /etc/apt/source.list
 deb http://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse

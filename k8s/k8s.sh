@@ -58,6 +58,7 @@ networking:
   podSubnet: "192.168.0.0/16"
 EOF
 #kubeadm config migrate --old-config kubeadm-config-old.yaml --new-config kubeadm-config.yaml
+
 cat << \EOF > kubeadm-config.yaml
 apiVersion: kubeadm.k8s.io/v1beta2
 bootstrapTokens:
@@ -102,6 +103,10 @@ networking:
   serviceSubnet: 10.96.0.0/12
 scheduler: {}
 EOF
+
+#！！！手工，替换正确的control plan IP地址
+sed -i 's@10.10.3.189@10.10.13.3@g' kubeadm-config.yaml
+
 ansible masterexpcp -m copy -a"src=~/kubeadm-config.yaml dest=~"
 
 kubeadm init --config kubeadm-config.yaml
@@ -117,6 +122,7 @@ mkdir -p $HOME/.kube
 sudo \cp -f /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
+#root
 #kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 wget -c https://docs.projectcalico.org/v3.9/manifests/calico.yaml
 kubectl apply -f calico.yaml
@@ -313,3 +319,4 @@ function fix_statfulset_rev_beta2(){
 }
 
 EOF
+

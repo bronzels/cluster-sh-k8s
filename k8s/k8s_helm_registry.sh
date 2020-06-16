@@ -39,64 +39,97 @@ sed -i 's@type: ClusterIP@type: NodePort@g' ${file}
 sed -i 's@# nodePort:@nodePort: 30500@g' ${file}
 helm install -f values.yaml dkreg .
 #helm uninstall dkreg
+#！！！手工，重新登录ubuntu，测试直到返回
+#{"repositories":[]}
 curl http://master01:30500/v2/_catalog
 
-cat << \EOF > Dockerfile-testredis.yaml
-FROM redis:4.0-alpine
-MAINTAINER bronzels@hotmail.com
+cp ~/source.list.ubuntu.16.04 source.list
+
+docker images|grep ubu16ssh
+docker images|grep ubu16ssh|awk '{print $3}'|xargs docker rmi -f
+ansible slave -m shell -a"docker images|grep ubu16ssh|awk '{print \$3}'|xargs docker rmi -f"
+docker images|grep ubu16ssh
+
+cat << \EOF > Dockerfile.ubu16ssh
+FROM ubuntu:16.04
+
+COPY ./source.list /etc/apt
+RUN apt-get update
+RUN apt-get install -y openssh-server
+RUN sed -i 's@PermitRootLogin prohibit-password@PermitRootLogin yes@g' /etc/ssh/sshd_config
+RUN sed -i 's@#PasswordAuthentication yes@PasswordAuthentication yes@g' /etc/ssh/sshd_config
+RUN usermod --password $(echo root | openssl passwd -1 -stdin) root
+RUN systemctl enable ssh
+
+WORKDIR /
+
+EXPOSE 22
+
+ENTRYPOINT service ssh start && set -e -x && tail -f /dev/null
 
 EOF
-docker build -f Dockerfile-testredis.yaml -t bigdata/testredis:0.1 ./
-docker tag bigdata/testredis:0.1 master01:30500/bigdata/testredis:0.1
-docker push master01:30500/bigdata/testredis:0.1
-curl http://master01:30500/v2/_catalog
 
-cat << EOF > ~/redis-deploy-testsvc.yaml
+docker build -f Dockerfile.ubu16ssh -t master01:30500/bronzels/ubu16ssh:0.1 ./
+docker push master01:30500/bronzels/ubu16ssh:0.1
+
+:<<EOF
+        command:
+          - /bin/sh
+          - '-c'
+          - set -e -x;tail -f /dev/null
+EOF
+cat << EOF > ubu16ssh-deploy-svc.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: myrdtestpod
+  name: myubu16sshpod
   namespace: default
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: testredis
-      role: mem-cache
+      app: ubu16ssh
+      role: client-cp
   template:
     metadata:
       labels:
-        app: testredis
-        role: mem-cache
+        app: ubu16ssh
+        role: client-cp
     spec:
       containers:
-      - name: testredis
-        image: master01:30500/bigdata/testredis:0.1
+      - name: ubu16ssh
+        image: master01:30500/bronzels/ubu16ssh:0.1
         ports:
-        - name: testredis
-          containerPort: 6379
+        - name: ssh
+          containerPort: 22
+        resources:
+         requests:
+           cpu: 4
+           memory: 4096Mi
+         limits:
+           cpu: 8
+           memory: 8192Mi
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: myrdtestsvc
+  name: myubu16sshsvc
   namespace: default
 spec:
   selector:
-    app: testredis
-    role: mem-cache
+    app: ubu16ssh
+    role: client-cp
   type: ClusterIP
   ports:
-  - port: 6379
-    targetPort: 6379
+  - port: 22
+    targetPort: 22
 EOF
-kubectl apply -f ~/redis-deploy-testsvc.yaml
+
+kubectl apply -f ubu16ssh-deploy-svc.yaml
 kubectl get pod
 kubectl get svc
 
-kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h myrdtestsvc set fool bar
-kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h myrdtestsvc get fool
-kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h myrdtestsvc set fool2 bar2
-kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h myrdtestsvc get fool2
+kubectl run test-ubu16ssh1 -ti --image=master01:30500/bronzels/ubu16ssh:0.1 --rm=true --restart=Never -- bash
+  ssh -p 22 root@myubu16sshsvc
 
-kubectl delete -f ~/redis-deploy-testsvc.yaml
+kubectl delete -f ubu16ssh-deploy-svc.yaml

@@ -1,4 +1,3 @@
-#！！！手工, 新机器加入集群跳过所有cat EOF文件生成步骤
 #root
 # step 1: 安装必要的一些系统工具
 ansible all -m shell -a"apt-get update"
@@ -15,6 +14,7 @@ ansible all -m shell -a"curl -fsSL https://get.docker.com | bash -s docker --mir
 #19.03.8
 ansible all -m shell -a"docker --version"
 ansible all -m shell -a"systemctl enable docker.service"
+#root
 cat << EOF > /etc/docker/daemon.json
 {
   "exec-opts": ["native.cgroupdriver=systemd"],

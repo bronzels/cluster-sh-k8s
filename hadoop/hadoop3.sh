@@ -12,19 +12,53 @@ cd $HDPHOME
 
 cd image
 
+docker images|grep hadoop
+docker images|grep hadoop|awk '{print $3}'|xargs docker rmi -f
+ansible slave -m shell -a"docker images|grep hadoop|awk '{print \$3}'|xargs docker rmi -f"
+docker images|grep hadoop
+
 file=Dockerfile
-cp ~/helm-hadoop-3.bk/image/$file $file
-sed -i '/ENV HADOOP_PREFIX/a\    HADOOP_HOME=/usr/local/hadoop' ${file}
-sed -i '/    YARN_CONF_DIR/a\    YARN_HOME=/usr/local/hadoop' ${file}
+cp ~/helm-hadoop-3.bk/image/${file} ${file}.template
+sed -i '/ENV HADOOP_PREFIX/a\    HADOOP_HOME=/usr/local/hadoop \\' ${file}.template
+sed -i '/    YARN_CONF_DIR/a\    YARN_HOME=/usr/local/hadoop \\' ${file}.template
+
+cp ${file}.template ${file}
+sed -i 's@FROM java:8-jre@FROM anapsix\/alpine-java@g' ${file}
 
 file=Makefile
 cp ~/helm-hadoop-3.bk/image/$file $file
 sed -i "s@HADOOP_30_VERSION = 3.2.1@HADOOP_30_VERSION = ${HADOOPREV}@g" ${file}
+
 make
 #helm install错误kubernetes Error: create: failed to create: Request entity too large: limit is 3145728
 rm hadoop-${HADOOPREV}.tar.gz
 docker tag hadoop:${HADOOPREV}-nolib master01:30500/chenseanxy/hadoop:${HADOOPREV}-nolib
 docker push master01:30500/chenseanxy/hadoop:${HADOOPREV}-nolib
+
+cp ${file}.template ${file}
+sed -i 's@FROM java:8-jre@FROM paulosalgado\/oracle-java8-ubuntu-16@g' ${file}
+
+cp ~/source.list.ubuntu.16.04 source.list
+cat << \EOF > Dockerfile.ubu16ssh
+FROM ubuntu:16.04
+
+COPY ./source.list /etc/apt
+RUN apt-get update
+RUN apt-get install -y openssh-server
+RUN sed -i 's@PermitRootLogin prohibit-password@PermitRootLogin yes@g' /etc/ssh/sshd_config
+RUN sed -i 's@#PasswordAuthentication yes@PasswordAuthentication yes@g' /etc/ssh/sshd_config
+RUN service ssh restart
+RUN usermod --password $(echo root | openssl passwd -1 -stdin) root
+EOF
+
+cp Makefile Makefile-ubu16ssh
+sed 's@$(DOCKER) build -t hadoop@$(DOCKER) build -t hadoop-ubu16ssh@g' Makefile-ubu16ssh
+make -f Makefile-ubu16ssh
+rm hadoop-${HADOOPREV}.tar.gz
+docker tag hadoop-ubu16ssh:${HADOOPREV}-nolib master01:30500/chenseanxy/hadoop-ubu16ssh:${HADOOPREV}-nolib
+docker push master01:30500/chenseanxy/hadoop-ubu16ssh:${HADOOPREV}-nolib
+
+docker images|grep "<none>"|awk '{print $3}'|xargs docker rmi -f
 
 cd $HDPHOME
 file=values.yaml
