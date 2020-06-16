@@ -1,8 +1,8 @@
 cd ~
 MYHOME=~/hdpallcp
 rm -rf ${MYHOME}
-mkdir -p ${MYHOME}/template
-mkdir -p ${MYHOME}/image
+
+unzip hdpallcp.zip
 
 cd ${MYHOME}/image
 
@@ -65,12 +65,6 @@ ENV MYHOME=/usr/local
 ENV PATH=${PATH}:$JAVA_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$HADOOP_HOME/lib:$HBASE_HOME/bin:$HIVE_HOME/bin:$SPARK_HOME/bin:$SQOOP_HOME/bin:{ZOOKEEPER_HOME}/bin:{MYHOME}/kafka/bin
 
 WORKDIR ${MYHOME}
-
-#CMD nohup ${HIVE_HOME}/bin/hive --service hiveserver2 >> ${HIVE_HOME}/logs/hiveserver2.log 2>&1 &
-
-# hive-server2 ports
-#EXPOSE 9084
-
 EOF
 sed -i "s@(HBASEREV)@${HBASEREV}@g" ${file}
 sed -i "s@(HADOOPREV)@${HADOOPREV}@g" ${file}

@@ -24,7 +24,6 @@ ADD comscripts.tar.gz {MYSCRIPTSHOME}
 ADD comcpscripts.tar.gz {MYSCRIPTSHOME}
 
 ENV PATH=${PATH}:{MYSCRIPTSHOME}
-
 EOF
 
 docker build -f Dockerfile.hdpallcpcom -t master01:30500/bronzels/hdpallcpcom:0.1 ./

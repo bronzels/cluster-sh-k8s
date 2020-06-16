@@ -19,6 +19,13 @@ sed -i "/ADD hbase-/i\ENV HADOOP_HOME=\/usr\/local\/hadoop" $file
 #sed -i "/ADD hbase-/a\RUN sed -i 's@# export HBASE_HEAPSIZE=1G@export HBASE_HEAPSIZE=16G@g' \/opt\/hbase-${HBASEREV}\/conf\/hbase-env.sh" $file
 #sed -i "/ADD hbase-/a\RUN sed -i 's@# export HBASE_CLASSPATH=@export HBASE_CLASSPATH=\$HADOOP_HOME/etc/hadoop@g' \/opt\/hbase-${HBASEREV}\/conf\/hbase-env.sh" $file
 sed -i "/WORKDIR/i\ADD hbase-env.sh \/opt\/hbase\/conf\n" $file
+
+:<<EOF
+export HBASE_OPTS="$HBASE_OPTS -XX:SurvivorRatio=2  -XX:+PrintGCDateStamps  -Xloggc:/var/lib/hadoop2/hbase-2.0.1/gc-regionserver.log -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=1 -XX:GCLogFileSize=512M -server -Xmx16g -Xms16g -Xmn2g -Xss256k -XX:PermSize=256m -XX:MaxPermSize=256m -XX:+UseParNewGC -XX:MaxTenuringThreshold=15  -XX:+CMSParallelRemarkEnabled -XX:+UseCMSCompactAtFullCollection -XX:+CMSClassUnloadingEnabled -XX:+UseCMSInitiatingOccupancyOnly -XX:CMSInitiatingOccupancyFraction=75 -XX:-DisableExplicitGC "
+export HBASE_MASTER_OPTS="$HBASE_MASTER_OPTS -XX:PermSize=128m -XX:MaxPermSize=128m"
+export HBASE_REGIONSERVER_OPTS="$HBASE_REGIONSERVER_OPTS -XX:PermSize=128m -XX:MaxPermSize=128m"
+EOF
+
 cat << \EOF > hbase-env.sh
 #!/usr/bin/env bash
 #
@@ -66,9 +73,6 @@ export HBASE_HEAPSIZE=16G
 # For more on why as well as other possible settings,
 # see http://hbase.apache.org/book.html#performance
 export HBASE_OPTS="$HBASE_OPTS -XX:+UseConcMarkSweepGC"
-export HBASE_OPTS="$HBASE_OPTS -XX:SurvivorRatio=2  -XX:+PrintGCDateStamps  -Xloggc:/var/lib/hadoop2/hbase-2.0.1/gc-regionserver.log -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=1 -XX:GCLogFileSize=512M -server -Xmx16g -Xms16g -Xmn2g -Xss256k -XX:PermSize=256m -XX:MaxPermSize=256m -XX:+UseParNewGC -XX:MaxTenuringThreshold=15  -XX:+CMSParallelRemarkEnabled -XX:+UseCMSCompactAtFullCollection -XX:+CMSClassUnloadingEnabled -XX:+UseCMSInitiatingOccupancyOnly -XX:CMSInitiatingOccupancyFraction=75 -XX:-DisableExplicitGC "
-export HBASE_MASTER_OPTS="$HBASE_MASTER_OPTS -XX:PermSize=128m -XX:MaxPermSize=128m"
-export HBASE_REGIONSERVER_OPTS="$HBASE_REGIONSERVER_OPTS -XX:PermSize=128m -XX:MaxPermSize=128m"
 
 # Uncomment one of the below three options to enable java garbage collection logging for the server-side processes.
 
@@ -167,6 +171,11 @@ export HBASE_MANAGES_ZK=false
 # export HBASE_DISABLE_HADOOP_CLASSPATH_LOOKUP="true"
 EOF
 
+docker images|grep "${HBASEREV}-hadoop${HADOOPREV}"
+#docker images|grep "${HBASEREV}-hadoop${HADOOPREV}"|awk '{print $3}'|xargs docker rmi -f
+docker images|grep hbase|awk '{print $3}'|xargs docker rmi -f
+ansible slave -m shell -a"docker images|grep hbase|awk '{print \$3}'|xargs docker rmi -f"
+
 file=Makefile
 cp ~/helm-hbase-chart.bk/image/$file $file
 sed -i "s@HADOOP_30_VERSION = 3.1.2@HADOOP_30_VERSION = ${HADOOPREV}@g" $file
@@ -175,11 +184,6 @@ sed -i "s@DOCKER_REPO = chenseanxy\/hbase@DOCKER_REPO = master01:30500/chenseanx
 wget -c http://archive.apache.org/dist/hbase/${HBASEREV}/hbase-${HBASEREV}-bin.tar.gz
 make
 rm -f hbase-${HBASEREV}-bin.tar.gz
-
-docker images|grep "${HBASEREV}-hadoop${HADOOPREV}"
-#docker images|grep "${HBASEREV}-hadoop${HADOOPREV}"|awk '{print $3}'|xargs docker rmi -f
-docker images|grep hbase|awk '{print $3}'|xargs docker rmi -f
-ansible slave -m shell -a"docker images|grep hbase|awk '{print \$3}'|xargs docker rmi -f"
 
 docker tag hbase:${HBASEREV}-hadoop${HADOOPREV} master01:30500/chenseanxy/hbase:${HBASEREV}-hadoop${HADOOPREV}
 docker push master01:30500/chenseanxy/hbase:${HBASEREV}-hadoop${HADOOPREV}
@@ -304,6 +308,7 @@ find ~/helm-hbase-chart -name "*.yaml" | xargs grep 'apps/v1beta1'
 find ~/helm-hbase-chart -name "*.yaml" | xargs sed -i 's@apps/v1beta1@apps/v1@g'
 
 #  --set hbase.zookeeper.quorum="myzk-zookeeper-0.myzk-zookeeper-headless\,myzk-zookeeper-1.myzk-zookeeper-headless\,myzk-zookeeper-2.myzk-zookeeper-headles" \
+cd ~/helm-hbase-chart
 helm install myhb -n hadoop -f values.yaml \
   --set hbase.hdfs.name="myhdp-hadoop" \
   --set hbase.hdfs.release="myhdp" \
@@ -316,7 +321,6 @@ helm install myhb -n hadoop -f values.yaml \
   --set hdfs.dataNode.resources.limits.cpu="4000m" \
   ./
 :<<EOF
-myzktest
 helm uninstall myhb -n hadoop
 kubectl exec myzk-zookeeper-0 -n hadoop -- bin/zkCli.sh deleteall /hbase
 kubectl exec -n hadoop -it myhdp-hadoop-hdfs-nn-0 -- /usr/local/hadoop/bin/hdfs dfs -rm -r -f /hbase

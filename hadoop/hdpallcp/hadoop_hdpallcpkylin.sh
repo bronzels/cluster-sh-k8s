@@ -1,5 +1,5 @@
 
-MYHOME=~/hadoop-client
+MYHOME=~/hdpallcp
 
 cd ${MYHOME}/image
 
