@@ -1,0 +1,22 @@
+# The base hadoop image to use for all components.
+# See this repo for image build details: https://github.com/Comcast/kube-yarn/tree/master/image
+
+image:
+  repository: master01:30500/bronzels/hdpallcp
+  tag: 0.1
+  pullPolicy: IfNotPresent
+
+resources: {}
+
+conf:
+  hbaseSite:
+  hiveSite:
+  hdfsAdminUser: root
+  # if not set, default is configMap from hdfs requirement {{.Release.Name}}-hdfs-hadoop
+  hadoopConfigMap:
+  # to manually provide hadoop config attributes instead of hadoopConfigMap.
+  # hadoopSite:
+  #   coreSite:
+  #     fs.defaultFS: hdfs://hdfs-cluster:8020
+  #   hdfsSite:
+  #   ...
