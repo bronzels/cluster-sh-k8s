@@ -23,7 +23,8 @@ sed -i '/ENV HADOOP_PREFIX/a\    HADOOP_HOME=/usr/local/hadoop \\' ${file}.templ
 sed -i '/    YARN_CONF_DIR/a\    YARN_HOME=/usr/local/hadoop \\' ${file}.template
 
 cp ${file}.template ${file}
-sed -i 's@FROM java:8-jre@FROM anapsix\/alpine-java@g' ${file}
+#sed -i 's@FROM java:8-jre@FROM anapsix\/alpine-java@g' ${file}
+#替换为alpine以后，datanode/nodemanager不能启动
 
 file=Makefile
 cp ~/helm-hadoop-3.bk/image/$file $file
@@ -35,30 +36,34 @@ rm hadoop-${HADOOPREV}.tar.gz
 docker tag hadoop:${HADOOPREV}-nolib master01:30500/chenseanxy/hadoop:${HADOOPREV}-nolib
 docker push master01:30500/chenseanxy/hadoop:${HADOOPREV}-nolib
 
+file=Dockerfile
 cp ${file}.template ${file}
 sed -i 's@FROM java:8-jre@FROM paulosalgado\/oracle-java8-ubuntu-16@g' ${file}
 
 cp ~/source.list.ubuntu.16.04 source.list
-cat << \EOF > Dockerfile.ubu16ssh
-FROM ubuntu:16.04
+cat << \EOF >> ${file}
 
 COPY ./source.list /etc/apt
 RUN apt-get update
 RUN apt-get install -y openssh-server
 RUN sed -i 's@PermitRootLogin prohibit-password@PermitRootLogin yes@g' /etc/ssh/sshd_config
 RUN sed -i 's@#PasswordAuthentication yes@PasswordAuthentication yes@g' /etc/ssh/sshd_config
-RUN service ssh restart
 RUN usermod --password $(echo root | openssl passwd -1 -stdin) root
+
+EXPOSE 22
 EOF
 
 cp Makefile Makefile-ubu16ssh
-sed 's@$(DOCKER) build -t hadoop@$(DOCKER) build -t hadoop-ubu16ssh@g' Makefile-ubu16ssh
+sed -i 's@$(DOCKER) build -t hadoop@$(DOCKER) build -t hadoop-ubu16ssh@g' Makefile-ubu16ssh
 make -f Makefile-ubu16ssh
 rm hadoop-${HADOOPREV}.tar.gz
-docker tag hadoop-ubu16ssh:${HADOOPREV}-nolib master01:30500/chenseanxy/hadoop-ubu16ssh:${HADOOPREV}-nolib
-docker push master01:30500/chenseanxy/hadoop-ubu16ssh:${HADOOPREV}-nolib
 
 docker images|grep "<none>"|awk '{print $3}'|xargs docker rmi -f
+docker images|grep ubu16ssh|awk '{print $3}'|xargs docker rmi -f
+ansible slave -m shell -a"docker images|grep ubu16ssh|awk '{print \$3}'|xargs docker rmi -f"
+
+docker tag hadoop-ubu16ssh:${HADOOPREV}-nolib master01:30500/chenseanxy/hadoop-ubu16ssh:${HADOOPREV}-nolib
+docker push master01:30500/chenseanxy/hadoop-ubu16ssh:${HADOOPREV}-nolib
 
 cd $HDPHOME
 file=values.yaml

@@ -38,17 +38,17 @@ kubectl create -f dashboard-external-https.yaml
 #kubectl delete -f dashboard-external-https.yaml
 kubectl get service -n rook-ceph|grep rook-ceph-mgr-dashboard-external-https
 #！！！手工，找到service映射的nodeport
-curl https://master01:30996/#/login
+curl https://master01:31322/#/login
 #！！！手工，账户admin，密码以下命令生成
 kubectl -n rook-ceph get secret rook-ceph-dashboard-password -o jsonpath='{.data.password}'  |  base64 --decode
-#IsM~U,[E}[2gB|\!13T,
+#d?P,r7}VYit7Aep&376I
 
 kubectl create -f toolbox.yaml
 #kubectl delete -f toolbox.yaml
 kubectl -n rook-ceph get pod -l "app=rook-ceph-tools" -o wide | grep rook-ceph-tools | awk '{print $1}'
 #kubectl -n rook-ceph get pod -l "app=rook-ceph-tools" -o wide | grep rook-ceph-tools | awk '{print $1}' | xargs -n1 -i{} kubectl -n rook-ceph exec -it {} bash
 #！！！手工，copy pod名字到以下命令
-kubectl -n rook-ceph exec -it rook-ceph-tools-84d6784856-75jck bash
+kubectl -n rook-ceph exec -it rook-ceph-tools-84d6784856-n6nl9 bash
   #ceph status
   #ceph df
   #ceph osd status

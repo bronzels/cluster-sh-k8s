@@ -43,6 +43,7 @@ EOF
 kubectl apply -f ~/redis/redis-deploy-svc.yaml
 #kubectl delete -f ~/redis/redis-deploy-svc.yaml
 kubectl get pod
+kubectl get pvc
 kubectl get svc
 
 kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h myrdsvc set fool bar

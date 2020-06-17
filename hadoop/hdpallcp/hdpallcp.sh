@@ -1,6 +1,6 @@
 cd ~
 MYHOME=~/hdpallcp
-rm -rf ${MYHOME}
+#rm -rf ${MYHOME}
 
 unzip hdpallcp.zip
 
@@ -15,7 +15,6 @@ cp /tmp/sqoop.tar.gz ./
 #   totally depends on ENV
 #spark-2.4.4-bin-hadoop2.7
 cp /tmp/spark.tar.gz ./
-cp /tmp/spark_shared_jars.tar.gz ./
 #   spark/conf/
 #     core-site.xml
 #     hdfs-site.xml
@@ -38,54 +37,60 @@ cp /tmp/hive.tar.gz ./
 cp /tmp/kafka.tar.gz ./
 #   no dep, pure client
 
+cp ~/source.list.ubuntu.16.04 source.list
+
 HADOOPREV=3.2.1
 HBASEREV=2.2.2
 
+file=entrypoint.sh
+cat << \EOF > ${file}
+. $HADOOP_PREFIX/etc/hadoop/hadoop-env.sh
 
-RUN gpg --keyserver pgp.mit.edu --recv-keys AA8E81B4331F7F50
-RUN gpg --export AA8E81B4331F7F50 | apt-key add -
+if id -u hive ; then
+    echo "hive user exists";
+else
+    echo "Creating hive user";
+    groupadd -g 500 -r hive
+    useradd --comment "Hive user" -u 500 --shell /bin/bash -M -r -g hive hive
+    groupadd supergroup
+    usermod -a -G supergroup hive
+    su - hive -s /bin/bash -c "hdfs dfsadmin -refreshUserToGroupsMappings"
+fi
 
-#cp ~/sources.list.debian.8 ./sources.list
+service ssh start
+
+exec $@
+EOF
+chmod a+x ${file}
+
 file=Dockerfile.hdpallcp
 cat << \EOF > ${file}
 FROM master01:30500/chenseanxy/hbase-ubu16ssh:(HBASEREV)-hadoop(HADOOPREV)
 
-EOF
-sed -i "s@(HBASEREV)@${HBASEREV}@g" ${file}
-sed -i "s@(HADOOPREV)@${HADOOPREV}@g" ${file}
-docker build -f Dockerfile.hdpallcp -t master01:30500/bronzels/hdpallcp:0.1 ./
+ENV MYHOME=/usr/local
+WORKDIR ${MYHOME}
 
+ADD entrypoint.sh bin/
 
 # Add libs
-ADD zookeeper.tar.gz /usr/local
-ADD sqoop.tar.gz /usr/local
-ADD spark.tar.gz /usr/local
-ADD spark_shared_jars.tar.gz /usr/local
-ADD hive.tar.gz /usr/local
-ADD kafka.tar.gz /usr/local
+ADD zookeeper.tar.gz ./
+ADD sqoop.tar.gz ./
+ADD spark.tar.gz ./
+ADD hive.tar.gz ./
+ADD kafka.tar.gz ./
 
-ENV HADOOP_HOME=/usr/local/hadoop \
-    YARN_HOME=/usr/local/hadoop \
-    ZOOKEEPER_HOME=/usr/local/zookeeper \
-    SQOOP_HOME=/usr/local/sqoop \
-    SPARK_HOME=/usr/local/spark \
-    HIVE_HOME=/usr/local/hive \
+ENV HADOOP_HOME=${MYHOME}/hadoop \
+    YARN_HOME=${MYHOME}/hadoop \
+    ZOOKEEPER_HOME=${MYHOME}/zookeeper \
+    SQOOP_HOME=${MYHOME}/sqoop \
+    SPARK_HOME=${MYHOME}/spark \
+    HIVE_HOME=${MYHOME}/hive \
     HBASE_HOME=/opt/hbase
 
-ENV MYHOME=/usr/local
+ENV PATH=${PATH}:$JAVA_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$HADOOP_HOME/lib:$HBASE_HOME/bin:$HIVE_HOME/bin:$SPARK_HOME/bin:$SQOOP_HOME/bin:{ZOOKEEPER_HOME}/bin:{MYHOME}/bin:{MYHOME}/kafka/bin
 
-ENV PATH=${PATH}:$JAVA_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$HADOOP_HOME/lib:$HBASE_HOME/bin:$HIVE_HOME/bin:$SPARK_HOME/bin:$SQOOP_HOME/bin:{ZOOKEEPER_HOME}/bin:{MYHOME}/kafka/bin
-
-RUN cat /etc/issue
-RUN uname -r
-RUN apt-get install -y ssh
-
-RUN groupadd -g 500 -r hive
-RUN useradd --comment "Hive user" -u 500 --shell /bin/bash -M -r -g hive hive
-RUN groupadd supergroup
-RUN usermod -a -G supergroup hive
-
-WORKDIR ${MYHOME}
+ENTRYPOINT ["entrypoint.sh"]
+CMD set -e -x && tail -f /dev/null
 EOF
 sed -i "s@(HBASEREV)@${HBASEREV}@g" ${file}
 sed -i "s@(HADOOPREV)@${HADOOPREV}@g" ${file}

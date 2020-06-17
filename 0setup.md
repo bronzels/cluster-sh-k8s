@@ -21,8 +21,8 @@
             给集群设置控制平面以外多master加入集群，执行k8s/k8s_masters.sh
             给集群设置slaves加入集群，执行k8s/k8s_slaves.sh
     给集群设置helm/docker repo，测试新开发dockerfile能正确启动pod/svc，执行k8s/k8s_helm_registry.sh
-    给集群安装k8s dashboard，，执行k8s_dash.sh
-    如果后续集群软件安装错误无法恢复，停止卸载k8s，删除所有容器，执行k8s_remove.sh
+    给集群安装k8s dashboard，，执行k8s/k8s_dash.sh
+    如果后续集群软件安装错误无法恢复，停止卸载k8s，删除所有容器，执行k8s/k8s_remove.sh
 
 #####5，新建集群后再加入新机器
     执行步骤2
@@ -42,26 +42,52 @@
 #####9，创建单机版redis的自定义pod/svc，执行redis.sh
 
 #####10，创建用作流处理mysql源数据汇聚缓存的postgre，执行postre.sh
-        
+    provisioning pvc包括1个128G
+
 #####11，创建给流处理和数仓使用的2套kafka集群
-    zookeeper/kafka集群，执行kafka.sh
-    执行kafka_confluent.sh
+    zookeeper/kafka集群，执行mq/kafka.sh
+    执行mq/kafka_confluent.sh
         创建registry/connector image
         启动registry pod/svc
         被airflow ssh后从控制平面调用的connector ns/pod/svc创建和启动脚本。
+    provisioning pvc包括2组各3个kafka-server，每个256G
 
 #####12，创建用作流处理cube数据聚合缓存的codis/pika集群，执行codis.sh
-    被airflow ssh后从控制平面调用的codis/pika集群在serv/servyat命名空间删除/创建的脚本。svc包括：
+    被airflow ssh后从控制平面调用的codis/pika集群在serv/servyat命名空间删除/创建的脚本。执行serv/codis_pika.sh。
+    svc包括：
         codis-proxy
         codis-fe(NodePort)
+    provisioning pvc包括2组各6个（主备）codis-server/pika，每个128G
 
-#####13，创建airflow ssh执行b4str/streaming运行脚本的环境
-    创建hadoop集群，执行hadoop.sh
-    创建包含hadoopclient的image
-        运行sshd
-        sqoop/spark/kylin/hbase/hive client程序包
-        移植被airflow ssh后从控制平面调用的 spark/kylin/hbase/hive client的scripts脚本
-    创建包含hadoopclient pod/svc（ssh），执行hadoop_client.sh
+#####13，创建hadoop/hbase/hive集群，airflow ssh执行b4str/streaming运行脚本的环境，创建kylin。
+    创建hadoop集群
+        创建zookeeper集群，执行hadoop/hadoop_zk.sh。
+        定制hadoop3的chart本地目录（hadoop.sh为hadoopv2），执行hadoop/hadoop3.sh。
+        定制hadoop的web监控svc，执行hadoop/hadoop_svc.sh。
+        创建hadoop集群，执行hadoop/hadoop_setup.sh
+    创建zookeeper集群，执行hadoop/zookeeper.sh。
+    创建hbase集群（hbasev2，基于hadoopv3），执行hadoop/hbase2.sh。
+    创建hive集群，执行hadoop/hive.sh。
+        创建metabase server
+        创建hive2 server
+            初始化hive在hdfs的目录环境
+    创建包含hadoopclient的base image，执行hadoop/hdpallcp/hdpallcp.sh
+        hadoop3作为base image
+        运行sshd，配置登录
+        hadoop3以外，额外包括zookeeper/sqoop/spark/hive/kafka client程序包
+    创建包含hadoopclient的image，脚本/库/入口程序打包准备：
+        从具体项目抽取的公共不带域名/口令配置部分，在hadoopclient执行的脚本，本工程scripts目录打包/tmp/scripts.tar.gz
+        在k8s控制平面server01执行的新脚本，本工程cpscripts打包/tmp/cpscripts.tar.gz
+        具体项目带域名/口令配置部分，在hadoopclient执行的脚本，comdeploy工程scripts目录打包/tmp/comscripts.tar.gz
+        批处理运行第三方库包，打包/tmp/spark_shared_jars.tar.gz
+        批处理运行具体项目开发库包，打包/tmp/com_spark_lib_jars.tar.gz
+        批处理运行具体项目入口包，打包/tmp/com_spark_entry_jars.tar.gz
+    把hadoop下的hdpallcp目录打包放到k8s控制平面server01的ubuntu用户$HOME目录
+    创建hadoopclient的image，在base基础上，执行hdpallcpcom.sh
+        copy上一步准备的各种scripts/程序包，创建image。
+        部署具体项目的hadoopclient，供airflow ssh远程调用提交启动批处理应用等脚本。
+    创建kylin的image，在base基础上，copy脚本，执行hadoop/hdpallcp/hdpallcpcom.sh
+    部署所有基于hdpallcp的image对应的statefulset，目前2个分别作为clientcp和kylin server，执行hadoop_hdpallcp_setup.sh。
 
 #####14，创建用作流处理历史聚合快照保存opentsdb集群，执行tsdb.sh
     创建指向aws hbase集群hbase-site.xml的configMap
@@ -77,7 +103,7 @@
     移植被airflow ssh后从控制平面调用的 hbase/tsdb 库创建脚本
     移植被airflow ssh后从控制平面调用的 hbase/tsdb snap/restore/drop scripts脚本
 
-#####16，创建保存数仓数据的kudu集群，执行kudu.sh
+#####16，创建保存数仓数据的kudu集群，执行dw/kudu.sh
     NodePort方式暴露端口供beta metabase对应的presto访问
 
 #####17，创建用作接入各种catalog的presto集群，执行presto.sh

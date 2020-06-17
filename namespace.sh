@@ -42,7 +42,25 @@ kubectl create namespace mqdw
     #teardown/launch codis(serv/servyat)
 kubectl create namespace hadoop
   #hadoop(zookeeper/hdfs/yarn/hive/hbase)
-  #hadoopclient(spark/kylin/hive/hbase)
+  #hadoopclient and all on control plane(hdpallcp)
+    hdpallcpcom
+      #ssh
+      #hadoop client(sqoop/zookeeper/hdfs/yarn/hive/hbase)
+      #kafka client
+      #spark
+      #scripts
+    hdpallcpkylin
+      #ssh
+      #hadoop client(sqoop/zookeeper/hdfs/yarn/hive/hbase)
+      #kafka client
+      #spark
+      #kylin
+    #scripts/porting
+      #hadoop(zookeeper/hdfs/yarn/hive/hbase)
+      #spark
+      #kylin
+      #flink
+      #presto
 kubectl create namespace serv
   #codis
   #opentsdb
@@ -52,25 +70,13 @@ kubectl create namespace servyat
 kubectl create namespace dw
   #kudu
   #presto
-kubectl create namespace workflow
+kubectl create namespace str
+  #flink
+kubectl create namespace flow
   #airflow
     #ssh cligw
     #ssh tsdb
     #ssh k8s master
-kubectl create namespace cligw
-  #cligw
-    #ssh
-    #hadoop server(zookeeper/hdfs/yarn/hive/hbase)
-    #spark
-    #kylin server
-    #flink
-    #presto server
-    #scripts/porting
-      #hadoop(zookeeper/hdfs/yarn/hive/hbase)
-      #spark
-      #kylin
-      #flink
-      #presto
 #default
   #prometheus operator
   #redis

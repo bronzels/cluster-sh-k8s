@@ -190,11 +190,11 @@ rm -f hbase-${HBASEREV}-bin.tar.gz
 docker tag hbase:${HBASEREV}-hadoop${HADOOPREV} master01:30500/chenseanxy/hbase:${HBASEREV}-hadoop${HADOOPREV}
 docker push master01:30500/chenseanxy/hbase:${HBASEREV}-hadoop${HADOOPREV}
 
-sed i 's@30500\/chenseanxy\/hadoop@30500\/chenseanxy\/hadoop-ubu16ssh@g' Dockerfile
+sed -i 's@30500\/chenseanxy\/hadoop@30500\/chenseanxy\/hadoop-ubu16ssh@g' Dockerfile
 
-wget -c http://archive.apache.org/dist/hbase/${HBASEREV}/hbase-${HBASEREV}-bin.tar.gz
 cp Makefile Makefile-ubu16ssh
-sed 's@$$(DOCKER) build -t hbase@$(DOCKER) build -t hbase-ubu16ssh@g' Makefile-ubu16ssh
+sed -i 's@$(DOCKER) build -t hbase@$(DOCKER) build -t hbase-ubu16ssh@g' Makefile-ubu16ssh
+wget -c http://archive.apache.org/dist/hbase/${HBASEREV}/hbase-${HBASEREV}-bin.tar.gz
 make -f Makefile-ubu16ssh
 rm -f hbase-${HBASEREV}-bin.tar.gz
 
@@ -215,8 +215,8 @@ cp ~/helm-hbase-chart.bk/$file $file
 sed -i 's@<value>{{ template \"hbase.name\" . }}-hbase-master:16010<\/value>@<value>{{ .Release.Name }}-hbase-master:16010<\/value>@g' ${file}
 #sed -i 's@<value>\/hbase<\/value>@<value>\/hbase-unsecure<\/value>@g' ${file}
 #sed -i '/    <\/configuration>/i\      <property>\n        <name>hbase.zookeeper.property.clientPort<\/name>\n        <value>2281<\/value>\n      <\/property>' ${file}
-sed -i '/    <\/configuration>/i\      <property>\n        <name>hbase.unsafe.stream.capability.enforce<\/name>\n        <value>false<\/value>\n      <\/property>' ${file}
-sed -i '/    <\/configuration>/i\      <property>\n        <name>hbase.cluster.distributed<\/name>\n        <value>true<\/value>\n      <\/property>' ${file}
+#sed -i '/    <\/configuration>/i\      <property>\n        <name>hbase.unsafe.stream.capability.enforce<\/name>\n        <value>false<\/value>\n      <\/property>' ${file}
+#sed -i '/    <\/configuration>/i\      <property>\n        <name>hbase.cluster.distributed<\/name>\n        <value>true<\/value>\n      <\/property>' ${file}
 sed -i '/    : ${HADOOP_PREFIX:=\/usr\/local\/hadoop}/a\    : ${HADOOP_HOME:=\/usr\/local\/hadoop}' ${file}
 
 function fix_statefulset_affinity(){
@@ -259,6 +259,35 @@ sed -i 's@                component: hdfs-nn@                    component: hdfs
 #sed -i s's@@@g' $file
 
 :<<EOF
+spec:
+  serviceName: {{ template "hbase.name" . }}-rs
+  replicas: {{ .Values.hdfs.dataNode.replicas }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "hbase.name" . }}
+        release: {{ .Release.Name }}
+        component: hbase-rs
+      annotations:
+        scheduler.alpha.kubernetes.io/affinity: >
+            {
+              "podAntiAffinity": {
+                "preferredDuringSchedulingIgnoredDuringExecution": [{
+                  "weight":100,
+                  "labelSelector": {
+                    "matchExpressions": [{
+                      "key": "app",
+                      "operator": "In",
+                      "values": ["codis-server"]
+                    }]
+                  },
+                  "topologyKey": "kubernetes.io/hostname"
+                }]
+              }
+            }
+EOF
+
+:<<EOF
     spec:
       affinity:
       requiredDuringSchedulingIgnoredDuringExecution:
@@ -291,8 +320,9 @@ file=templates/hbase-rs-statefulset.yaml
 cp ~/helm-hbase-chart.bk/$file $file
 fix_statefulset_affinity "$file"
 sed -i 's@                component: hdfs-nn@                    component: hdfs-dn@g' $file
-sed -i '/                    component: hdfs-dn/a\        podAntiAffinity:\n          requiredDuringSchedulingIgnoredDuringExecution:\n              - topologyKey:\ "kubernetes.io\/hostname\"\n                labelSelector:\n                  matchLabels:\n                    app:  {{ .Release.Namespace | quote }}\n                    release: {{ .Release.Name | quote }}\n                    component: hbase-rs' $file
+#sed -i '/                    component: hdfs-dn/a\        podAntiAffinity:\n          requiredDuringSchedulingIgnoredDuringExecution:\n              - topologyKey:\ "kubernetes.io\/hostname\"\n                labelSelector:\n                  matchLabels:\n                    app:  {{ .Release.Namespace | quote }}\n                    release: {{ .Release.Name | quote }}\n                    component: hbase-rs' $file
 sed -i 's@{{ toYaml .Values.hdfs.nameNode.resources | indent 10 }}@{{ toYaml .Values.hdfs.dataNode.resources | indent 10 }}@g' ${file}
+sed -i '/        component: hbase-rs/a\      annotations:\n        scheduler.alpha.kubernetes.io\/affinity: >\n            {\n              \"podAntiAffinity": {\n                \"preferredDuringSchedulingIgnoredDuringExecution\": \[{\n                  \"weight\":100,\n                  \"labelSelector\": {\n                    \"matchExpressions\": \[{\n                      \"key\": \"component\",\n                      \"operator\": \"In\",\n                      \"values\": \[\"hbase-rs\"\]\n                    }\]\n                  },\n                  \"topologyKey\": \"kubernetes.io/hostname\"\n                }\]\n              }\n            }' ${file}
 
 cat << \EOF > templates/hbase-master-web-svc.yaml
 # A headless service to create DNS records

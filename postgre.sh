@@ -1,19 +1,21 @@
-kubectl get pvc -n md
-#kubectl get pvc -n md|grep mdpostgre|awk '{print $1}'|xargs kubectl -n md delete pvc
-
-helm install mdpostgre stable/postgresql -n md \
+helm install mdpostgre bitnami/postgresql -n md \
     --set postgresqlPassword=postgres \
     --set global.storageClass=rook-ceph-block \
     --set persistence.size=128Gi
 #helm uninstall mdpostgre -n md
+#kubectl get pvc -n md|grep mdpostgre|awk '{print $1}'|xargs kubectl -n md delete pvc
 kubectl run mdpostgre-postgresql-client --rm --tty -i --restart='Never' --namespace md --image docker.io/bitnami/postgresql:11.7.0-debian-10-r9 --env="PGPASSWORD=postgres" --command -- \
   psql --host mdpostgre-postgresql -U postgres -d postgres -p 5432 \
   -c "SELECT version()"
 
 kubectl get pod -n md
 kubectl get svc -n md
+kubectl get pvc -n md
 
 :<<EOF
+NOTES:
+** Please be patient while the chart is being deployed **
+
 PostgreSQL can be accessed via port 5432 on the following DNS name from within your cluster:
 
     mdpostgre-postgresql.md.svc.cluster.local - Read/Write connection
@@ -24,7 +26,7 @@ To get the password for "postgres" run:
 
 To connect to your database run the following command:
 
-    kubectl run mdpostgre-postgresql-client --rm --tty -i --restart='Never' --namespace md --image docker.io/bitnami/postgresql:11.7.0-debian-10-r9 --env="PGPASSWORD=$POSTGRES_PASSWORD" --command -- psql --host mdpostgre-postgresql -U postgres -d postgres -p 5432
+    kubectl run mdpostgre-postgresql-client --rm --tty -i --restart='Never' --namespace md --image docker.io/bitnami/postgresql:11.8.0-debian-10-r19 --env="PGPASSWORD=$POSTGRES_PASSWORD" --command -- psql --host mdpostgre-postgresql -U postgres -d postgres -p 5432
 
 
 

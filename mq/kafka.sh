@@ -1,6 +1,3 @@
-kubectl get pvc -n mqstr
-kubectl get pvc -n mqstr|grep mykafka|awk '{print $1}'|xargs kubectl -n mqstr delete pvc
-
 helm install mykafka incubator/kafka -n mqstr \
   --set replicas=3 \
   --set persistence.size=256Gi \
@@ -10,17 +7,16 @@ helm install mykafka incubator/kafka -n mqstr \
 	--set configurationOverrides."num\.partitions"=12 \
 	--set configurationOverrides."log\.retention\.hours"=168
 #helm uninstall mykafka -n mqstr
+#kubectl get pvc -n mqstr|grep mykafka|awk '{print $1}'|xargs kubectl -n mqstr delete pvc
 
 kubectl get pod -n mqstr
 kubectl get svc -n mqstr -o wide
+kubectl get pvc -n mqstr
 
 kubectl -n default run test-kafka-producer-mqstr -ti --image=strimzi/kafka:0.18.0-kafka-2.5.0 --rm=true --restart=Never -- bin/kafka-console-producer.sh --broker-list mykafka.mqstr:9092 --topic test
 kubectl -n default run test-kafka-consumer-mqstr -ti --image=strimzi/kafka:0.18.0-kafka-2.5.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server mykafka.mqstr:9092 --topic test
 kubectl -n default run test-kafka-consumer-mqstr -ti --image=strimzi/kafka:0.18.0-kafka-2.5.0 --env="KAFKA_HEAP_OPTS=-Xmx1024M" --rm=true --restart=Never -- bin/kafka-run-class.sh kafka.tools.GetOffsetShell --broker-list mykafka.mqstr:9092 --topic test --time -1 --offsets 1
 
-
-kubectl get pvc -n mqdw
-kubectl get pvc -n mqdw|grep mykafka|awk '{print $1}'|xargs kubectl -n mqdw delete pvc
 
 helm install mykafka incubator/kafka -n mqdw \
   --set replicas=3 \
@@ -31,13 +27,17 @@ helm install mykafka incubator/kafka -n mqdw \
 	--set configurationOverrides."num\.partitions"=12 \
 	--set configurationOverrides."log\.retention\.hours"=168
 #helm uninstall mykafka -n mqdw
+#kubectl get pvc -n mqdw|grep mykafka|awk '{print $1}'|xargs kubectl -n mqdw delete pvc
 
 kubectl get pod -n mqdw
 kubectl get svc -n mqdw -o wide
+kubectl get pvc -n mqdw
 
 kubectl -n default run test-kafka-producer-mqdw -ti --image=strimzi/kafka:0.18.0-kafka-2.5.0 --rm=true --restart=Never -- bin/kafka-console-producer.sh --broker-list mykafka.mqdw:9092 --topic test
 kubectl -n default run test-kafka-consumer-mqdw -ti --image=strimzi/kafka:0.18.0-kafka-2.5.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server mykafka.mqdw:9092 --topic test
 kubectl -n default run test-kafka-consumer-mqdw -ti --image=strimzi/kafka:0.18.0-kafka-2.5.0 --env="KAFKA_HEAP_OPTS=-Xmx1024M" --rm=true --restart=Never -- bin/kafka-run-class.sh kafka.tools.GetOffsetShell --broker-list mykafka.mqdw:9092 --topic test --time -1 --offsets 1
+
+kubectl run test-mysr -ti --image=praqma/network-multitool --rm=true --restart=Never -- curl http://mysr-schema-registry.mqdw:8081
 
 :<<EOF
 #  --set kafkaStore.overrideBootstrapServer=mykafka.mqdw:9092 \
@@ -250,6 +250,9 @@ kubectl get pod -n mqdw
 kubectl get svc -n mqdw -o wide
 
 :<<EOF
+NOTES:
+### Connecting to Kafka from inside Kubernetes
+
 You can connect to Kafka by running a simple pod in the K8s cluster like this with a configuration like this:
 
   apiVersion: v1

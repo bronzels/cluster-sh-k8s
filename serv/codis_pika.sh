@@ -7,10 +7,11 @@ tar -xzf ~/go${rev}.linux-amd64.tar.gz
 rm -rf pika
 git clone https://github.com/Qihoo360/pika.git
 cd ~/pika
-git tag
 git checkout pika_codis
+cd ~
 cp -r pika pika.bk
 
+cd ~/pika
 file=conf/pika.conf
 cp $file ${file}.bk
 #sed -i 's@@@g'  $file
@@ -28,6 +29,7 @@ sed -i 's@https://mirrors.ustc.edu.cn/epel/epel-release-latest-7.noarch.rpm@http
 sed -i 's@FROM centos:latest@FROM centos:7@g' ${file}
 EOF
 
+cd ~
 cp ~/source.list.ubuntu.16.04 source.list
 
 cd ~/pika
@@ -65,7 +67,13 @@ WORKDIR ${CODIS}
 RUN make
 ENV PATH ${CODIS}/bin:${PATH}
 
+WORKDIR $PIKA
 EOF
+
+docker images|grep pika_codis
+docker images|grep pika_codis|awk '{print $3}'|xargs docker rmi -f
+ansible slave -m shell -a"docker images|grep pika_codis|awk '{print \$3}'|xargs docker rmi -f"
+docker images|grep pika_codis
 
 #ENTRYPOINT ["/pika/entrypoint.sh"]
 #CMD ["/pika/bin/pika", "-c", "/pika/conf/pika.conf"]
@@ -87,18 +95,18 @@ find ~/codis/kubernetes -name "*.yaml"  | xargs grep "apps/v1beta1"
 find ~/codis/kubernetes -name "*.yaml" | xargs sed -i 's@apps/v1beta1@apps/v1@g'
 #./output/bin/pika -c ./conf/pika.conf
 file=codis-server.yaml
+cp ~/codis/kubernetes.bk/$file $file
 sed -i 's@image: codis-image@image: master01:30500/pikadb/pika_codis:0.1@g' ${file}
 sed -i 's@6379@9221@g' ${file}
 sed -i 's@replicas: 4@replicas: 6@g' ${file}
-sed -i 's@command: \["codis-server"\]@command: \["output/bin/pika"\]@g' ${file}
+sed -i 's@command: \["codis-server"\]@command: \["output\/bin\/pika"\]@g' ${file}
 sed -i 's@args: \[@#args: \[@g' ${file}
 #sed -i '/#args: \[/a\        workingDir: "/pika"' ${file}
-sed -i '/#args: \[/a\        args: \["-c","conf\/pika.conf"\]' ${file}
+sed -i '/#args: \[/a\        args: \["-c","\/pika\/conf\/pika.conf"\]' ${file}
 sed -i '/  serviceName:/i\  selector:\n      matchLabels:\n        app: codis-server' ${file}
-sed -i 's@codis-admin@/codisbin/codis-admin@g' ${file}
+#sed -i 's@codis-admin@/codisbin/codis-admin@g' ${file}
 sed -i 's@imagePullPolicy: IfNotPresent@imagePullPolicy: Always@g' ${file}
-#"/bin/sh", "-c",
-#sed -i 's@"\/bin\/sh"\, "-c"\, @@g' ${file}
+sed -i 's@apps/v1beta1@apps/v1@g' ${file}
 cat << \EOF >> ${file}
         volumeMounts:
         - name: datadir
@@ -112,7 +120,7 @@ cat << \EOF >> ${file}
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          storage: 256Gi
+          storage: 128Gi
 EOF
 
 sed -i '/  serviceName:/i\  selector:\n      matchLabels:\n        app: zk' zookeeper/zookeeper.yaml
@@ -204,7 +212,7 @@ buildup)
     kubectl exec -n ${codisns} -it codis-dashboard-0 -- redis-cli -h codis-proxy -p 19000 PING
     if [ $? != 0 ]; then
         echo "buildup codis cluster with problems, plz check it!!"
-    ficluster-sh-k8s
+    fi
     ;;
 
 ### 扩容／缩容 codis proxy
@@ -255,9 +263,12 @@ diff ${file} ../kubernetes.bk/${file}
 file=codis-service.yaml
 cp ${file}.template ${file}
 #sed -i 's@nodePort: 31080@nodePort: 31080@g' ${file}
+curl http://master01:31080
 
-./start.sh serv cleanup
+cd ~/codis/kubernetes
 ./start.sh serv buildup
+#./start.sh serv cleanup
+#kubectl get pvc -n serv | awk '{print $1}' | grep datadir-codis-server | xargs kubectl delete pvc -n serv
 
 ansible slave -m shell -a"docker images|grep pika"
 ansible slave -m shell -a"docker ps -a|grep codis"
@@ -267,6 +278,10 @@ kubectl get pod -n serv | awk '{print $1}' | grep codis-server | xargs kubectl d
 kubectl get pod -n serv | awk '{print $1}' | grep codis-server | xargs kubectl logs -n serv
 kubectl exec -it codis-server-0 -n serv  -- bash
   kubectl get pod -n serv | awk '{print $1}' | grep codis-server-0 | xargs -I CNAME  sh -c "kubectl exec -it CNAME -n serv  -- /bin/sh"
+
+kubectl get pod -n serv
+kubectl get pvc -n serv
+kubectl get svc -n serv
 EOF
 kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.serv -p 19000  set fool2 bar2
 kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.serv -p 19000  get fool2
@@ -276,12 +291,12 @@ kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never --
 file=codis-service.yaml
 cp ${file}.template ${file}
 sed -i 's@nodePort: 31080@nodePort: 31081@g' ${file}
+curl http://master01:31081
 
+cd ~/codis/kubernetes
 ./start.sh servyat buildup
 #./start.sh servyat cleanup
+#kubectl get pvc -n servyat | awk '{print $1}' | grep datadir-codis-server | xargs kubectl delete pvc -n servyat
 
 kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.servyat -p 19000  set fool4 bar4
 kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.servyat -p 19000  get fool4
-
-ansible slave -m shell -a"docker images|grep pika"
-ansible slave -m shell -a"docker ps -a|grep codis"

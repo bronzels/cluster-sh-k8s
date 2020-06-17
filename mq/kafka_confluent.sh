@@ -298,13 +298,11 @@ chmod a+x ${file}
 
 ~/scripts/myconnector-start-log-check.sh  mqstr mysqlsrctest
 
-chmod a+x ${file}
 
 :<<EOF
 kubectl get pod -n mqstr-mysqlsrctest | grep myconn | awk '{print $1}'
+kubectl get svc -n mqstr-mysqlsrctest | grep myconn
 kubectl exec -it myconn-5fd6f987bc-kd4vz -n mqstr-mysqlsrctest bash
 EOF
 
-kubectl run curl-json --image=radial/busyboxplus:curl --restart=Never --rm -- curl myconn-mysqlsrctest-svc
-kubectl run curl-avro --image=radial/busyboxplus:curl --restart=Never --rm -- curl myconn-mysqlsrctest-svc
-kubectl run curl-bsonkudu --image=radial/busyboxplus:curl --restart=Never --rm -- curl myconn-mysqlsrctest-svc
+kubectl run curl-json -it --image=radial/busyboxplus:curl --restart=Never --rm -- curl myconnsvc.mqstr-mysqlsrctest:8083

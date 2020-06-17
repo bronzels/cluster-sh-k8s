@@ -1,5 +1,6 @@
 cd ~
 
+:<<EOF
 git clone https://github.com/Gradiant/charts.git gradiant
 MYHOME=~/gradiant/charts/hive
 #MYHOME=~/gradiant/charts/hive-metastore
@@ -34,10 +35,7 @@ cd ${MYHOME}
 groupadd supergroup
 usermod -a -G supergroup hive
 su - hive -s /bin/bash -c "hdfs dfsadmin -refreshUserToGroupsMappings"
-
-#  --set conf.hiveSite."hive\.server2\.thrift\.port"=9084 \
-#  --set conf.hiveSite."hive\.server2\.thrift\.http\.port"=9085 \
-helm repo add gradiant https://gradiant.github.io/charts/
+EOF
 
 :<<EOF
 helm install myhv -n hadoop \
@@ -45,6 +43,10 @@ helm install myhv -n hadoop \
   gradiant/hive-metastore --version 0.1.1
 #  ./
 EOF
+
+#  --set conf.hiveSite."hive\.server2\.thrift\.port"=9084 \
+#  --set conf.hiveSite."hive\.server2\.thrift\.http\.port"=9085 \
+helm repo add gradiant https://gradiant.github.io/charts/
 
 #  --set image.repository=master01:30500/bde2020/hive \
 helm install myhv -n hadoop \
@@ -58,7 +60,7 @@ helm install myhv -n hadoop \
 #  --set conf.hiveSite."hive\.server2\.thrift\.port"=10000 \
 #  --set conf.hiveSite."hive\.server2\.thrift\.http\.port"=10002 \
 
-helm repo delete gradiant
+helm repo remove gradiant
 
 :<<EOF
 helm uninstall myhv -n hadoop
@@ -89,10 +91,6 @@ kubectl exec -it -n hadoop myhv-hive-server-0 -- bash
     LOAD DATA LOCAL INPATH '/opt/student.txt' INTO TABLE students;
     SELECT * FROM students;
 
-EOF
-cat << EOF > student.txt
-2 "trump"
-3 "wyh"
 EOF
 cat << EOF > student.txt
 2,"trump"

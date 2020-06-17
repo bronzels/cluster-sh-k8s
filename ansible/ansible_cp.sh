@@ -134,7 +134,7 @@ EOF
 ssh-keyscan master01 master02 slave01 slave02 slave03 slave04 >> ~/.ssh/known_hosts
 ansible-playbook -i /etc/ansible/hosts-ubuntu ~/ssh-addkey.yml
 
-sudo apt install -y unzip zip tar
+sudo apt install -y unzip zip tar make
 
 ansible all -m shell -a"cat /etc/issue"
 ansible all -m shell -a"uname -r"
