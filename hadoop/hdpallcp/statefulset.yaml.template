@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "hdpallcp.fullname" . }}-<<subcp>>-server
+  labels:
+    app.kubernetes.io/name: {{ include "hdpallcp.name" . }}
+    app.kubernetes.io/component: <<subcp>>-server
+    {{- include "hdpallcp.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "hdpallcp.name" . }}
+      app.kubernetes.io/component: <<subcp>>-server
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+  serviceName: {{ include "hdpallcp.fullname" . }}-<<subcp>>-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "hdpallcp.name" . }}
+        app.kubernetes.io/component: <<subcp>>-server
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    spec:
+      containers:
+      - name: <<subcp>>-server
+        image: "{{ .Values.image.repository }}-<<subcp>>:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        command: ['bash']
+        args:
+          - "-c"
+          - |
+            set -ex
+            mkdir /opt/hdpallcp/conf
+            cp /opt/hdpallcp/mnt/* /opt/hdpallcp/conf/
+            chmod a+x /opt/hdpallcp/conf/*.sh
+            /opt/hdpallcp/conf/startup.sh
+            /opt/hdpallcp/conf/startup-<<subcp>>.sh
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        volumeMounts:
+        - name: hdpallcp-config
+          mountPath: /opt/hdpallcp/mnt
+        - name: hive-config
+          mountPath: /tmp/hive-config
+        - name: hbase-config
+          mountPath: /tmp/hbase-config
+        - name: hadoop-config
+          mountPath: /tmp/hadoop-config
+      volumes:
+      - name: hive-config
+        configMap:
+          name: {{ .Values.conf.hiveConfigMap }}
+      - name: hbase-config
+        configMap:
+          name: {{ .Values.conf.hbaseConfigMap }}
+      - name: hadoop-config
+        configMap:
+          name: {{ .Values.conf.hadoopConfigMap }}
+      - name: hdpallcp-config
+        configMap:
+          name: {{ include "hdpallcp.fullname" . }}

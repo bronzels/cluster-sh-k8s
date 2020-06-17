@@ -59,7 +59,7 @@
         codis-fe(NodePort)
     provisioning pvc包括2组各6个（主备）codis-server/pika，每个128G
 
-#####13，创建hadoop/hbase/hive集群，airflow ssh执行b4str/streaming运行脚本的环境，创建kylin。
+#####13，在统一的hadoop namespace，创建hadoop/hbase/hive集群，airflow ssh执行b4str/streaming运行脚本的环境，创建kylin。
     创建hadoop集群
         创建zookeeper集群，执行hadoop/hadoop_zk.sh。
         定制hadoop3的chart本地目录（hadoop.sh为hadoopv2），执行hadoop/hadoop3.sh。
@@ -71,11 +71,11 @@
         创建metabase server
         创建hive2 server
             初始化hive在hdfs的目录环境
-    创建包含hadoopclient的base image，执行hadoop/hdpallcp/hdpallcp.sh
+    创建包含hadoopallclientcontrolplan/hdpallcp的base image，执行hadoop/hdpallcp/image/hdpallcp.sh
         hadoop3作为base image
         运行sshd，配置登录
         hadoop3以外，额外包括zookeeper/sqoop/spark/hive/kafka client程序包
-    创建包含hadoopclient的image，脚本/库/入口程序打包准备：
+    创建包含hdpallcp的base的image，脚本/库/入口程序打包准备：
         从具体项目抽取的公共不带域名/口令配置部分，在hadoopclient执行的脚本，本工程scripts目录打包/tmp/scripts.tar.gz
         在k8s控制平面server01执行的新脚本，本工程cpscripts打包/tmp/cpscripts.tar.gz
         具体项目带域名/口令配置部分，在hadoopclient执行的脚本，comdeploy工程scripts目录打包/tmp/comscripts.tar.gz
@@ -83,10 +83,11 @@
         批处理运行具体项目开发库包，打包/tmp/com_spark_lib_jars.tar.gz
         批处理运行具体项目入口包，打包/tmp/com_spark_entry_jars.tar.gz
     把hadoop下的hdpallcp目录打包放到k8s控制平面server01的ubuntu用户$HOME目录
-    创建hadoopclient的image，在base基础上，执行hdpallcpcom.sh
+    创建hdpallcp的image，在base基础上，执行hadoop/hdpallcp/image/hdpallcpcom.sh
         copy上一步准备的各种scripts/程序包，创建image。
         部署具体项目的hadoopclient，供airflow ssh远程调用提交启动批处理应用等脚本。
-    创建kylin的image，在base基础上，copy脚本，执行hadoop/hdpallcp/hdpallcpcom.sh
+        同步hive2 hive用户权限到hdfs。
+    创建kylin的image，在base基础上，copy脚本，执行hadoop/hdpallcp/image/hdpallcpcom.sh
     部署所有基于hdpallcp的image对应的statefulset，目前2个分别作为clientcp和kylin server，执行hadoop_hdpallcp_setup.sh。
 
 #####14，创建用作流处理历史聚合快照保存opentsdb集群，执行tsdb.sh

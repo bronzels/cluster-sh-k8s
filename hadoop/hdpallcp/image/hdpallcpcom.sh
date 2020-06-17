@@ -24,6 +24,7 @@ ADD comscripts.tar.gz {MYSCRIPTSHOME}
 ADD spark_shared_jars.tar.gz {MYSCRIPTSHOME}
 ADD com_spark_lib_jars.tar.gz {MYSCRIPTSHOME}
 ADD com_spark_entry_jars.tar.gz {MYSCRIPTSHOME}
+chmod a+x {MYSCRIPTSHOME}/*.sh
 
 ENV PATH=${PATH}:{MYSCRIPTSHOME}
 EOF

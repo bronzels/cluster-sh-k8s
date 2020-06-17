@@ -1,9 +1,12 @@
 set -x
 
+~/scripts/cp_funcs.sh
+
 HADOOP_CONFIG_DIR="/tmp/hadoop-config"
-# Copy config files from volume mount
 for f in slaves core-site.xml hdfs-site.xml mapred-site.xml yarn-site.xml; do
-    if [[ -e ${HADOOP_CONFIG_DIR}/$f ]]; then
+    "${HADOOP_CONFIG_DIR}/$f"
+    realf=
+    if [[ -e  ]]; then
     cp ${HADOOP_CONFIG_DIR}/$f $HADOOP_HOME/etc/hadoop/$f
     else
     echo "ERROR: Could not find $f in $HADOOP_CONFIG_DIR"

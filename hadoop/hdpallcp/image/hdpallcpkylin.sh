@@ -4,7 +4,7 @@ MYHOME=~/hdpallcp
 cd ${MYHOME}/image
 
 #apache-kylin-3.0.1-bin-hadoop3
-cp /tmp/kylin.tar.gz ./
+cp ~/tmp/kylin.tar.gz ./
 #   totally depends on ENV
 
 file=Dockerfile.hdpallcp-kylin

@@ -1,26 +1,21 @@
-cd ~
-MYHOME=~/hdpallcp
-#rm -rf ${MYHOME}
-
-unzip hdpallcp.zip
-
 #mkdir -p ${MYHOME}/image
+
 cd ${MYHOME}/image
 
 #spark/sqoop/hbase are all with both folder with rev and soft link
 #sqoop-1.4.7.bin__hadoop-2.6.0
-cp /tmp/zookeeper.tar.gz ./
+cp ~/tmp/zookeeper.tar.gz ./
 #   no dep, pure client
-cp /tmp/sqoop.tar.gz ./
+cp ~/tmp/sqoop.tar.gz ./
 #   totally depends on ENV
 #spark-2.4.4-bin-hadoop2.7
-cp /tmp/spark.tar.gz ./
+cp ~/tmp/spark.tar.gz ./
 #   spark/conf/
 #     core-site.xml
 #     hdfs-site.xml
 #     -------------
 #     hive-site.xml
-cp /tmp/hive.tar.gz ./
+cp ~/tmp/hive.tar.gz ./
 #  hive/conf/
 #    hive-site.xml
 #    hadoop depends on ENV
@@ -34,7 +29,7 @@ cp /tmp/hive.tar.gz ./
 #     hbase-env.sh
 #cp /tmp/flink.tar.gz ./
 #   no dep, pure client
-cp /tmp/kafka.tar.gz ./
+cp ~/tmp/kafka.tar.gz ./
 #   no dep, pure client
 
 cp ~/source.list.ubuntu.16.04 source.list
@@ -92,12 +87,12 @@ ENV PATH=${PATH}:$JAVA_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$HADOOP_HOME/
 RUN mkdir /opt/hdpallcp
 
 ENTRYPOINT ["entrypoint.sh"]
-CMD set -e -x && tail -f /dev/null
+#CMD set -e -x && tail -f /dev/null
 EOF
 sed -i "s@(HBASEREV)@${HBASEREV}@g" ${file}
 sed -i "s@(HADOOPREV)@${HADOOPREV}@g" ${file}
 
 docker build -f Dockerfile.hdpallcp -t master01:30500/bronzels/hdpallcp:0.1 ./
-docker push master01:30500/bronzels/hdpallcp:0.1
+#docker push master01:30500/bronzels/hdpallcp:0.1
 
 rm -f *.tar.gz
