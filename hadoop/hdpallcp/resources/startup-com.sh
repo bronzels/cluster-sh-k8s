@@ -1,0 +1,1 @@
+set -e -x && tail -f /dev/null

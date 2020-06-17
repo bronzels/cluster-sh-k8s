@@ -89,6 +89,8 @@ ENV HADOOP_HOME=${MYHOME}/hadoop \
 
 ENV PATH=${PATH}:$JAVA_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$HADOOP_HOME/lib:$HBASE_HOME/bin:$HIVE_HOME/bin:$SPARK_HOME/bin:$SQOOP_HOME/bin:{ZOOKEEPER_HOME}/bin:{MYHOME}/bin:{MYHOME}/kafka/bin
 
+RUN mkdir /opt/hdpallcp
+
 ENTRYPOINT ["entrypoint.sh"]
 CMD set -e -x && tail -f /dev/null
 EOF
@@ -98,6 +100,4 @@ sed -i "s@(HADOOPREV)@${HADOOPREV}@g" ${file}
 docker build -f Dockerfile.hdpallcp -t master01:30500/bronzels/hdpallcp:0.1 ./
 docker push master01:30500/bronzels/hdpallcp:0.1
 
-file=values.yaml
-cp ${file} ${file}.bk
-sed -i 'pullPolicy: IfNotPresent@pullPolicy: Always@g' ${file}
+rm -f *.tar.gz

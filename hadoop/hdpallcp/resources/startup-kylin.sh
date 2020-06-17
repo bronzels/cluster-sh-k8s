@@ -1,0 +1,1 @@
+${KYLIN_HOME}/bin/kylin.sh start && tail -f $KYLIN_HOME/logs/kylin.log

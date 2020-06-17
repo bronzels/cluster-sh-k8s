@@ -8,7 +8,7 @@ icon: https://hive.apache.org/images/hive_logo_medium.jpg
 maintainers:
   - email: bronzels@hotmail.com
     name: bronzels
-name: hdpallcli
+name: hdpallcp
 sources:
   - https://github.com/apache/hive
   - https://github.com/gradiant/charts

@@ -9,14 +9,6 @@ image:
 resources: {}
 
 conf:
-  hbaseSite:
-  hiveSite:
-  hdfsAdminUser: root
-  # if not set, default is configMap from hdfs requirement {{.Release.Name}}-hdfs-hadoop
+  hiveConfigMap:
+  hbaseConfigMap:
   hadoopConfigMap:
-  # to manually provide hadoop config attributes instead of hadoopConfigMap.
-  # hadoopSite:
-  #   coreSite:
-  #     fs.defaultFS: hdfs://hdfs-cluster:8020
-  #   hdfsSite:
-  #   ...

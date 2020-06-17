@@ -22,7 +22,7 @@ ENV PATH=${PATH}:$KYLIN_HOME/bin
 # kylin ports
 EXPOSE 7070
 
-CMD ${KYLIN_HOME}/bin/kylin.sh start && tail -f $KYLIN_HOME/logs/kylin.log
+#CMD ${KYLIN_HOME}/bin/kylin.sh start && tail -f $KYLIN_HOME/logs/kylin.log
 EOF
 
 docker build -f Dockerfile.hdpallcp-kylin -t master01:30500/bronzels/hdpallcp-kylin:0.1 ./
