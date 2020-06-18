@@ -59,38 +59,21 @@
         codis-fe(NodePort)
     provisioning pvc包括2组各6个（主备）codis-server/pika，每个128G
 
-#####13，在统一的hadoop namespace，创建hadoop/hbase/hive集群，airflow ssh执行b4str/streaming运行脚本的环境，创建kylin。
-    创建hadoop集群
-        创建zookeeper集群，执行hadoop/hadoop_zk.sh。
-        定制hadoop3的chart本地目录（hadoop.sh为hadoopv2），执行hadoop/hadoop3.sh。
-        定制hadoop的web监控svc，执行hadoop/hadoop_svc.sh。
-        创建hadoop集群，执行hadoop/hadoop_setup.sh
-    创建zookeeper集群，执行hadoop/zookeeper.sh。
-    创建hbase集群（hbasev2，基于hadoopv3），执行hadoop/hbase2.sh。
-    创建hive集群，执行hadoop/hive.sh。
-        创建metabase server
-        创建hive2 server
-            初始化hive在hdfs的目录环境
-    创建包含hadoopallclientcontrolplan/hdpallcp的base image，执行hadoop/hdpallcp/image/hdpallcp.sh
-        hadoop3作为base image
-        运行sshd，配置登录
-        hadoop3以外，额外包括zookeeper/sqoop/spark/hive/kafka client程序包
-    创建包含hdpallcp的base的image，脚本/库/入口程序打包准备：
-        从具体项目抽取的公共不带域名/口令配置部分，在hadoopclient执行的脚本，本工程scripts目录打包/tmp/scripts.tar.gz
-        在k8s控制平面server01执行的新脚本，本工程cpscripts打包/tmp/cpscripts.tar.gz
-        具体项目带域名/口令配置部分，在hadoopclient执行的脚本，comdeploy工程scripts目录打包/tmp/comscripts.tar.gz
-        批处理运行第三方库包，打包/tmp/spark_shared_jars.tar.gz
-        批处理运行具体项目开发库包，打包/tmp/com_spark_lib_jars.tar.gz
-        批处理运行具体项目入口包，打包/tmp/com_spark_entry_jars.tar.gz
-    把hadoop下的hdpallcp目录打包放到k8s控制平面server01的ubuntu用户$HOME目录
-    创建hdpallcp的image，在base基础上，执行hadoop/hdpallcp/image/hdpallcpcom.sh
-        copy上一步准备的各种scripts/程序包，创建image。
-        部署具体项目的hadoopclient，供airflow ssh远程调用提交启动批处理应用等脚本。
-        同步hive2 hive用户权限到hdfs。
-    创建kylin的image，在base基础上，copy脚本，执行hadoop/hdpallcp/image/hdpallcpcom.sh
-    部署所有基于hdpallcp的image对应的statefulset，目前2个分别作为clientcp和kylin server，执行hadoop_hdpallcp_setup.sh。
+#####13，hadoop相关组件基于cdh安装，用master01做master。
+      #hadoop
+        #zookeeper
+        #hdfs
+        #yarn
+        #hive
+        #hbase
+      #spark
+      #kudu
 
-#####14，创建用作流处理历史聚合快照保存opentsdb集群，执行tsdb.sh
+#####14，presto基于k8s安装，执行presto.sh。
+
+#####15，flink基于k8s安装，执行flink.sh。
+
+#####16，创建用作流处理历史聚合快照保存opentsdb集群，执行tsdb.sh
     创建指向aws hbase集群hbase-site.xml的configMap
     创建tsdb image，包含
         aws hbase集群版本的hbaseclient程序包和HBASE_HOME环境变量
@@ -99,19 +82,10 @@
         ssh
         opentsdb
 
-#####15，定制租用aws hbase集群，
+#####17，定制租用aws hbase集群，
     安装ssh服务
     移植被airflow ssh后从控制平面调用的 hbase/tsdb 库创建脚本
     移植被airflow ssh后从控制平面调用的 hbase/tsdb snap/restore/drop scripts脚本
-
-#####16，创建保存数仓数据的kudu集群，执行dw/kudu.sh
-    NodePort方式暴露端口供beta metabase对应的presto访问
-
-#####17，创建用作接入各种catalog的presto集群，执行presto.sh
-    hadoopclient hive
-    mqstr kafka
-    mqdw kafka
-    kudu
 
 #####18，创建用作新版本发布工作流集群，执行airflow.sh
     修改批/流处理的consul入口
@@ -119,8 +93,10 @@
     建立批/流处理的新consul配置，全部用dns.ns的方式代替原来的ip，端口用svc的端口代替
     修改airflow dag脚本的ssh指向
       新增tsdb的ssh conn指向aws hbase集群
-      把到hadoop(sqoop/hive/kylin)的ssh conn修改指向hadoopclient
-      把到spark的ssh conn修改指向hadoopclient
-      新增flink的ssh conn指向hadoopclient
+      把到hadoop(sqoop/hive/kylin)的ssh conn修改指向cdh master
+      把到spark的ssh conn修改指向cdh master
+      flink
+        cancel任务的http指向新的session svc
+        启动/停止flink的命令移植成ssh到cp来helm install/uninstall flink集群
     清理和启动pika的脚本，移植到ssh到控制平面调用restart codis/pika脚本
     重启tsdb的脚本，移植到ssh到控制平面调用restart tsdb集群脚本

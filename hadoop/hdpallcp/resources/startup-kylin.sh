@@ -1,1 +1,0 @@
-${KYLIN_HOME}/bin/kylin.sh start && set -e -x && tail -f /dev/null

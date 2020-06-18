@@ -40,27 +40,6 @@ kubectl create namespace mqdw
       #tsdbsink2kudu
     #teardown/launch opentsdb(serv/servyat)
     #teardown/launch codis(serv/servyat)
-kubectl create namespace hadoop
-  #hadoop(zookeeper/hdfs/yarn/hive/hbase)
-  #hadoopclient and all on control plane(hdpallcp)
-    hdpallcpcom
-      #ssh
-      #hadoop client(sqoop/zookeeper/hdfs/yarn/hive/hbase)
-      #kafka client
-      #spark
-      #scripts
-    hdpallcpkylin
-      #ssh
-      #hadoop client(sqoop/zookeeper/hdfs/yarn/hive/hbase)
-      #kafka client
-      #spark
-      #kylin
-    #scripts/porting
-      #hadoop(zookeeper/hdfs/yarn/hive/hbase)
-      #spark
-      #kylin
-      #flink
-      #presto
 kubectl create namespace serv
   #codis
   #opentsdb
