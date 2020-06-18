@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hdpallcp.fullname" . }}-kylin-server-web
+  labels:
+    app: {{ include "hdpallcp.name" . }}
+    chart: {{ include "hdpallcp.chart" . }}
+    release: {{ .Release.Name }}
+    component: kylin-server
+spec:
+  type: NodePort
+  ports:
+    - port: 7070
+      name: web
+      nodePort: 30070
+  selector:
+    app: {{ include "hdpallcp.name" . }}
+    release: {{ .Release.Name }}
+    component: kylin-server

@@ -1,0 +1,14 @@
+# The base hadoop image to use for all components.
+# See this repo for image build details: https://github.com/Comcast/kube-yarn/tree/master/image
+
+image:
+  repository: master01:30500/bronzels/hdpallcp
+  tag: 0.1
+  pullPolicy: IfNotPresent
+
+resources: {}
+
+conf:
+  hiveConfigMap:
+  hbaseConfigMap:
+  hadoopConfigMap:
