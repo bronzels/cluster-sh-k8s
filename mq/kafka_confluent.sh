@@ -70,7 +70,7 @@ EOF
   # 删除config目录下所有文件
   # 删除etc/schema-registry/schema-registry.properties
   # 删除logs目录下所有文件
-unzip /tmp/confluent-5.3.2.zip
+unzip ~/tmp/confluent-5.3.2.zip
 
 file=~/mykc/confluent-5.3.2/etc/kafka/log4j.properties
 cp ${file} ${file}.bk

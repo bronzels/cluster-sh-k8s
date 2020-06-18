@@ -1,3 +1,5 @@
+cd ~
+
 rm -rf ~/redis
 mkdir ~/redis
 

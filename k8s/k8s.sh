@@ -105,7 +105,7 @@ scheduler: {}
 EOF
 
 #！！！手工，替换正确的control plan IP地址
-sed -i 's@10.10.3.189@10.10.13.3@g' kubeadm-config.yaml
+sed -i 's@10.10.3.189@10.10.7.45@g' kubeadm-config.yaml
 
 ansible masterexpcp -m copy -a"src=~/kubeadm-config.yaml dest=~"
 
@@ -128,7 +128,8 @@ wget -c https://docs.projectcalico.org/v3.9/manifests/calico.yaml
 kubectl apply -f calico.yaml
 
 #ubuntu
-cat << \EOF > ~/scripts/k8s_funcs.sh
+file=~/scripts/k8s_funcs.sh
+cat << \EOF > ${file}
 #!/bin/bash
 
 nofound="No resources found"
@@ -319,4 +320,5 @@ function fix_statfulset_rev_beta2(){
 }
 
 EOF
-
+chmod a+x ${file}
+${file}

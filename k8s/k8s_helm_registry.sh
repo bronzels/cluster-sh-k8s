@@ -39,7 +39,7 @@ sed -i 's@type: ClusterIP@type: NodePort@g' ${file}
 sed -i 's@# nodePort:@nodePort: 30500@g' ${file}
 helm install -f values.yaml dkreg .
 #helm uninstall dkreg
-#！！！手工，重新登录ubuntu，测试直到返回
+#！！！手工，测试直到返回
 #{"repositories":[]}
 curl http://master01:30500/v2/_catalog
 

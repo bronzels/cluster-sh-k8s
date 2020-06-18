@@ -28,18 +28,6 @@ rm -f requirements.yaml
 file=templates/opentsdb-deployment.yaml
 sed -i 's@          name: {{ .Release.Name }}-hbase@          name: {{ .Release.Name }}-hbcm@g' ${file}
 
-file=~/scripts/myopentsdb-restart.sh
-rm -f ${file}
-cat ~/scripts/k8s_funcs.sh > ${file}
-cat << \EOF >> ${file}
-#!/bin/bash
-ns=$1
-echo "ns:${ns}"
-rev=$2
-echo "rev:${rev}"
-
-set -e
-
 :<<EOF
 # pass env vars to the opentsdb or init-container
 env:
@@ -52,6 +40,20 @@ env:
     # UID_TABLE: tsdb-uid'
 EOF
 
+file=~/scripts/myopentsdb-restart.sh
+rm -f ${file}
+cat ~/scripts/k8s_funcs.sh > ${file}
+cat << \EOF >> ${file}
+#!/bin/bash
+ns=$1
+echo "ns:${ns}"
+rev=$2
+echo "rev:${rev}"
+
+set -e
+
+ZOOKEEPER_QUORUM=`cat hbase/zookeeper_quorum`
+
 helm uninstall myopts -n ${ns}
 helm install myopts -n ${ns} \
   --set hbase.enabled=false \
@@ -62,7 +64,7 @@ helm install myopts -n ${ns} \
   --set env.TREE_TABLE=tsdb-tree${rev} \
   --set env.TSDB_TABLE=tsdb${rev} \
   --set env.UID_TABLE=tsdb-uid${rev} \
-  --conf zookeeper.tsd.storage.hbase.zk_quorum="" \
+  --conf zookeeper.tsd.storage.hbase.zk_quorum="$ZOOKEEPER_QUORUM" \
   ./
 # gradiant/opentsdb
 EOF

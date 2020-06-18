@@ -1,3 +1,4 @@
+#root
 #master
 apt-get install -y ansible
 apt-get install -y sshpass
@@ -9,28 +10,28 @@ slave02 ansible_ssh_user=root ansible_ssh_pass=root
 slave03 ansible_ssh_user=root ansible_ssh_pass=root
 slave04 ansible_ssh_user=root ansible_ssh_pass=root
 [all]
-master01 myhostname="hk-prod-bigdata-master-13-3" myip="10.10.13.3"
-master02 myhostname="hk-prod-bigdata-master-7-140" myip="10.10.7.140"
-slave01 myhostname="hk-prod-bigdata-slave-12-65" myip="10.10.12.65"
-slave02 myhostname="hk-prod-bigdata-slave-15-249" myip="10.10.15.249"
-slave03 myhostname="hk-prod-bigdata-slave-4-122" myip="10.10.4.122"
-slave04 myhostname="hk-prod-bigdata-slave-4-177" myip="10.10.4.177"
+master01 myhostname="hk-prod-bigdata-master-7-45" myip="10.10.7.45"
+master02 myhostname="hk-prod-bigdata-master-11-46" myip="10.10.11.46"
+slave01 myhostname="hk-prod-bigdata-slave-13-136" myip="10.10.13.136"
+slave02 myhostname="hk-prod-bigdata-slave-14-158" myip="10.10.14.158"
+slave03 myhostname="hk-prod-bigdata-slave-9-150" myip="10.10.9.150"
+slave04 myhostname="hk-prod-bigdata-slave-9-231" myip="10.10.9.231"
 [allexpcp]
-master02 myhostname="hk-prod-bigdata-master-7-140" myip="10.10.7.140"
-slave01 myhostname="hk-prod-bigdata-slave-12-65" myip="10.10.12.65"
-slave02 myhostname="hk-prod-bigdata-slave-15-249" myip="10.10.15.249"
-slave03 myhostname="hk-prod-bigdata-slave-4-122" myip="10.10.4.122"
-slave04 myhostname="hk-prod-bigdata-slave-4-177" myip="10.10.4.177"
+master02 myhostname="hk-prod-bigdata-master-11-46" myip="10.10.11.46"
+slave01 myhostname="hk-prod-bigdata-slave-13-136" myip="10.10.13.136"
+slave02 myhostname="hk-prod-bigdata-slave-14-158" myip="10.10.14.158"
+slave03 myhostname="hk-prod-bigdata-slave-9-150" myip="10.10.9.150"
+slave04 myhostname="hk-prod-bigdata-slave-9-231" myip="10.10.9.231"
 [master]
-master01 myhostname="hk-prod-bigdata-master-13-3" myip="10.10.13.3"
-master02 myhostname="hk-prod-bigdata-master-7-140" myip="10.10.7.140"
+master01 myhostname="hk-prod-bigdata-master-7-45" myip="10.10.7.45"
+master02 myhostname="hk-prod-bigdata-master-11-46" myip="10.10.11.46"
 [masterexpcp]
-master02 myhostname="hk-prod-bigdata-master-7-140" myip="10.10.7.140"
+master02 myhostname="hk-prod-bigdata-master-11-46" myip="10.10.11.46"
 [slave]
-slave01 myhostname="hk-prod-bigdata-slave-12-65" myip="10.10.12.65"
-slave02 myhostname="hk-prod-bigdata-slave-15-249" myip="10.10.15.249"
-slave03 myhostname="hk-prod-bigdata-slave-4-122" myip="10.10.4.122"
-slave04 myhostname="hk-prod-bigdata-slave-4-177" myip="10.10.4.177"
+slave01 myhostname="hk-prod-bigdata-slave-13-136" myip="10.10.13.136"
+slave02 myhostname="hk-prod-bigdata-slave-14-158" myip="10.10.14.158"
+slave03 myhostname="hk-prod-bigdata-slave-9-150" myip="10.10.9.150"
+slave04 myhostname="hk-prod-bigdata-slave-9-231" myip="10.10.9.231"
 EOF
 cat <<EOF > /etc/ansible/hosts-ubuntu
 master01 ansible_ssh_user=ubuntu ansible_ssh_pass=ubuntu
@@ -40,55 +41,48 @@ slave02 ansible_ssh_user=ubuntu ansible_ssh_pass=ubuntu
 slave03 ansible_ssh_user=ubuntu ansible_ssh_pass=ubuntu
 slave04 ansible_ssh_user=ubuntu ansible_ssh_pass=ubuntu
 [all]
-master01 myhostname="hk-prod-bigdata-master-13-3" myip="10.10.13.3"
-master02 myhostname="hk-prod-bigdata-master-7-140" myip="10.10.7.140"
-slave01 myhostname="hk-prod-bigdata-slave-12-65" myip="10.10.12.65"
-slave02 myhostname="hk-prod-bigdata-slave-15-249" myip="10.10.15.249"
-slave03 myhostname="hk-prod-bigdata-slave-4-122" myip="10.10.4.122"
-slave04 myhostname="hk-prod-bigdata-slave-4-177" myip="10.10.4.177"
+master01 myhostname="hk-prod-bigdata-master-7-45" myip="10.10.7.45"
+master02 myhostname="hk-prod-bigdata-master-11-46" myip="10.10.11.46"
+slave01 myhostname="hk-prod-bigdata-slave-13-136" myip="10.10.13.136"
+slave02 myhostname="hk-prod-bigdata-slave-14-158" myip="10.10.14.158"
+slave03 myhostname="hk-prod-bigdata-slave-9-150" myip="10.10.9.150"
+slave04 myhostname="hk-prod-bigdata-slave-9-231" myip="10.10.9.231"
 [allexpcp]
-master02 myhostname="hk-prod-bigdata-master-7-140" myip="10.10.7.140"
-slave01 myhostname="hk-prod-bigdata-slave-12-65" myip="10.10.12.65"
-slave02 myhostname="hk-prod-bigdata-slave-15-249" myip="10.10.15.249"
-slave03 myhostname="hk-prod-bigdata-slave-4-122" myip="10.10.4.122"
-slave04 myhostname="hk-prod-bigdata-slave-4-177" myip="10.10.4.177"
+master02 myhostname="hk-prod-bigdata-master-11-46" myip="10.10.11.46"
+slave01 myhostname="hk-prod-bigdata-slave-13-136" myip="10.10.13.136"
+slave02 myhostname="hk-prod-bigdata-slave-14-158" myip="10.10.14.158"
+slave03 myhostname="hk-prod-bigdata-slave-9-150" myip="10.10.9.150"
+slave04 myhostname="hk-prod-bigdata-slave-9-231" myip="10.10.9.231"
 [master]
-master01 myhostname="hk-prod-bigdata-master-13-3" myip="10.10.13.3"
-master02 myhostname="hk-prod-bigdata-master-7-140" myip="10.10.7.140"
+master01 myhostname="hk-prod-bigdata-master-7-45" myip="10.10.7.45"
+master02 myhostname="hk-prod-bigdata-master-11-46" myip="10.10.11.46"
 [masterexpcp]
-master02 myhostname="hk-prod-bigdata-master-7-140" myip="10.10.7.140"
+master02 myhostname="hk-prod-bigdata-master-11-46" myip="10.10.11.46"
 [slave]
-slave01 myhostname="hk-prod-bigdata-slave-12-65" myip="10.10.12.65"
-slave02 myhostname="hk-prod-bigdata-slave-15-249" myip="10.10.15.249"
-slave03 myhostname="hk-prod-bigdata-slave-4-122" myip="10.10.4.122"
-slave04 myhostname="hk-prod-bigdata-slave-4-177" myip="10.10.4.177"
+slave01 myhostname="hk-prod-bigdata-slave-13-136" myip="10.10.13.136"
+slave02 myhostname="hk-prod-bigdata-slave-14-158" myip="10.10.14.158"
+slave03 myhostname="hk-prod-bigdata-slave-9-150" myip="10.10.9.150"
+slave04 myhostname="hk-prod-bigdata-slave-9-231" myip="10.10.9.231"
 EOF
 cp /etc/hosts /etc/hosts.bk
 cat <<EOF >> /etc/hosts
 
-10.10.13.3 master01
-10.10.7.140 master02
-10.10.12.65 slave01
-10.10.15.249 slave02
-10.10.4.122 slave03
-10.10.4.177 slave04
+10.10.7.45 master01
+10.10.11.46 master02
+10.10.13.136 slave01
+10.10.14.158 slave02
+10.10.9.150 slave03
+10.10.9.231 slave04
 
-10.10.13.3 hk-prod-bigdata-master-13-3
-10.10.7.140 hk-prod-bigdata-master-7-140
-10.10.12.65 hk-prod-bigdata-slave-12-65
-10.10.15.249 hk-prod-bigdata-slave-15-249
-10.10.4.122 hk-prod-bigdata-slave-4-122
-10.10.4.177 hk-prod-bigdata-slave-4-177
+10.10.7.45 hk-prod-bigdata-master-7-45
+10.10.11.46 hk-prod-bigdata-master-11-46
+10.10.13.136 hk-prod-bigdata-slave-13-136
+10.10.14.158 hk-prod-bigdata-slave-14-158
+10.10.9.150 hk-prod-bigdata-slave-9-150
+10.10.9.231 hk-prod-bigdata-slave-9-231
 
-10.10.13.3 master01
-10.10.7.140 master02
-10.10.12.65 slave01
-10.10.15.249 slave02
-10.10.4.122 slave03
-10.10.4.177 slave04
-
-10.10.13.3 api.k8s.at.bronzels
-10.10.7.140 api.k8s.at.bronzels
+10.10.7.45 api.k8s.at.bronzels
+10.10.11.46 api.k8s.at.bronzels
 
 EOF
 
@@ -182,6 +176,7 @@ echo "export GOPATH=$HOME/gopath" >> ~/.bashrc
 sudo apt-get install -y autoconf
 EOF
 
+cp /tmp/confluent-5.3.2.zip ~/tmp
 
 
 

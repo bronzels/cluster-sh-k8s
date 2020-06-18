@@ -18,7 +18,7 @@ ansible slave -m shell -a"mkdir $HOME/rook"
 sed -i "s@dataDirHostPath: /var/lib/rook@dataDirHostPath: $HOME/rook/ceph@g" ${file}
 ansible slave -m shell -a"fdisk -l"
 #！！！手工，找到数据盘对应设备名，填入到一下sed命令
-sed -i "s@#deviceFilter:@deviceFilter: "^nvme0n1"@g" ${file}
+sed -i "s@#deviceFilter:@deviceFilter: "^nvme1n1"@g" ${file}
 kubectl create -f cluster.yaml
 #kubectl delete -f cluster.yaml
 
@@ -38,17 +38,17 @@ kubectl create -f dashboard-external-https.yaml
 #kubectl delete -f dashboard-external-https.yaml
 kubectl get service -n rook-ceph|grep rook-ceph-mgr-dashboard-external-https
 #！！！手工，找到service映射的nodeport
-curl https://master01:31322/#/login
+curl https://master01:30541/#/login
 #！！！手工，账户admin，密码以下命令生成
 kubectl -n rook-ceph get secret rook-ceph-dashboard-password -o jsonpath='{.data.password}'  |  base64 --decode
-#d?P,r7}VYit7Aep&376I
+#Jz6[5_:X!E~K(!aX^`O(
 
 kubectl create -f toolbox.yaml
 #kubectl delete -f toolbox.yaml
 kubectl -n rook-ceph get pod -l "app=rook-ceph-tools" -o wide | grep rook-ceph-tools | awk '{print $1}'
 #kubectl -n rook-ceph get pod -l "app=rook-ceph-tools" -o wide | grep rook-ceph-tools | awk '{print $1}' | xargs -n1 -i{} kubectl -n rook-ceph exec -it {} bash
 #！！！手工，copy pod名字到以下命令
-kubectl -n rook-ceph exec -it rook-ceph-tools-84d6784856-n6nl9 bash
+kubectl -n rook-ceph exec -it rook-ceph-tools-84d6784856-gs4w7 bash
   #ceph status
   #ceph df
   #ceph osd status

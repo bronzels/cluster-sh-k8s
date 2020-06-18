@@ -1,4 +1,5 @@
 #each
+#root
 #设置root密码为root
 usermod --password $(echo root | openssl passwd -1 -stdin) root
 #设置ubuntu密码为ubuntu
@@ -13,3 +14,20 @@ sed -i 's@#PermitRootLogin prohibit-password@PermitRootLogin yes@g' ${file}
 sed -i 's@#PubkeyAuthentication yes@PubkeyAuthentication yes@g' ${file}
 sed -i 's@PasswordAuthentication no@PasswordAuthentication yes@g' ${file}
 service sshd restart
+
+
+#slaves
+#root
+fdisk -l
+parted /dev/nvme2n1
+:<<EOF
+  mklabel   gpt
+  mkpart   p1
+    ext3
+    1
+    2T
+  quit
+EOF
+mkfs.ext4 /dev/nvme0n1p1
+mount /dev/nvme0n1p1 /app
+#add below in /etc/fstab
