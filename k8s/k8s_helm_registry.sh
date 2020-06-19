@@ -15,7 +15,7 @@ helm repo add stable https://kubernetes-charts.storage.googleapis.com
 helm repo add incubator https://kubernetes-charts-incubator.storage.googleapis.com/
 helm repo add bitnami https://charts.bitnami.com/bitnami
 
-mkdir -rf $HOME/cmstorage
+rm -rf $HOME/cmstorage
 mkdir -p $HOME/cmstorage/charts
 docker run --name=chartmuseum \
            --restart=always -it -d \
@@ -41,7 +41,7 @@ helm install -f values.yaml dkreg .
 #helm uninstall dkreg
 #！！！手工，测试直到返回
 #{"repositories":[]}
-curl http://master01:30500/v2/_catalog
+curl http://localhost:30500/v2/_catalog
 
 cp ~/source.list.ubuntu.16.04 source.list
 

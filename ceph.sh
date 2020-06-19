@@ -1,5 +1,5 @@
-ansible slave -m shell -a"apt-get install -y lvm2"
-ansible slave -m shell -a"modprobe rbd"
+sudo ansible slavek8s -m shell -a"apt-get install -y lvm2"
+sudo ansible slavek8s -m shell -a"modprobe rbd"
 
 git clone https://github.com/rook/rook.git
 cd ~/rook/
@@ -13,10 +13,11 @@ kubectl create -f operator.yaml
 #kubectl delete -f operator.yaml
 file=cluster.yaml
 cp ${file} ${file}.bk
-ansible slave -m shell -a"rm -rf $HOME/rook/ceph"
-ansible slave -m shell -a"mkdir $HOME/rook"
+ansible slavek8s -i /etc/ansible/hosts-ubuntu -m shell -a"rm -rf $HOME/rook/ceph"
+ansible slavek8s -i /etc/ansible/hosts-ubuntu -m shell -a"mkdir $HOME/rook"
 sed -i "s@dataDirHostPath: /var/lib/rook@dataDirHostPath: $HOME/rook/ceph@g" ${file}
-ansible slave -m shell -a"fdisk -l"
+#root
+sudo ansible slavek8s -m shell -a"fdisk -l"
 #！！！手工，找到数据盘对应设备名，填入到一下sed命令
 sed -i "s@#deviceFilter:@deviceFilter: "^nvme1n1"@g" ${file}
 kubectl create -f cluster.yaml
@@ -30,25 +31,27 @@ kubectl create -f csi/rbd/storageclass.yaml
 kubectl patch storageclass rook-ceph-block -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 kubectl get storageclass
 
-kubectl -n rook-ceph get pod
 kubectl get service -n rook-ceph
+kubectl get pod -n rook-ceph
+
+kubectl logs csi-rbdplugin-mmfgd -n rook-ceph
 
 kubectl get svc -n rook-ceph |grep mgr-dashboard
 kubectl create -f dashboard-external-https.yaml
 #kubectl delete -f dashboard-external-https.yaml
 kubectl get service -n rook-ceph|grep rook-ceph-mgr-dashboard-external-https
 #！！！手工，找到service映射的nodeport
-curl https://master01:30541/#/login
+curl https://master01:30165/#/login
 #！！！手工，账户admin，密码以下命令生成
 kubectl -n rook-ceph get secret rook-ceph-dashboard-password -o jsonpath='{.data.password}'  |  base64 --decode
-#Jz6[5_:X!E~K(!aX^`O(
+#97K:I'K,ah0Em}1B2$>D
 
 kubectl create -f toolbox.yaml
 #kubectl delete -f toolbox.yaml
 kubectl -n rook-ceph get pod -l "app=rook-ceph-tools" -o wide | grep rook-ceph-tools | awk '{print $1}'
 #kubectl -n rook-ceph get pod -l "app=rook-ceph-tools" -o wide | grep rook-ceph-tools | awk '{print $1}' | xargs -n1 -i{} kubectl -n rook-ceph exec -it {} bash
 #！！！手工，copy pod名字到以下命令
-kubectl -n rook-ceph exec -it rook-ceph-tools-84d6784856-gs4w7 bash
+kubectl -n rook-ceph exec -it rook-ceph-tools-67788f4dd7-zwft6 -- bash
   #ceph status
   #ceph df
   #ceph osd status

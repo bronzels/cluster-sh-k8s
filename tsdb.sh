@@ -58,7 +58,7 @@ helm uninstall myopts -n ${ns}
 helm install myopts -n ${ns} \
   --set hbase.enabled=false \
   --set antiAffinity="hard" \
-  --set daemons=1 \
+  --set daemons=4 \
   --set nodePort.enabled=true \
   --set env.META_TABLE=tsdb-meta${rev} \
   --set env.TREE_TABLE=tsdb-tree${rev} \

@@ -1,15 +1,16 @@
 #！！！手工, 新机器加入集群跳过所有cat EOF文件生成步骤
 #root
-ansible all -m shell -a"ufw disable"
-ansible all -m shell -a"apt install -y selinux-utils"
-ansible all -m shell -a"swapoff -a"
-ansible all -m shell -a"setenforce 0"
+ansible allk8s -m shell -a"ufw disable"
+ansible allk8s -m shell -a"apt install -y selinux-utils"
+ansible allk8s -m shell -a"swapoff -a"
+ansible allk8s -m shell -a"setenforce 0"
 
 mkdir /etc/sysconfig;echo SELINUX=disabled > /etc/sysconfig/selinux
-ansible allexpcp -m shell -a"mkdir /etc/sysconfig"
-ansible allexpcp -m copy -a"src=/etc/sysconfig/selinux dest=/etc/sysconfig"
+ansible allk8sexpcp -m shell -a"mkdir /etc/sysconfig"
+ansible allk8sexpcp -m copy -a"src=/etc/sysconfig/selinux dest=/etc/sysconfig"
 
-ansible all -m shell -a"rm -rf /etc/sysconfig/modules/;mkdir -p /etc/sysconfig/modules/"
+ansible allk8s -m shell -a"ls /etc/sysconfig/modules/"
+ansible allk8s -m shell -a"rm -rf /etc/sysconfig/modules/;mkdir -p /etc/sysconfig/modules/"
 
 file=/etc/sysctl.d/k8s-sysctl.conf
 rm -f $file
@@ -20,18 +21,18 @@ net.ipv4.ip_nonlocal_bind = 1
 net.ipv4.ip_forward = 1
 vm.swappiness=0
 EOF
-ansible allexpcp -m copy -a"src=/etc/sysctl.d/k8s-sysctl.conf dest=/etc/sysctl.d"
-ansible all -m shell -a"sysctl -p /etc/sysctl.d/k8s-sysctl.conf"
+ansible allk8sexpcp -m copy -a"src=/etc/sysctl.d/k8s-sysctl.conf dest=/etc/sysctl.d"
+ansible allk8s -m shell -a"sysctl -p /etc/sysctl.d/k8s-sysctl.conf"
 
-ansible all -m shell -a"curl -s https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | apt-key add -"
+ansible allk8s -m shell -a"curl -s https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | apt-key add -"
 cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
 deb https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main
 EOF
-ansible allexpcp -m copy -a"src=/etc/apt/sources.list.d/kubernetes.list dest=/etc/apt/sources.list.d"
-ansible all -m shell -a"apt-get update"
-ansible all -m shell -a"apt-get install -y kubelet kubeadm kubectl"
-ansible all -m shell -a"kubeadm reset -f"
-ansible all -m shell -a"systemctl enable kubelet"
+ansible allk8sexpcp -m copy -a"src=/etc/apt/sources.list.d/kubernetes.list dest=/etc/apt/sources.list.d"
+ansible allk8s -m shell -a"apt-get update"
+ansible allk8s -m shell -a"apt-get install -y kubelet kubeadm kubectl"
+ansible allk8s -m shell -a"kubeadm reset -f"
+ansible allk8s -m shell -a"systemctl enable kubelet"
 
 #kubeadm init --kubernetes-version=v1.18.3 --apiserver-advertise-address=10.10.2.81 --pod-network-cidr=10.244.0.0/16
 
@@ -105,9 +106,10 @@ scheduler: {}
 EOF
 
 #！！！手工，替换正确的control plan IP地址
-sed -i 's@10.10.3.189@10.10.7.45@g' kubeadm-config.yaml
+sed -i 's@10.10.3.189@10.10.6.127@g' kubeadm-config.yaml
+sed -i 's@hk-prod-bigdata-master-3-189@hk-prod-bigdata-master-6-127@g' kubeadm-config.yaml
 
-ansible masterexpcp -m copy -a"src=~/kubeadm-config.yaml dest=~"
+ansible masterk8sexpcp -m copy -a"src=~/kubeadm-config.yaml dest=~"
 
 kubeadm init --config kubeadm-config.yaml
 #kubeadm token create --print-join-command|sed 's/${LOCAL_IP}/${VIP}/g'

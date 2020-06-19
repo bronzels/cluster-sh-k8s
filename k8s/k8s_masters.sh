@@ -8,7 +8,7 @@ rm -f $file
 cat << \EOF > ${file}
 #!/bin/bash
 
-vhost="master02"
+vhost="hk-prod-bigdata-master-11-84"
 usr=root
 
 who=`whoami`
@@ -59,13 +59,13 @@ file=/root/kubejoin-master.sh
 rm -f $file
 cat >> $file << EOF
   kubeadm join api.k8s.at.bronzels:6443 --token 42ypg3.xns4cl9xka8nd2r7 \
-    --discovery-token-ca-cert-hash sha256:f04891aeef5e5b8ce3eb8fefb97792ea3b9b2b8e79e10104d1647767173ecada \
+    --discovery-token-ca-cert-hash sha256:bc4c9d19ab536b41c7c839a51360b469ad76ec5d706b777ac3e14d76e0e67ed7 \
     --control-plane
 EOF
-ansible masterexpcp -m copy -a"src=$file dest=/root"
-ansible masterexpcp -m shell -a"chmod a+x $file"
+ansible masterk8sexpcp -m copy -a"src=$file dest=/root"
+ansible masterk8sexpcp -m shell -a"chmod a+x $file"
 
-ansible masterexpcp -m shell -a"/root/kubejoin-master.sh"
+ansible masterk8sexpcp -m shell -a"/root/kubejoin-master.sh"
 
 kubectl get node -n kube-system
 

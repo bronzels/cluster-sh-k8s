@@ -49,8 +49,6 @@ kubectl create namespace servyat
 kubectl create namespace dw
   #kudu
   #presto
-kubectl create namespace str
-  #flink
 kubectl create namespace flow
   #airflow
     #ssh cligw
@@ -59,5 +57,6 @@ kubectl create namespace flow
 #default
   #prometheus operator
   #redis
+  #flink
 
 kubectl get namespaces
