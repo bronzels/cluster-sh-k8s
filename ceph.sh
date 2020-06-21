@@ -7,21 +7,47 @@ git checkout release-1.3
 
 cd ~/rook/cluster/examples/kubernetes/ceph
 
+# 如果一旦出现长时间都没有osd pod，ceph status也显示HEALTH WARN，没有任何磁盘空间的话，要把所有已安装的delete，从头重装
 kubectl create -f common.yaml
 #kubectl delete -f common.yaml
 kubectl create -f operator.yaml
 #kubectl delete -f operator.yaml
 file=cluster.yaml
 cp ${file} ${file}.bk
-ansible slavek8s -i /etc/ansible/hosts-ubuntu -m shell -a"rm -rf $HOME/rook/ceph"
 ansible slavek8s -i /etc/ansible/hosts-ubuntu -m shell -a"mkdir $HOME/rook"
+ansible slavek8s -i /etc/ansible/hosts-ubuntu -m shell -a"ls $HOME/rook/"
 sed -i "s@dataDirHostPath: /var/lib/rook@dataDirHostPath: $HOME/rook/ceph@g" ${file}
 #root
-sudo ansible slavek8s -m shell -a"fdisk -l"
+sudo ansible slavek8s -m shell -a"fdisk -l|grep '2 TiB'"
 #！！！手工，找到数据盘对应设备名，填入到一下sed命令
 sed -i "s@#deviceFilter:@deviceFilter: "^nvme1n1"@g" ${file}
-kubectl create -f cluster.yaml
+sed -i "s@count: 3@count: 4@g" ${file}
 #kubectl delete -f cluster.yaml
+#！！！手工，至少等15分钟
+# 有error/crashbackoff都不要担心，硬盘初始化需要时间。
+# 要等到rook-ceph-osd-prepare/4个都complete，rook-ceph-osd/4个都在1/1 running才进行下一步
+# 如果出现错误，不要删除下面的storageclass，有可能要等待很长时间没有提示，如果ssh应该跳板机中断，那就既不能删除又不能新增storageclass了。
+sudo ansible slavek8s -m shell -a"rm -rf $HOME/rook/ceph"
+sudo ansible slavek8s -m shell -a"dmsetup remove_all"
+sudo ansible slavek8s -m shell -a"wipefs /dev/nvme1n1"
+sudo ansible slavek8s -m shell -a"sgdisk  --zap-all /dev/nvme1n1"
+#！！！手工，umount相关mount，再rm -rf（lvremove不行） 相关devmapper，不然重新安装也不行
+sudo ansible slavek8s -m shell -a"mount|grep ceph"
+sudo ansible slavek8s -m shell -a"mount|grep ceph| awk '{print \$3}'|xargs umount"
+sudo ansible slavek8s -m shell -a"mount|grep ceph"
+sudo ansible slavek8s -m shell -a"ls /dev|grep ceph"
+sudo ansible slavek8s -m shell -a"ls /dev|grep ceph|xargs -I CNAME  sh -c 'rm -rf /dev/CNAME'"
+sudo ansible slavek8s -m shell -a"ls /dev|grep ceph"
+:<<EOF
+sudo ansible slavek8s -m shell -a"fdisk -l|grep ceph"
+sudo ansible slavek8s -m shell -a"fdisk -l|grep ceph"
+sudo ansible slavek8s -m shell -a"ls /dev/mapper|grep ceph"
+sudo ansible slavek8s -m shell -a"ls /dev/mapper|grep ceph|xargs -I CNAME  sh -c 'rm -rf /dev/mapper/CNAME'"
+sudo ansible slavek8s -m shell -a"ls /dev/mapper|grep ceph"
+EOF
+#！！！手工，rm -rf（lvremove不行） 相关devmapper，不然重新安装也不行
+
+kubectl create -f cluster.yaml
 
 file=csi/rbd/storageclass.yaml
 cp ${file} ${file}.bk
@@ -34,24 +60,22 @@ kubectl get storageclass
 kubectl get service -n rook-ceph
 kubectl get pod -n rook-ceph
 
-kubectl logs csi-rbdplugin-mmfgd -n rook-ceph
-
 kubectl get svc -n rook-ceph |grep mgr-dashboard
 kubectl create -f dashboard-external-https.yaml
 #kubectl delete -f dashboard-external-https.yaml
 kubectl get service -n rook-ceph|grep rook-ceph-mgr-dashboard-external-https
 #！！！手工，找到service映射的nodeport
-curl https://master01:30165/#/login
+curl https://localhost:31868/#/login
 #！！！手工，账户admin，密码以下命令生成
 kubectl -n rook-ceph get secret rook-ceph-dashboard-password -o jsonpath='{.data.password}'  |  base64 --decode
-#97K:I'K,ah0Em}1B2$>D
+#*.0r=^hhi.N|P[qw^x\\
 
 kubectl create -f toolbox.yaml
 #kubectl delete -f toolbox.yaml
 kubectl -n rook-ceph get pod -l "app=rook-ceph-tools" -o wide | grep rook-ceph-tools | awk '{print $1}'
 #kubectl -n rook-ceph get pod -l "app=rook-ceph-tools" -o wide | grep rook-ceph-tools | awk '{print $1}' | xargs -n1 -i{} kubectl -n rook-ceph exec -it {} bash
 #！！！手工，copy pod名字到以下命令
-kubectl -n rook-ceph exec -it rook-ceph-tools-67788f4dd7-zwft6 -- bash
+kubectl -n rook-ceph exec -it rook-ceph-tools-67788f4dd7-nn2bh -- bash
   #ceph status
   #ceph df
   #ceph osd status
@@ -64,7 +88,7 @@ kubectl create -f monitoring/
 #kubectl delete -f monitoring/
 kubectl -n rook-ceph get pod |grep prometheus-rook
 kubectl -n rook-ceph get svc |grep rook-prometheus
-curl http://master01:30900/graph
+curl http://localhost:30900/graph
 
 cat << EOF > busy-box-pvc.yaml
 apiVersion: v1

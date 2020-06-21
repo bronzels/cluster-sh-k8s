@@ -19,7 +19,8 @@ cat << EOF > /etc/docker/daemon.json
 {
   "exec-opts": ["native.cgroupdriver=systemd"],
   "iptables": false,
-  "insecure-registries":["master01:30500"]
+  "insecure-registries":["master01:30500"],
+  "dns": ["8.8.8.8", "114.114.114.114"]
 }
 EOF
 ansible allk8sexpcp -m copy -a"src=/etc/docker/daemon.json dest=/etc/docker"

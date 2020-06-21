@@ -30,7 +30,8 @@ sed -i 's@FROM centos:latest@FROM centos:7@g' ${file}
 EOF
 
 cd ~
-cp ~/source.list.ubuntu.16.04 source.list
+cp ~/sources.list.ubuntu.16.04 sources.list
+#COPY ./sources.list /etc/apt
 
 cd ~/pika
 file=Dockerfile
@@ -42,9 +43,7 @@ USER root:root
 
 ENV PIKA /pika
 COPY pika /pika
-RUN ls /pika
 
-COPY ./source.list /etc/apt
 RUN apt-get update && \
     apt-get install -y build-essential git autoconf
 
@@ -69,6 +68,8 @@ ENV PATH ${CODIS}/bin:${PATH}
 
 WORKDIR $PIKA
 EOF
+
+docker images|grep "<none>"|awk '{print $3}'|xargs docker rmi -f
 
 docker images|grep pika_codis
 docker images|grep pika_codis|awk '{print $3}'|xargs docker rmi -f

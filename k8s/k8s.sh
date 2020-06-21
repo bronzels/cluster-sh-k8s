@@ -31,7 +31,15 @@ EOF
 ansible allk8sexpcp -m copy -a"src=/etc/apt/sources.list.d/kubernetes.list dest=/etc/apt/sources.list.d"
 ansible allk8s -m shell -a"apt-get update"
 ansible allk8s -m shell -a"apt-get install -y kubelet kubeadm kubectl"
+
+#root
+ansible allk8s -m shell -a"rm -rf /root/.kube"
+ansible allk8s -m shell -a"rm -rf /etc/kubernetes/*"
+ansible allk8s -m shell -a"rm -rf /home/ubuntu/.kube"
+
 ansible allk8s -m shell -a"kubeadm reset -f"
+ansible allk8s -m shell -a"ipvsadm --clear"
+
 ansible allk8s -m shell -a"systemctl enable kubelet"
 
 #kubeadm init --kubernetes-version=v1.18.3 --apiserver-advertise-address=10.10.2.81 --pod-network-cidr=10.244.0.0/16
@@ -106,10 +114,18 @@ scheduler: {}
 EOF
 
 #！！！手工，替换正确的control plan IP地址
-sed -i 's@10.10.3.189@10.10.6.127@g' kubeadm-config.yaml
-sed -i 's@hk-prod-bigdata-master-3-189@hk-prod-bigdata-master-6-127@g' kubeadm-config.yaml
+sed -i 's@10.10.3.189@10.10.7.44@g' kubeadm-config.yaml
+sed -i 's@hk-prod-bigdata-master-3-189@hk-prod-bigdata-master-7-44@g' kubeadm-config.yaml
 
 ansible masterk8sexpcp -m copy -a"src=~/kubeadm-config.yaml dest=~"
+
+:<<EOF
+error execution phase preflight: [preflight] Some fatal errors occurred:
+	[ERROR FileContent--proc-sys-net-bridge-bridge-nf-call-iptables]: /proc/sys/net/bridge/bridge-nf-call-iptables does not exist
+	[ERROR FileContent--proc-sys-net-ipv4-ip_forward]: /proc/sys/net/ipv4/ip_forward contents are not set to 1
+EOF
+ansible all -m shell -a"modprobe br_netfilter"
+ansible all -m shell -a"echo 1 > /proc/sys/net/bridge/bridge-nf-call-iptables"
 
 kubeadm init --config kubeadm-config.yaml
 #kubeadm token create --print-join-command|sed 's/${LOCAL_IP}/${VIP}/g'

@@ -3,8 +3,11 @@ ansible all -m shell -a"cat /etc/issue"
 ansible all -m shell -a"uname -r"
 ansible all -m shell -a"free -g"
 
-ansible slave01,slave02,slave03,slave04 -m shell -a"cp /etc/hosts /etc/hosts.bk"
-ansible slave01,slave02,slave03,slave04 -m copy -a"src=/etc/hosts dest=/etc"
+ansible hk-prod-bigdata-master-14-114,hk-prod-bigdata-slave-0-234,hk-prod-bigdata-slave-10-68,hk-prod-bigdata-slave-3-3,hk-prod-bigdata-slave-7-226 -m shell -a"cp /etc/hosts /etc/hosts.bk"
+ansible hk-prod-bigdata-master-14-114,hk-prod-bigdata-slave-0-234,hk-prod-bigdata-slave-10-68,hk-prod-bigdata-slave-3-3,hk-prod-bigdata-slave-7-226 -m copy -a"src=/etc/hosts dest=/etc"
+
+ansible all -m shell -a"cat /etc/hosts"
+ansible all -m shell -a"ip addr|grep 10.10."
 
 #ubuntu
 #cpscripts for airflow to ssh and execute
@@ -24,17 +27,21 @@ gcc -v
 g++ -v
 EOF
 
-cat << \EOF > ~/source.list.ubuntu.16.04
-deb http://mirrors.aliyun.com/ubuntu/ trusty main restricted universe multiverse
-deb http://mirrors.aliyun.com/ubuntu/ trusty-security main restricted universe multiverse
-deb http://mirrors.aliyun.com/ubuntu/ trusty-updates main restricted universe multiverse
-deb http://mirrors.aliyun.com/ubuntu/ trusty-proposed main restricted universe multiverse
-deb http://mirrors.aliyun.com/ubuntu/ trusty-backports main restricted universe multiverse
-deb-src http://mirrors.aliyun.com/ubuntu/ trusty main restricted universe multiverse
-deb-src http://mirrors.aliyun.com/ubuntu/ trusty-security main restricted universe multiverse
-deb-src http://mirrors.aliyun.com/ubuntu/ trusty-updates main restricted universe multiverse
-deb-src http://mirrors.aliyun.com/ubuntu/ trusty-proposed main restricted universe multiverse
-deb-src http://mirrors.aliyun.com/ubuntu/ trusty-backports main restricted universe multiverse
+cat << \EOF > ~/sources.list.ubuntu.16.04
+deb http://mirrors.aliyun.com/ubuntu/ xenial main restricted
+deb-src http://mirrors.aliyun.com/ubuntu/ xenial main restricted multiverse universe #Added by software-properties
+deb http://mirrors.aliyun.com/ubuntu/ xenial-updates main restricted
+deb-src http://mirrors.aliyun.com/ubuntu/ xenial-updates main restricted multiverse universe #Added by software-properties
+deb http://mirrors.aliyun.com/ubuntu/ xenial universe
+deb http://mirrors.aliyun.com/ubuntu/ xenial-updates universe
+deb http://mirrors.aliyun.com/ubuntu/ xenial multiverse
+deb http://mirrors.aliyun.com/ubuntu/ xenial-updates multiverse
+deb http://mirrors.aliyun.com/ubuntu/ xenial-backports main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ xenial-backports main restricted universe multiverse #Added by software-properties
+deb http://mirrors.aliyun.com/ubuntu/ xenial-security main restricted
+deb-src http://mirrors.aliyun.com/ubuntu/ xenial-security main restricted multiverse universe #Added by software-properties
+deb http://mirrors.aliyun.com/ubuntu/ xenial-security universe
+deb http://mirrors.aliyun.com/ubuntu/ xenial-security multiverse
 EOF
 
 #for codis building

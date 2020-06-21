@@ -10,6 +10,8 @@ docker stop $(docker ps -a | grep k8s_ | awk '{print $1}')
 docker ps -a|grep mysql
 docker rm $(docker ps -a | grep k8s_ | awk '{print $1}')
 
+docker start $(docker ps -a | grep k8s_ | awk '{print $1}')
+
 rm -rf ~/.kube
 
 ansible allk8s -m shell -a"rm -rf /etc/kubernetes/"

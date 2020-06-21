@@ -5,159 +5,145 @@
 #root
 apt-get install -y ansible
 apt-get install -y sshpass
-:<<EOF
-master01 ansible_ssh_user=root ansible_ssh_pass=root
-deploy01 ansible_ssh_user=root ansible_ssh_pass=root
-slave01 ansible_ssh_user=root ansible_ssh_pass=root
-slave02 ansible_ssh_user=root ansible_ssh_pass=root
-slave03 ansible_ssh_user=root ansible_ssh_pass=root
-slave04 ansible_ssh_user=root ansible_ssh_pass=root
-EOF
 cat <<EOF > /etc/ansible/hosts
-hk-prod-bigdata-master-6-127 ansible_ssh_user=root ansible_ssh_pass=root
-hk-prod-bigdata-master-11-84 ansible_ssh_user=root ansible_ssh_pass=root
-hk-prod-bigdata-slave-1-245 ansible_ssh_user=root ansible_ssh_pass=root
-hk-prod-bigdata-slave-3-30 ansible_ssh_user=root ansible_ssh_pass=root
-hk-prod-bigdata-slave-5-41 ansible_ssh_user=root ansible_ssh_pass=root
-hk-prod-bigdata-slave-8-134 ansible_ssh_user=root ansible_ssh_pass=root
+hk-prod-bigdata-master-7-44 ansible_ssh_user=root ansible_ssh_pass=root
+hk-prod-bigdata-master-14-114 ansible_ssh_user=root ansible_ssh_pass=root
+hk-prod-bigdata-slave-0-234 ansible_ssh_user=root ansible_ssh_pass=root
+hk-prod-bigdata-slave-10-68 ansible_ssh_user=root ansible_ssh_pass=root
+hk-prod-bigdata-slave-3-3 ansible_ssh_user=root ansible_ssh_pass=root
+hk-prod-bigdata-slave-7-226 ansible_ssh_user=root ansible_ssh_pass=root
 
 [all]
-hk-prod-bigdata-master-6-127
-hk-prod-bigdata-master-11-84
-hk-prod-bigdata-slave-1-245
-hk-prod-bigdata-slave-3-30
-hk-prod-bigdata-slave-5-41
-hk-prod-bigdata-slave-8-134
+hk-prod-bigdata-master-7-44
+hk-prod-bigdata-master-14-114
+hk-prod-bigdata-slave-0-234
+hk-prod-bigdata-slave-10-68
+hk-prod-bigdata-slave-3-3
+hk-prod-bigdata-slave-7-226
 
 [allk8s]
-hk-prod-bigdata-master-6-127
-hk-prod-bigdata-master-11-84
-hk-prod-bigdata-slave-1-245
-hk-prod-bigdata-slave-3-30
-hk-prod-bigdata-slave-5-41
-hk-prod-bigdata-slave-8-134
+hk-prod-bigdata-master-7-44
+hk-prod-bigdata-master-14-114
+hk-prod-bigdata-slave-0-234
+hk-prod-bigdata-slave-10-68
+hk-prod-bigdata-slave-3-3
+hk-prod-bigdata-slave-7-226
 [allk8sexpcdhcp]
-hk-prod-bigdata-master-6-127
-hk-prod-bigdata-master-11-84
-hk-prod-bigdata-slave-3-30
-hk-prod-bigdata-slave-5-41
-hk-prod-bigdata-slave-8-134
+hk-prod-bigdata-master-7-44
+hk-prod-bigdata-master-14-114
+hk-prod-bigdata-slave-10-68
+hk-prod-bigdata-slave-3-3
+hk-prod-bigdata-slave-7-226
 [allk8sexpcp]
-hk-prod-bigdata-master-11-84
-hk-prod-bigdata-slave-1-245
-hk-prod-bigdata-slave-3-30
-hk-prod-bigdata-slave-5-41
-hk-prod-bigdata-slave-8-134
+hk-prod-bigdata-master-14-114
+hk-prod-bigdata-slave-0-234
+hk-prod-bigdata-slave-10-68
+hk-prod-bigdata-slave-3-3
+hk-prod-bigdata-slave-7-226
 [masterk8s]
-hk-prod-bigdata-master-6-127
-hk-prod-bigdata-master-11-84
+hk-prod-bigdata-master-7-44
+hk-prod-bigdata-master-14-114
 [masterk8sexpcp]
-hk-prod-bigdata-master-11-84
+hk-prod-bigdata-master-14-114
 [slavek8s]
-hk-prod-bigdata-slave-1-245
-hk-prod-bigdata-slave-3-30
-hk-prod-bigdata-slave-5-41
-hk-prod-bigdata-slave-8-134
+hk-prod-bigdata-slave-0-234
+hk-prod-bigdata-slave-10-68
+hk-prod-bigdata-slave-3-3
+hk-prod-bigdata-slave-7-226
 
 [allcdh]
-hk-prod-bigdata-slave-1-245
-hk-prod-bigdata-slave-3-30
-hk-prod-bigdata-slave-5-41
-hk-prod-bigdata-slave-8-134
+hk-prod-bigdata-slave-0-234
+hk-prod-bigdata-slave-10-68
+hk-prod-bigdata-slave-3-3
+hk-prod-bigdata-slave-7-226
 [slavecdh]
-hk-prod-bigdata-slave-3-30
-hk-prod-bigdata-slave-5-41
-hk-prod-bigdata-slave-8-134
-EOF
-:<<EOF
-master01 ansible_ssh_user=ubuntu ansible_ssh_pass=ubuntu
-deploy01 ansible_ssh_user=ubuntu ansible_ssh_pass=ubuntu
-slave01 ansible_ssh_user=ubuntu ansible_ssh_pass=ubuntu
-slave02 ansible_ssh_user=ubuntu ansible_ssh_pass=ubuntu
-slave03 ansible_ssh_user=ubuntu ansible_ssh_pass=ubuntu
-slave04 ansible_ssh_user=ubuntu ansible_ssh_pass=ubuntu
+hk-prod-bigdata-slave-10-68
+hk-prod-bigdata-slave-3-3
+hk-prod-bigdata-slave-7-226
 EOF
 cat <<EOF > /etc/ansible/hosts-ubuntu
-hk-prod-bigdata-master-6-127 ansible_ssh_user=ubuntu ansible_ssh_pass=ubuntu
-hk-prod-bigdata-master-11-84 ansible_ssh_user=ubuntu ansible_ssh_pass=ubuntu
-hk-prod-bigdata-slave-1-245 ansible_ssh_user=ubuntu ansible_ssh_pass=ubuntu
-hk-prod-bigdata-slave-3-30 ansible_ssh_user=ubuntu ansible_ssh_pass=ubuntu
-hk-prod-bigdata-slave-5-41 ansible_ssh_user=ubuntu ansible_ssh_pass=ubuntu
-hk-prod-bigdata-slave-8-134 ansible_ssh_user=ubuntu ansible_ssh_pass=ubuntu
+hk-prod-bigdata-master-7-44 ansible_ssh_user=ubuntu ansible_ssh_pass=ubuntu
+hk-prod-bigdata-master-14-114 ansible_ssh_user=ubuntu ansible_ssh_pass=ubuntu
+hk-prod-bigdata-slave-0-234 ansible_ssh_user=ubuntu ansible_ssh_pass=ubuntu
+hk-prod-bigdata-slave-10-68 ansible_ssh_user=ubuntu ansible_ssh_pass=ubuntu
+hk-prod-bigdata-slave-3-3 ansible_ssh_user=ubuntu ansible_ssh_pass=ubuntu
+hk-prod-bigdata-slave-7-226 ansible_ssh_user=ubuntu ansible_ssh_pass=ubuntu
 
 
 [all]
-hk-prod-bigdata-master-6-127
-hk-prod-bigdata-master-11-84
-hk-prod-bigdata-slave-1-245
-hk-prod-bigdata-slave-3-30
-hk-prod-bigdata-slave-5-41
-hk-prod-bigdata-slave-8-134
+hk-prod-bigdata-master-7-44
+hk-prod-bigdata-master-14-114
+hk-prod-bigdata-slave-0-234
+hk-prod-bigdata-slave-10-68
+hk-prod-bigdata-slave-3-3
+hk-prod-bigdata-slave-7-226
 
 [allk8s]
-hk-prod-bigdata-master-6-127
-hk-prod-bigdata-master-11-84
-hk-prod-bigdata-slave-1-245
-hk-prod-bigdata-slave-3-30
-hk-prod-bigdata-slave-5-41
-hk-prod-bigdata-slave-8-134
+hk-prod-bigdata-master-7-44
+hk-prod-bigdata-master-14-114
+hk-prod-bigdata-slave-0-234
+hk-prod-bigdata-slave-10-68
+hk-prod-bigdata-slave-3-3
+hk-prod-bigdata-slave-7-226
 [allk8sexpcdhcp]
-hk-prod-bigdata-master-6-127
-hk-prod-bigdata-master-11-84
-hk-prod-bigdata-slave-3-30
-hk-prod-bigdata-slave-5-41
-hk-prod-bigdata-slave-8-134
+hk-prod-bigdata-master-7-44
+hk-prod-bigdata-master-14-114
+hk-prod-bigdata-slave-10-68
+hk-prod-bigdata-slave-3-3
+hk-prod-bigdata-slave-7-226
 [allk8sexpcp]
-hk-prod-bigdata-master-11-84
-hk-prod-bigdata-slave-1-245
-hk-prod-bigdata-slave-3-30
-hk-prod-bigdata-slave-5-41
-hk-prod-bigdata-slave-8-134
+hk-prod-bigdata-master-14-114
+hk-prod-bigdata-slave-0-234
+hk-prod-bigdata-slave-10-68
+hk-prod-bigdata-slave-3-3
+hk-prod-bigdata-slave-7-226
 [masterk8s]
-hk-prod-bigdata-master-6-127
-hk-prod-bigdata-master-11-84
+hk-prod-bigdata-master-7-44
+hk-prod-bigdata-master-14-114
 [masterk8sexpcp]
-hk-prod-bigdata-master-11-84
+hk-prod-bigdata-master-14-114
 [slavek8s]
-hk-prod-bigdata-slave-1-245
-hk-prod-bigdata-slave-3-30
-hk-prod-bigdata-slave-5-41
-hk-prod-bigdata-slave-8-134
+hk-prod-bigdata-slave-0-234
+hk-prod-bigdata-slave-10-68
+hk-prod-bigdata-slave-3-3
+hk-prod-bigdata-slave-7-226
 
 [allcdh]
-hk-prod-bigdata-slave-1-245
-hk-prod-bigdata-slave-3-30
-hk-prod-bigdata-slave-5-41
-hk-prod-bigdata-slave-8-134
+hk-prod-bigdata-slave-0-234
+hk-prod-bigdata-slave-10-68
+hk-prod-bigdata-slave-3-3
+hk-prod-bigdata-slave-7-226
 [slavecdh]
-hk-prod-bigdata-slave-3-30
-hk-prod-bigdata-slave-5-41
-hk-prod-bigdata-slave-8-134
+hk-prod-bigdata-slave-10-68
+hk-prod-bigdata-slave-3-3
+hk-prod-bigdata-slave-7-226
 EOF
 cp /etc/hosts /etc/hosts.bk
 cat <<EOF >> /etc/hosts
 
-10.10.6.127 hk-prod-bigdata-master-6-127
+10.10.7.44 master01
 
-10.10.11.84 hk-prod-bigdata-master-11-84
+10.10.7.44 hk-prod-bigdata-master-7-44
+10.10.14.114 hk-prod-bigdata-master-14-114
 
-10.10.1.245 hk-prod-bigdata-slave-1-245
-10.10.3.30 hk-prod-bigdata-slave-3-30
-10.10.5.41 hk-prod-bigdata-slave-5-41
-10.10.8.134 hk-prod-bigdata-slave-8-134
+10.10.0.234 hk-prod-bigdata-slave-0-234
+10.10.10.68 hk-prod-bigdata-slave-10-68
+10.10.3.3 hk-prod-bigdata-slave-3-3
+10.10.7.226 hk-prod-bigdata-slave-7-226
 
-10.10.6.127 api.k8s.at.bronzels
+10.10.7.44 api.k8s.at.bronzels
+10.10.14.114 api.k8s.at.bronzels
 
 EOF
 
 :<<EOF
-master01 hk-prod-bigdata-master-6-127
-master02 hk-prod-bigdata-master-11-84
+master01 hk-prod-bigdata-master-7-44
+master02 hk-prod-bigdata-master-14-114
 
-slave01 hk-prod-bigdata-slave-1-245
-slave01 hk-prod-bigdata-slave-3-30
-slave01 hk-prod-bigdata-slave-5-41
-slave01 hk-prod-bigdata-slave-8-134
+slave01 hk-prod-bigdata-slave-0-234
+slave02 hk-prod-bigdata-slave-10-68
+slave03 hk-prod-bigdata-slave-3-3
+slave04 hk-prod-bigdata-slave-7-226
 
 EOF
 cp /etc/ansible/ansible.cfg /etc/ansible/ansible.cfg.bk
@@ -179,7 +165,7 @@ cat <<EOF > ssh-addkey.yml
                     key="{{ lookup('file', '/root/.ssh/id_rsa.pub') }}"
                     state=present
 EOF
-ssh-keyscan hk-prod-bigdata-master-6-127 hk-prod-bigdata-master-11-84 hk-prod-bigdata-slave-1-245 hk-prod-bigdata-slave-3-30 hk-prod-bigdata-slave-5-41 hk-prod-bigdata-slave-8-134 >> ~/.ssh/known_hosts
+ssh-keyscan hk-prod-bigdata-master-7-44 hk-prod-bigdata-master-14-114 hk-prod-bigdata-slave-0-234 hk-prod-bigdata-slave-10-68 hk-prod-bigdata-slave-3-3 hk-prod-bigdata-slave-7-226 >> ~/.ssh/known_hosts
 ansible-playbook -i /etc/ansible/hosts ~/ssh-addkey.yml
 
 #ubuntu
@@ -199,7 +185,7 @@ cat <<EOF > ssh-addkey.yml
                     key="{{ lookup('file', '/home/ubuntu/.ssh/id_rsa.pub') }}"
                     state=present
 EOF
-ssh-keyscan hk-prod-bigdata-master-6-127 hk-prod-bigdata-master-11-84 hk-prod-bigdata-slave-1-245 hk-prod-bigdata-slave-3-30 hk-prod-bigdata-slave-5-41 hk-prod-bigdata-slave-8-134 >> ~/.ssh/known_hosts
+ssh-keyscan hk-prod-bigdata-master-7-44 hk-prod-bigdata-master-14-114 hk-prod-bigdata-slave-0-234 hk-prod-bigdata-slave-10-68 hk-prod-bigdata-slave-3-3 hk-prod-bigdata-slave-7-226 >> ~/.ssh/known_hosts
 ansible-playbook -i /etc/ansible/hosts-ubuntu ~/ssh-addkey.yml
 
 #root

@@ -37,8 +37,6 @@ kubectl -n default run test-kafka-producer-mqdw -ti --image=strimzi/kafka:0.18.0
 kubectl -n default run test-kafka-consumer-mqdw -ti --image=strimzi/kafka:0.18.0-kafka-2.5.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server mykafka.mqdw:9092 --topic test
 kubectl -n default run test-kafka-consumer-mqdw -ti --image=strimzi/kafka:0.18.0-kafka-2.5.0 --env="KAFKA_HEAP_OPTS=-Xmx1024M" --rm=true --restart=Never -- bin/kafka-run-class.sh kafka.tools.GetOffsetShell --broker-list mykafka.mqdw:9092 --topic test --time -1 --offsets 1
 
-kubectl run test-mysr -ti --image=praqma/network-multitool --rm=true --restart=Never -- curl http://mysr-schema-registry.mqdw:8081
-
 :<<EOF
 #  --set kafkaStore.overrideBootstrapServer=mykafka.mqdw:9092 \
 #  --set configurationOverrides."kafkastore\.connection\.url"=mykafka-zookeeper.mqdw:2181 \
@@ -248,6 +246,8 @@ helm install mysr -f values.yaml incubator/schema-registry -n mqdw
 
 kubectl get pod -n mqdw
 kubectl get svc -n mqdw -o wide
+
+kubectl run test-mysr -ti --image=praqma/network-multitool --rm=true --restart=Never -- curl http://mysr-schema-registry.mqdw:8081
 
 :<<EOF
 NOTES:
