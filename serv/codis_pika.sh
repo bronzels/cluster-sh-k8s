@@ -151,18 +151,19 @@ sed -i 's@kubectl exec@kubectl exec -n \${codisns}@g' ${file}
 sed -i 's@kubectl scale@kubectl scale -n \${codisns}@g' ${file}
 EOF
 
-file=start.sh
+file=mycodis_cp_op.sh
 cat ~/scripts/k8s_funcs.sh > ${file}
 cat << \EOF >> ${file}
 
-codisns=$1
+op=$1
+codisns=$2
 
 product_name="codis-test"
 #product_auth="auth"
-case "$2" in
+case "$op" in
 
 ### 清理原来codis遗留数据
-cleanup)
+"stop")
     kubectl delete -n ${codisns} -f .
     wait_pod_deleted "${codisns}" "codis-dashboard" 300
     wait_pod_deleted "${codisns}" "codis-fe" 300
@@ -177,7 +178,7 @@ cleanup)
     ;;
 
 ### 创建新的codis集群
-buildup)
+"start" | "restart")
     kubectl delete -n ${codisns} -f .
     wait_pod_deleted "${codisns}" "codis-dashboard" 300
     wait_pod_deleted "${codisns}" "codis-fe" 300
@@ -267,8 +268,9 @@ cp ${file}.template ${file}
 curl http://master01:31080
 
 cd ~/codis/kubernetes
-./start.sh serv buildup
-#./start.sh serv cleanup
+./mycodis_cp_op.sh start serv
+./mycodis_cp_op.sh stop serv
+#./start.sh stop serv
 #kubectl get pvc -n serv | awk '{print $1}' | grep datadir-codis-server | xargs kubectl delete pvc -n serv
 
 ansible slave -m shell -a"docker images|grep pika"

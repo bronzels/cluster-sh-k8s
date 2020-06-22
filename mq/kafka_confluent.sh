@@ -160,17 +160,19 @@ spec:
     targetPort: 8083
 EOF
 
-file=~/scripts/myconnector-restart.sh
+file=~/scripts/myconnector-cp-op.sh
 rm -f ${file}
 cat ~/scripts/k8s_funcs.sh > ${file}
 cat << \EOF >> ${file}
 
-ns=$1
+op=$1
+echo "op:${op}"
+ns=$2
 echo "ns:${ns}"
 #json/avro/bson
-kind=$2
+kind=$3
 echo "kind:${kind}"
-name=$3
+name=$4
 echo "name:${name}"
 
 podnsname=${ns}-${name}
@@ -228,6 +230,10 @@ else
   fi
 fi
 
+if [ $op == "stop" ]; then
+  exit(0)
+fi
+
 podnsname4topic=${podnsname//-/_}
 nsbootstrap=mykafka.${ns}:9092
 nssr=mysr-schema-registry.${ns}:8081
@@ -269,7 +275,8 @@ fi
 EOF
 chmod a+x ${file}
 
-~/scripts/myconnector-restart.sh mqstr json mysqlsrctest
+~/scripts/myconnector-restart.sh start mqstr json mysqlsrctest
+~/scripts/myconnector-restart.sh stop mqstr json mysqlsrctest
 #kubectl delete -f ~/mykc/kafka-connect-mqstr-mysqlsrctest.yaml
 #rm -f ~/mykc/kafka-connect-mqstr-mysqlsrctest.yaml
 
