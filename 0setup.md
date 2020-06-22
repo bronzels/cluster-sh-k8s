@@ -40,10 +40,18 @@
 #####！！！以下操作无特殊说明都在操作台master01服务器上ubuntu用户下执行，并在k8s集群上操作
 #####6，新建集群后再加入新机器
     执行步骤2
-    ！！！手工，修改/etc/hosts加入新机器别名，/etc/ansible/hosts，/etc/ansible-ubuntu，创建新newgrp租，把新机器同时加入到其他组
-    安装docker/k8s，执行docker_k8s_new
-    给集群设置控制平面以外多master加入集群，群组masterexpcp修改为newgrp，执行k8s_masters.sh
-    给集群设置slaves加入集群，群组all/slaves修改为newgrp，执行k8s_slaves.sh
+    ！！！手工，在新机器上执行manual_each.sh
+    ！！！手工，master01/slave01上执行ansible_cp部分内容。
+        修改/etc/hosts加入新机器别名；
+        修改/etc/ansible/hosts，/etc/ansible-ubuntu，加入新机器别名；
+        创建新newgrp租；
+        执行ssh scan/add_keys；
+    ！！！手工，master01上把新hosts copy到所有机器。
+    安装docker/k8s，执行docker_k8s_new.sh
+    给集群设置控制平面以外多master加入集群，执行k8s_masters.sh：
+        群组masterk8sexpcp修改为newgrp；
+        kubecacp-cert-masters.sh的vohost包括新加机器；
+    给集群设置slaves加入集群，群组slavesk8s修改为newgrp，执行k8s_slaves.sh
 
 #####7，创建后续资源命名空间，执行namespace.sh
     同时还汇总组件和namepsace的对应关系。

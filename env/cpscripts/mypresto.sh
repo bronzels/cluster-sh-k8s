@@ -1,2 +1,7 @@
 #!/bin/bash
-~/presto-server/bin/presto-cli --server http://pro-hbase01:8070 --catalog hive --schema default 
+catalog=$1
+echo "catalog:${catalog}"
+schema=$2
+echo "schema:${schema}"
+
+kubectl -n dw exec mypres-coordinator-??? -it -- presto --catalog ${catalog} --schema ${schema}

@@ -2,4 +2,4 @@
 
 cmd='set bd:k:fm:fl -fe'
 
-redis-cli -c -h 127.0.0.1 -p 6379 ${cmd}
+kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h myrdsvc ${cmd}

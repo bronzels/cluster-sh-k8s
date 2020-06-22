@@ -5,8 +5,10 @@ cp ${MYHOME} ${MYHOME}.bk
 cd ${MYHOME}
 
 cd ${MYHOME}/resources
-cp ~/tmp/presto-catalog.tar.gz ./
-tar xzvf presto-catalog.tar.gz
+cp ~/tmp/presto-catalog.zip ./
+unzip xzvf presto-catalog.zip
+scp hk-prod-bigdata-slave-0-234:/etc/hadoop/conf/core-site.xml ./
+scp hk-prod-bigdata-slave-0-234:/etc/hadoop/conf/hdfs-site.xml ./
 
 :<<EOF
   config:
@@ -39,6 +41,10 @@ metadata:
 data:
   hive.properties: |-
 {{ tpl (.Files.Get "catalog/hive.properties") . | indent 4 }}
+  core-site.xml: |-
+{{ tpl (.Files.Get "catalog/core-site.xml") . | indent 4 }}
+  hdfs-site.xml: |-
+{{ tpl (.Files.Get "catalog/hdfs-site.xml") . | indent 4 }}
   kafka.properties: |-
 {{ tpl (.Files.Get "catalog/kafka.properties") . | indent 4 }}
   kudu.properties: |-
@@ -69,7 +75,7 @@ sed -i '/      containers:/i\        - name: catalog-volume\n          configMap
 EOF
 sed -i '/          ports:/i\            - mountPath: {{ .Values.server.catalog.path }}\n              name: catalog-volume' ${file}
 
-file=~/scripts/mypresto-restart.sh
+file=~/scripts/mypresto-server.sh
 rm -f ${file}
 cat << \EOF > ${file}
 #!/bin/bash

@@ -36,5 +36,4 @@ ansible newgrp -m shell -a"curl -s https://mirrors.aliyun.com/kubernetes/apt/doc
 ansible newgrp -m copy -a"src=/etc/apt/sources.list.d/kubernetes.list dest=/etc/apt/sources.list.d"
 ansible newgrp -m shell -a"apt-get update"
 ansible newgrp -m shell -a"apt-get install -y kubelet kubeadm kubectl"
-ansible newgrp -m shell -a"kubeadm reset -f"
 ansible newgrp -m shell -a"systemctl enable kubelet"

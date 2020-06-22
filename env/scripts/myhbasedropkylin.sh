@@ -1,6 +1,6 @@
 prefix=$1
 
-file=~/fm/tsdb_hbase2dropkylin.cmd
+file=~/tsdb_hbase2dropkylin.cmd
 rm -f $file
 touch $file
 

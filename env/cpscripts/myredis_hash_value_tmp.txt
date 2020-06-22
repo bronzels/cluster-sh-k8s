@@ -1,1 +1,0 @@
- offset_7 470 offset_4 2177 offset_5 432 offset_0 588 offset_11 633 offset_10 401 offset_8 478 offset_1 448 offset_3 712 offset_9 546 offset_2 553 offset_6 748 ptsize 12

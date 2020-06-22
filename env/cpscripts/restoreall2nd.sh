@@ -1,9 +1,0 @@
-../scripts/hive-clone-tables-in-prefix.sh allbk_h_fans h_fans
-../scripts/hive-clone-tables-in-prefix.sh allbk_h_mt4trades h_mt4trades
-../scripts/hive-clone-tables-in-prefix.sh allbk_h_mt4users h_mt4users
-../scripts/hive-clone-tables-in-prefix.sh allbk_h_useraccount_utm h_useraccount_utm
-#hive-clone-tables-in-prefix.sh h_tree_result_ allbk_h_tree_result_
-#hive-clone-tables-in-prefix.sh s_ allbk_s_
-#hive-clone-tables-in-prefix.sh t_ allbk_t_
-#hive-clone-tables-in-prefix.sh td_ allbk_td_
-#hive-clone-tables-in-prefix.sh u_ allbk_u_
