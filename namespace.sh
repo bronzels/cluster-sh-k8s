@@ -48,7 +48,7 @@ kubectl create namespace servyat
   #opentsdb
 kubectl create namespace dw
   #presto
-kubectl create namespace flow
+kubectl create namespace fl
   #airflow
     #ssh cligw
     #ssh tsdb

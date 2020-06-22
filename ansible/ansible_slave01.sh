@@ -21,5 +21,10 @@ chmod a+x deploy_spark_jars.sh
 rm -rf ~/scripts/
 mkdir ~/scripts/
 
+echo "export PATH=$PATH:$HOME/scripts" >> ~/.bashrc
+#！！！手工，重新登录ubuntu
+
 #把本工程的script目录下（不带目录）所有脚本，解压到root用户的~/scripts/目录
+cd ~/scripts;unzip /tmp/scripts.zip
 #把项目工程的comscript目录下（不带目录）所有脚本，解压到root用户的~/scripts/目录
+cd ~/scripts;unzip /tmp/comscripts.zip

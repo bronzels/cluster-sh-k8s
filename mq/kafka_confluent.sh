@@ -40,8 +40,8 @@ config.storage.topic=connector_config_test_tpc1
 offset.storage.topic=connector_offset_test_tpc1
 status.storage.topic=connector_status_test_tpc1
 
-key.converter.schema.registry.url=http://mysr-host-port
-value.converter.schema.registry.url=http://mysr-host-port
+key.converter.schema.registry.url=http://mysr-schema-registry:8081
+value.converter.schema.registry.url=http://mysr-schema-registry:8081
 
 bootstrap.servers=mybootstrap
 EOF

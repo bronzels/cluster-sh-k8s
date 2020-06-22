@@ -11,6 +11,9 @@ echo "export PATH=$PATH:$HOME/helm" >> ~/.bashrc
 #！！！手工，重新登录ubuntu
 #helm repo add stable https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
 #helm repo add incubator https://aliacs-app-catalog.oss-cn-hangzhou.aliyuncs.com/charts-incubator/
+rm -rf $HOME/.cache/helm
+rm -rf $HOME/.config/helm
+rm -rf $HOME/.local/share/helm
 helm repo add stable https://kubernetes-charts.storage.googleapis.com
 helm repo add incubator https://kubernetes-charts-incubator.storage.googleapis.com/
 helm repo add bitnami https://charts.bitnami.com/bitnami

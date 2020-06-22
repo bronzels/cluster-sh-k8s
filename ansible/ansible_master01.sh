@@ -14,8 +14,13 @@ ansible all -m shell -a"ip addr|grep 10.10."
 rm -rf ~/scripts/
 mkdir ~/scripts/
 
+echo "export PATH=$PATH:$HOME/scripts" >> ~/.bashrc
+#！！！手工，重新登录ubuntu
+
 #把本工程的cpscript目录下（不带目录）所有脚本，解压到ubuntu用户的~/scripts/目录
+cd ~/scripts;unzip /tmp/cpscripts.zip
 #把项目工程的comcpscript目录下（不带目录）所有脚本，解压到ubuntu用户的~/scripts/目录
+cd ~/scripts;unzip /tmp/comcpscripts.zip
 
 #for pika building
 :<<EOF

@@ -40,6 +40,7 @@ sudo ansible slavek8s -m shell -a"ls /dev|grep ceph|xargs -I CNAME  sh -c 'rm -r
 sudo ansible slavek8s -m shell -a"ls /dev|grep ceph"
 :<<EOF
 sudo ansible slavek8s -m shell -a"fdisk -l|grep ceph"
+sudo ansible slavek8s -m shell -a"fdisk -l|grep ceph|xargs -I CNAME  sh -c 'rm -rf /dev/CNAME'"
 sudo ansible slavek8s -m shell -a"fdisk -l|grep ceph"
 sudo ansible slavek8s -m shell -a"ls /dev/mapper|grep ceph"
 sudo ansible slavek8s -m shell -a"ls /dev/mapper|grep ceph|xargs -I CNAME  sh -c 'rm -rf /dev/mapper/CNAME'"
@@ -65,17 +66,17 @@ kubectl create -f dashboard-external-https.yaml
 #kubectl delete -f dashboard-external-https.yaml
 kubectl get service -n rook-ceph|grep rook-ceph-mgr-dashboard-external-https
 #！！！手工，找到service映射的nodeport
-curl https://localhost:31868/#/login
+curl https://localhost:31157/#/login
 #！！！手工，账户admin，密码以下命令生成
 kubectl -n rook-ceph get secret rook-ceph-dashboard-password -o jsonpath='{.data.password}'  |  base64 --decode
-#*.0r=^hhi.N|P[qw^x\\
+#j`9Nvf;r#9|#%WPJ#o-L
 
 kubectl create -f toolbox.yaml
 #kubectl delete -f toolbox.yaml
 kubectl -n rook-ceph get pod -l "app=rook-ceph-tools" -o wide | grep rook-ceph-tools | awk '{print $1}'
 #kubectl -n rook-ceph get pod -l "app=rook-ceph-tools" -o wide | grep rook-ceph-tools | awk '{print $1}' | xargs -n1 -i{} kubectl -n rook-ceph exec -it {} bash
 #！！！手工，copy pod名字到以下命令
-kubectl -n rook-ceph exec -it rook-ceph-tools-67788f4dd7-nn2bh -- bash
+kubectl -n rook-ceph exec -it rook-ceph-tools-67788f4dd7-nn8d9 -- bash
   #ceph status
   #ceph df
   #ceph osd status

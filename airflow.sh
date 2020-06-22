@@ -14,6 +14,6 @@ tar xzvf ~/tmp/k8sdeploy.tar.gz
 cp ~/k8sdeploy_dir/dags/* dags/
 cp ~/k8sdeploy_dir/requirements.txt requirements/dags.txt
 
-kubectl delete -f airflow.all.yaml -n flow
+kubectl delete -f airflow.all.yaml -n fl
 
-kubectl create -f airflow.all.yaml -n flow
+kubectl create -f airflow.all.yaml -n fl
