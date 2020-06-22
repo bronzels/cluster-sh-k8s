@@ -3,8 +3,8 @@ ansible all -m shell -a"cat /etc/issue"
 ansible all -m shell -a"uname -r"
 ansible all -m shell -a"free -g"
 
-ansible hk-prod-bigdata-master-14-114,hk-prod-bigdata-slave-0-234,hk-prod-bigdata-slave-10-34,hk-prod-bigdata-slave-3-3,hk-prod-bigdata-slave-5-226 -m shell -a"cp /etc/hosts /etc/hosts.bk"
-ansible hk-prod-bigdata-master-14-114,hk-prod-bigdata-slave-0-234,hk-prod-bigdata-slave-10-34,hk-prod-bigdata-slave-3-3,hk-prod-bigdata-slave-5-226 -m copy -a"src=/etc/hosts dest=/etc"
+ansible hk-prod-bigdata-master-14-114,hk-prod-bigdata-slave-0-234,hk-prod-bigdata-slave-10-34,hk-prod-bigdata-slave-3-233,hk-prod-bigdata-slave-5-226 -m shell -a"cp /etc/hosts /etc/hosts.bk"
+ansible hk-prod-bigdata-master-14-114,hk-prod-bigdata-slave-0-234,hk-prod-bigdata-slave-10-34,hk-prod-bigdata-slave-3-233,hk-prod-bigdata-slave-5-226 -m copy -a"src=/etc/hosts dest=/etc"
 
 ansible all -m shell -a"cat /etc/hosts"
 ansible all -m shell -a"ip addr|grep 10.10."
