@@ -49,19 +49,19 @@ sed -i 's@imagePullPolicy: IfNotPresent@imagePullPolicy: Always@g' ${file}
 docker build -f ~/pika/Dockerfile.client -t master01:30500/bronzels/flink:0.1 ./
 docker push master01:30500/bronzels/flink:0.1
 
-FLINKNS=flk
+FLINKNS=str
 
 cd ~/flinkdeploy
 file=~/scripts/myflink-cp-op.sh
 cat << EOF > ${file}
 if [ $op == "stop" ]; then
-  kubectl delete -f ${MYHOME}/yaml/
-  wait_pod_deleted "$FLINKNS" "flink-jobmanager" 300
+  kubectl delete -n $FLINKNS -f ${MYHOME}/yaml/
+  wait_pod_deleted -n "$FLINKNS" "flink-jobmanager" 300
   wait_pod_deleted "$FLINKNS" "flink-taskmanager" 300
 fi
 
 if [ $op == "start" ]; then
-  kubectl apply -f ${MYHOME}/yaml/
+  kubectl apply -n $FLINKNS -f ${MYHOME}/yaml/
   wait_pod_running "$FLINKNS" "flink-jobmanager" 300
   wait_pod_running "$FLINKNS" "flink-taskmanager" 300
 fi
