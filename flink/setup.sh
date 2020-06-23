@@ -2,9 +2,10 @@ cd ~
 
 MYHOME=$HOME/flinkdeploy
 rm -rf ${MYHOME}
-mkdir -rf ${MYHOME}
+mkdir ${MYHOME}
 
 cp ~/k8sdeploy_dir/str_jar ${MYHOME}
+cp ~/scripts/startfmstrall.sh ${MYHOME}/str_jar
 
 cd ${MYHOME}
 
@@ -15,6 +16,9 @@ tar xvf flink-${rev}-bin-scala_2.11.tgz
 
 file=${rev}/conf/flink-conf.yaml
 sed -i 's@jobmanager.rpc.address: localhost@jobmanager.rpc.address: flink-jm-rpc-service@g' ${file}
+sed -i 's@jobmanager.heap.size: 1024m@jobmanager.heap.size: 24576m@g' ${file}
+sed -i 's@taskmanager.memory.process.size: 1728m@taskmanager.memory.process.size: 40960m@g' ${file}
+sed -i 's@taskmanager.numberOfTaskSlots: 1@taskmanager.numberOfTaskSlots: 8@g' ${file}
 
 file=flink/conf/log4j.properties
 cp ${file} ${file}.bk
