@@ -73,7 +73,7 @@ docker images|grep "<none>"|awk '{print $3}'|xargs docker rmi -f
 
 docker images|grep pika_codis
 docker images|grep pika_codis|awk '{print $3}'|xargs docker rmi -f
-ansible slave -m shell -a"docker images|grep pika_codis|awk '{print \$3}'|xargs docker rmi -f"
+ansible slavek8s -i /etc/ansible/hosts-ubuntu -m shell -a"docker images|grep pika_codis|awk '{print \$3}'|xargs docker rmi -f"
 docker images|grep pika_codis
 
 #ENTRYPOINT ["/pika/entrypoint.sh"]
@@ -152,69 +152,96 @@ sed -i 's@kubectl scale@kubectl scale -n \${codisns}@g' ${file}
 EOF
 
 file=mycodis_cp_op.sh
-cat ~/scripts/k8s_funcs.sh > ${file}
-cat << \EOF >> ${file}
+~/scripts/k8s_funcs.sh
+cat << \EOF > ${file}
+#!/bin/bash
+
+set -e
 
 op=$1
 codisns=$2
+
+function mycodis_cp_op_stop(){
+  kubectl delete -n ${codisns} -f .
+  wait_pod_deleted "${codisns}" "codis-dashboard" 300
+  wait_pod_deleted "${codisns}" "codis-fe" 300
+  wait_pod_deleted "${codisns}" "codis-ha" 300
+  wait_pod_deleted "${codisns}" "codis-ha" 300
+  wait_pod_deleted "${codisns}" "codis-proxy" 300
+  wait_pod_deleted "${codisns}" "codis-server" 300
+  kubectl delete -n ${codisns} -f zookeeper/
+  wait_pod_deleted "${codisns}" "zk" 300
+  #wait_pod_deleted "${codisns}" "" 300
+}
+
+function mycodis_cp_op_deletepvc(){
+  kubectl get pvc -n ${codisns} | grep codis-server | awk '{print $1}' | xargs kubectl -n ${codisns} delete pvc
+}
+
+function mycodis_cp_op_start(){
+  echo "start create zookeeper cluster"
+  kubectl create -n ${codisns} -f zookeeper/zookeeper-service.yaml
+  kubectl create -n ${codisns} -f zookeeper/zookeeper.yaml
+  #while [ $(kubectl get pods -n ${codisns} -l app=zk |grep Running |wc -l) != 3 ]; do sleep 1; done;
+  wait_pod_running "${codisns}" "zk" 3 600
+  echo "finish create zookeeper cluster"
+
+  kubectl create -n ${codisns} -f codis-service.yaml
+  kubectl create -n ${codisns} -f codis-dashboard.yaml
+  #while [ $(kubectl get pods -n ${codisns} -l app=codis-dashboard |grep Running |wc -l) != 1 ]; do sleep 1; done;
+  wait_pod_running "${codisns}" "codis-dashboard" 1 600
+  kubectl create -n ${codisns} -f codis-proxy.yaml
+  kubectl create -n ${codisns} -f codis-server.yaml
+  servers=$(grep "replicas" codis-server.yaml |awk  '{print $2}')
+  #while [ $(kubectl get pods -n ${codisns} -l app=codis-server |grep Running |wc -l) != $servers ]; do sleep 1; done;
+  wait_pod_running "${codisns}" "codis-server" $servers 600
+  kubectl exec -n ${codisns} -it codis-server-0 -- codis-admin  --dashboard=codis-dashboard:18080 --rebalance --confirm
+  kubectl create -n ${codisns} -f codis-ha.yaml
+  kubectl create -n ${codisns} -f codis-fe.yaml
+  sleep 60
+  sleep 60
+  kubectl exec -n ${codisns} -it codis-dashboard-0 -- redis-cli -h codis-proxy -p 19000 PING
+  if [ $? != 0 ]; then
+      echo "buildup codis cluster with problems, plz check it!!"
+  fi
+}
 
 product_name="codis-test"
 #product_auth="auth"
 case "$op" in
 
-### 清理原来codis遗留数据
+### 停止codis集群
 "stop")
-    kubectl delete -n ${codisns} -f .
-    wait_pod_deleted "${codisns}" "codis-dashboard" 300
-    wait_pod_deleted "${codisns}" "codis-fe" 300
-    wait_pod_deleted "${codisns}" "codis-ha" 300
-    wait_pod_deleted "${codisns}" "codis-ha" 300
-    wait_pod_deleted "${codisns}" "codis-proxy" 300
-    wait_pod_deleted "${codisns}" "codis-server" 300
-    kubectl delete -n ${codisns} -f zookeeper/
-    wait_pod_deleted "${codisns}" "zk" 300
-    #wait_pod_deleted "${codisns}" "" 300
+    mycodis_cp_op_stop
+
+    ;;
+
+### 停止codis集群，并且清理原来codis遗留数据
+"clean")
+    mycodis_cp_op_stop
+    mycodis_cp_op_deletepvc
 
     ;;
 
 ### 创建新的codis集群
-"start" | "restart")
-    kubectl delete -n ${codisns} -f .
-    wait_pod_deleted "${codisns}" "codis-dashboard" 300
-    wait_pod_deleted "${codisns}" "codis-fe" 300
-    wait_pod_deleted "${codisns}" "codis-ha" 300
-    wait_pod_deleted "${codisns}" "codis-ha" 300
-    wait_pod_deleted "${codisns}" "codis-proxy" 300
-    wait_pod_deleted "${codisns}" "codis-server" 300
-    kubectl delete -n ${codisns} -f zookeeper/
-    wait_pod_deleted "${codisns}" "zk" 300
-    #wait_pod_deleted "${codisns}" "" 300
+"startnew")
+    mycodis_cp_op_stop
+    mycodis_cp_op_deletepvc
+    mycodis_cp_op_start
 
-    echo "start create zookeeper cluster"
-    kubectl create -n ${codisns} -f zookeeper/zookeeper-service.yaml
-    kubectl create -n ${codisns} -f zookeeper/zookeeper.yaml
-    #while [ $(kubectl get pods -n ${codisns} -l app=zk |grep Running |wc -l) != 3 ]; do sleep 1; done;
-    wait_pod_running "${codisns}" "zk" 3 600
-    echo "finish create zookeeper cluster"
+    ;;
 
-    kubectl create -n ${codisns} -f codis-service.yaml
-    kubectl create -n ${codisns} -f codis-dashboard.yaml
-    #while [ $(kubectl get pods -n ${codisns} -l app=codis-dashboard |grep Running |wc -l) != 1 ]; do sleep 1; done;
-    wait_pod_running "${codisns}" "codis-dashboard" 1 600
-    kubectl create -n ${codisns} -f codis-proxy.yaml
-    kubectl create -n ${codisns} -f codis-server.yaml
-    servers=$(grep "replicas" codis-server.yaml |awk  '{print $2}')
-    #while [ $(kubectl get pods -n ${codisns} -l app=codis-server |grep Running |wc -l) != $servers ]; do sleep 1; done;
-    wait_pod_running "${codisns}" "codis-server" $servers 600
-    kubectl exec -n ${codisns} -it codis-server-0 -- codis-admin  --dashboard=codis-dashboard:18080 --rebalance --confirm
-    kubectl create -n ${codisns} -f codis-ha.yaml
-    kubectl create -n ${codisns} -f codis-fe.yaml
-    sleep 60
-    sleep 60
-    kubectl exec -n ${codisns} -it codis-dashboard-0 -- redis-cli -h codis-proxy -p 19000 PING
-    if [ $? != 0 ]; then
-        echo "buildup codis cluster with problems, plz check it!!"
-    fi
+### 启动codis集群
+"start")
+    mycodis_cp_op_start
+
+    ;;
+
+### 重启codis集群
+"restart")
+    mycodis_cp_op_stop
+    mycodis_cp_op_start
+
     ;;
 
 ### 扩容／缩容 codis proxy

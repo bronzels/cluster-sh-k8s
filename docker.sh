@@ -14,17 +14,33 @@ ansible allk8s -m shell -a"curl -fsSL https://get.docker.com | bash -s docker --
 #19.03.8
 ansible allk8s -m shell -a"docker --version"
 ansible allk8s -m shell -a"systemctl enable docker.service"
+
 #root
+:<<EOF
+  "dns": ["8.8.8.8", "114.114.114.114"]
+  "dns": ["8.8.8.8", "8.8.4.4"]
+  "iptables": false,
+关闭iptables会导致build image在apt-get update是失败，提示Could not resolve 'archive.ubuntu.com'
+最初关闭iptables，是因为据说：数据包经过路由后，假如不是发往本机的流量，下一步会走iptables的FORWARD链，而docker从1.13版本开始，将FORWARD链的默认策略设置为DROP，会导致出现一些例如跨主机的两个pod使用podIP互访失败等问题。
+设置docker启动参数添加--iptables=false选项，使docker不再操作iptabl。
+EOF
 cat << EOF > /etc/docker/daemon.json
 {
   "exec-opts": ["native.cgroupdriver=systemd"],
-  "iptables": false,
-  "insecure-registries":["master01:30500"],
-  "dns": ["8.8.8.8", "114.114.114.114"]
+  "insecure-registries":["master01:30500"]
 }
 EOF
 ansible allk8sexpcp -m copy -a"src=/etc/docker/daemon.json dest=/etc/docker"
 ansible allk8s -m shell -a"cat /etc/docker/daemon.json"
+
+:<<EOF
+file=/etc/default/docker
+cp ${file} ${file}.bk
+sed -i 's@#DOCKER_OPTS=\"--dns 8.8.8.8 --dns 8.8.4.4\"@DOCKER_OPTS=\"--dns 8.8.8.8 --dns 8.8.4.4\"@g' ${file}
+ansible allk8sexpcp -m copy -a"src=/etc/default/docker dest=/etc/default"
+ansible allk8s -m shell -a"cat /etc/default/docker"
+EOF
+
 ansible allk8s -m shell -a"systemctl daemon-reload"
 ansible allk8s -m shell -a"systemctl restart docker"
 

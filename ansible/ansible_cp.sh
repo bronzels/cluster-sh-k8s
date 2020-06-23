@@ -196,6 +196,7 @@ ansible-playbook -i /etc/ansible/hosts-ubuntu ~/ssh-addkey.yml
 #root
 sed -i 's@ ansible_ssh_pass=root@@g' /etc/ansible/hosts
 sed -i 's@ ansible_ssh_pass=ubuntu@@g' /etc/ansible/hosts-ubuntu
+
 sudo apt install -y unzip zip tar make
 
 #root

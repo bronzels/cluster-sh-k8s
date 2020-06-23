@@ -17,9 +17,9 @@ mkdir ~/scripts/
 echo "export PATH=$PATH:$HOME/scripts" >> ~/.bashrc
 #！！！手工，重新登录ubuntu
 
-#把本工程的cpscript目录下（不带目录）所有脚本，解压到ubuntu用户的~/scripts/目录
+#把本工程的env/cpscript目录下（不带目录）所有脚本，解压到ubuntu用户的~/scripts/目录
 cd ~/scripts;unzip /tmp/cpscripts.zip
-#把项目工程的comcpscript目录下（不带目录）所有脚本，解压到ubuntu用户的~/scripts/目录
+#把项目工程的env-k8s/comcpscript目录下（不带目录）所有脚本，解压到ubuntu用户的~/scripts/目录
 cd ~/scripts;unzip /tmp/comcpscripts.zip
 
 #for pika building
@@ -64,6 +64,19 @@ EOF
 mkdir ~/tmp
 cp /tmp/confluent-5.3.2.zip ~/tmp
 
+#apt-get install -y openjdk-8-jdk
+cd ~
+#rev=251
+#rev=171
+rev=241
+cp /tmp/jdk-8u${rev}-linux-x64.tar.gz ~/tmp
+tar xzvf ~/tmp/jdk-8u${rev}-linux-x64.tar.gz
+rm -f jdk
+ln -s jdk1.8.0_${rev} jdk
+echo "export JAVA_HOME=$HOME/jdk" >> ~/.bashrc
+echo "export PATH=$PATH:$HOME/jdk/bin" >> ~/.bashrc
+java -version
+#！！！手工，重新登录ubuntu
 
 
 

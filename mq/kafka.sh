@@ -15,6 +15,7 @@ kubectl get pvc -n mqstr
 
 
 kubectl -n default run test-zookeeper-mqstr -ti --image=zookeeper:3.5.5 --rm=true --restart=Never -- zkCli.sh -server mykafka-zookeeper.mqstr:2181 ls /
+kubectl -n default run test-zookeeper-mqstr -ti --image=zookeeper:3.5.5 --rm=true --restart=Never -- zkCli.sh -server mykafka-zookeeper-0.mykafka-zookeeper-headless.mqstr:2181,mykafka-zookeeper-1.mykafka-zookeeper-headless.mqstr:2181,mykafka-zookeeper-2.mykafka-zookeeper-headless.mqstr:2181 ls /
 
 kubectl -n default run test-kafka-producer-mqstr -ti --image=strimzi/kafka:0.18.0-kafka-2.5.0 --rm=true --restart=Never -- bin/kafka-console-producer.sh --broker-list mykafka.mqstr:9092 --topic test
 kubectl -n default run test-kafka-consumer-mqstr -ti --image=strimzi/kafka:0.18.0-kafka-2.5.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server mykafka.mqstr:9092 --topic test

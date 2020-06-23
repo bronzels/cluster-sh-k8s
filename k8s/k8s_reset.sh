@@ -1,13 +1,15 @@
 #！！！手工，reset之前
-# 一定要卸载rook-ceph，并在执行以下命令前后
-#sudo ansible slavek8s -m shell -a"dmsetup remove_all"
-#sudo ansible slavek8s -m shell -a"wipefs /dev/nvme1n1"
-#sudo ansible slavek8s -m shell -a"sgdisk  --zap-all /dev/nvme1n1"
+:<<EOF
+#一定要卸载rook-ceph，并在执行以下命令前后
+sudo ansible slavek8s -m shell -a"dmsetup remove_all"
+sudo ansible slavek8s -m shell -a"wipefs /dev/nvme1n1"
+sudo ansible slavek8s -m shell -a"sgdisk  --zap-all /dev/nvme1n1"
 #用以下命令检查是否还有残余ceph mount/dev
-#sudo ansible slavek8s -m shell -a"mount|grep ceph"
-#sudo ansible slavek8s -m shell -a"ls /dev|grep ceph"
-#sudo ansible slavek8s -m shell -a"fdisk -l|grep ceph"
-#sudo ansible slavek8s -m shell -a"ls /dev/mapper|grep ceph"
+sudo ansible slavek8s -m shell -a"mount|grep ceph"
+sudo ansible slavek8s -m shell -a"ls /dev|grep ceph"
+sudo ansible slavek8s -m shell -a"fdisk -l|grep ceph"
+sudo ansible slavek8s -m shell -a"ls /dev/mapper|grep ceph"
+EOF
 
 #！！！手工，reset
 # 重新执行k8s/k8s.sh自

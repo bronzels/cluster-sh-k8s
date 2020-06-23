@@ -1,8 +1,10 @@
-#!/bin/sh
+#!/bin/bash
 # Small script to setup the HBase tables used by OpenTSDB.
 
-table_prefix=$1
+op=$1
+table_prefix=$2
 
+:<<EOF
 test -n "$HBASE_HOME" || {
   echo >&2 'The environment variable HBASE_HOME must be set'
   exit 1
@@ -11,6 +13,7 @@ test -d "$HBASE_HOME" || {
   echo >&2 "No such directory: HBASE_HOME=$HBASE_HOME"
   exit 1
 }
+EOF
 
 TSDB_TABLE=${TSDB_TABLE-"tsdb${table_prefix}"}
 UID_TABLE=${UID_TABLE-"tsdb-uid${table_prefix}"}
@@ -45,27 +48,40 @@ esac
 # HBase scripts also use a variable named `HBASE_HOME', and having this
 # variable in the environment with a value somewhat different from what
 # they expect can confuse them in some cases.  So rename the variable.
+:<<EOF
 hbh=$HBASE_HOME
 unset HBASE_HOME
 exec "$hbh/bin/hbase" shell <<EOF
+EOF
+exec hbase shell <<EOF
 disable '$UID_TABLE'
 drop '$UID_TABLE'
+
+disable '$TSDB_TABLE'
+drop '$TSDB_TABLE'
+
+disable '$TREE_TABLE'
+drop '$TREE_TABLE'
+
+disable '$META_TABLE'
+drop '$META_TABLE'
+EOF
+
+if [ $op == "drop" ]; then
+  exit 0
+fi
+
+exec hbase shell <<EOF
 create '$UID_TABLE',
 {NAME => 'id', COMPRESSION => '$COMPRESSION', BLOOMFILTER => '$BLOOMFILTER', DATA_BLOCK_ENCODING => '$DATA_BLOCK_ENCODING'},
 {NAME => 'name', COMPRESSION => '$COMPRESSION', BLOOMFILTER => '$BLOOMFILTER', DATA_BLOCK_ENCODING => '$DATA_BLOCK_ENCODING'}, SPLITS => ['\x00\xea\x60','\x01\xd4\xc0','\x02\xbf\x20','\x03\xa9\x80']
 
-disable '$TSDB_TABLE'
-drop '$TSDB_TABLE'
 create '$TSDB_TABLE',
   {NAME => 't', VERSIONS => 1, COMPRESSION => '$COMPRESSION', BLOOMFILTER => '$BLOOMFILTER', DATA_BLOCK_ENCODING => '$DATA_BLOCK_ENCODING', TTL => '$TSDB_TTL'}, SPLITS => ['\x00\x5b\x25','\x01\x11\x6f','\x01\xc7\xb9','\x02\x7e\x03','\x03\x34\x4d','\x03\x8f\x72','\x04\x45\xbc','\x04\xa0\xe1','\x05\x57\x2b','\x05\xb2\x50','\x06\x0d\x75','\x06\xc3\xbf','\x07\x1e\xe4','\x07\x7a\x09','\x07\xd5\x2e','\x08\x30\x53','\x08\xe6\x9d','\x09\x41\xc2','\x09\xf8\x0c','\x0A\xC5s\xEFZ\xBBL','\x0C\x17\x10\xD5\x5Cp','\x0Di\x91\xD6Z\xF4_','\x0E\xB0\xC0\x0F]\xFA\xDA','\x10\x01Z*[\xBBG','\x11T\x0E-Z\xCE','\x12\xA8\xD2VX\xCB','x0aS1']
 
-disable '$TREE_TABLE'
-drop '$TREE_TABLE'
 create '$TREE_TABLE',
 {NAME => 't', VERSIONS => 1, COMPRESSION => '$COMPRESSION', BLOOMFILTER => '$BLOOMFILTER', DATA_BLOCK_ENCODING => '$DATA_BLOCK_ENCODING'}
 
-disable '$META_TABLE'
-drop '$META_TABLE'
 create '$META_TABLE',
 {NAME => 'name', COMPRESSION => '$COMPRESSION', BLOOMFILTER => '$BLOOMFILTER', DATA_BLOCK_ENCODING => '$DATA_BLOCK_ENCODING'}
 EOF

@@ -33,12 +33,13 @@ ansible allk8s -m shell -a"apt-get update"
 ansible allk8s -m shell -a"apt-get install -y kubelet kubeadm kubectl"
 
 #root
+ansible allk8s -m shell -a"kubeadm reset -f"
+
+ansible allk8s -m shell -a"ipvsadm --clear"
+
 ansible allk8s -m shell -a"rm -rf /root/.kube"
 ansible allk8s -m shell -a"rm -rf /etc/kubernetes/*"
 ansible allk8s -m shell -a"rm -rf /home/ubuntu/.kube"
-
-ansible allk8s -m shell -a"kubeadm reset -f"
-ansible allk8s -m shell -a"ipvsadm --clear"
 
 ansible allk8s -m shell -a"systemctl enable kubelet"
 
@@ -144,6 +145,7 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 #kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 wget -c https://docs.projectcalico.org/v3.9/manifests/calico.yaml
 kubectl apply -f calico.yaml
+#kubectl delete -f calico.yaml
 
 #ubuntu
 file=~/scripts/k8s_funcs.sh

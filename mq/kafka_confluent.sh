@@ -162,8 +162,9 @@ EOF
 
 file=~/scripts/myconnector-cp-op.sh
 rm -f ${file}
-cat ~/scripts/k8s_funcs.sh > ${file}
-cat << \EOF >> ${file}
+~/scripts/k8s_funcs.sh
+cat << \EOF > ${file}
+#!/bin/bash
 
 op=$1
 echo "op:${op}"
@@ -231,7 +232,7 @@ else
 fi
 
 if [ $op == "stop" ]; then
-  exit(0)
+  exit 0
 fi
 
 podnsname4topic=${podnsname//-/_}

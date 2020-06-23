@@ -56,7 +56,7 @@ docker images|grep ubu16ssh
 cat << \EOF > Dockerfile.ubu16ssh
 FROM ubuntu:16.04
 
-COPY ./source.list /etc/apt
+COPY ./sources.list /etc/apt
 RUN apt-get update
 RUN apt-get install -y openssh-server
 RUN sed -i 's@PermitRootLogin prohibit-password@PermitRootLogin yes@g' /etc/ssh/sshd_config

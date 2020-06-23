@@ -59,7 +59,7 @@ EOF
           configMap:
             name: {{ template "presto.worker" . }}
 EOF
-file=deployment-worker.yaml
+file=templates/deployment-worker.yaml
 sed -i '/      containers:/i\        - name: catalog-volume\n          configMap:\n            name: {{ template \"presto.catalog\" . }}' ${file}
 :<<EOF
             - mountPath: {{ .Values.server.config.path }}
@@ -67,7 +67,7 @@ sed -i '/      containers:/i\        - name: catalog-volume\n          configMap
 EOF
 sed -i '/          livenessProbe:/i\            - mountPath: {{ .Values.server.catalog.path }}\n              name: catalog-volume' ${file}
 
-file=deployment-coordinator.yaml
+file=templates/deployment-coordinator.yaml
 sed -i '/      containers:/i\        - name: catalog-volume\n          configMap:\n            name: {{ template \"presto.catalog\" . }}' ${file}
 :<<EOF
             - mountPath: {{ .Values.server.config.path }}
@@ -75,7 +75,10 @@ sed -i '/      containers:/i\        - name: catalog-volume\n          configMap
 EOF
 sed -i '/          ports:/i\            - mountPath: {{ .Values.server.catalog.path }}\n              name: catalog-volume' ${file}
 
-file=~/scripts/mypresto-server.sh
+file=templates/service.yaml
+sed -i '/      name: http-coord/i\      nodePort: 30080' ${file}
+
+file=~/scripts/myprestoserver-cp-op.sh
 rm -f ${file}
 cat << \EOF > ${file}
 #!/bin/bash

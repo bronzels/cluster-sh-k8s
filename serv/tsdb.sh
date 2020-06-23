@@ -40,7 +40,7 @@ env:
     # UID_TABLE: tsdb-uid'
 EOF
 
-file=~/scripts/myopentsdb-restart.sh
+file=~/scripts/myopentsdb-cp-restart.sh
 rm -f ${file}
 cat ~/scripts/k8s_funcs.sh > ${file}
 cat << \EOF >> ${file}

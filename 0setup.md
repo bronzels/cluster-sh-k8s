@@ -4,7 +4,11 @@
 
 #####1，新加入集群的每台机器，要求统一操作系统/内核版本，预装Ubuntu 18.04.3，内核4.15.0。
 
-#####2，每台新加入集群机器，设置用户/口令，设置sshd，每台服务器root用户下，单独执行manual_each.sh
+#####2，每台新加入集群机器
+    设置用户/口令，每台服务器root用户下，
+        设置sshd，单独执行manual/each.sh；
+        如果是cdh集群的slaves，分区格式化和挂载数据盘，单独执行manual/slaves.sh；
+        如果是aws hbase/tsdb集群，只需要设置master，单独执行manual/hbasetsdb_master.sh
 
 #####3，新建k8s/cdh两个集群ansible操作环境，
     在同时用作操作平面的slave01的服务器上，设置ansible环境，执行
@@ -27,7 +31,7 @@
             给集群设置slaves加入集群，执行k8s/k8s_slaves.sh
     给集群设置helm/docker repo，测试新开发dockerfile能正确启动pod/svc，执行k8s/k8s_helm_registry.sh
     给集群安装k8s dashboard，，执行k8s/k8s_dash.sh
-    如果后续集群软件安装错误无法恢复，停止卸载k8s，删除所有容器，执行k8s/k8s_remove.sh
+    如果后续集群软件安装错误无法恢复，执行k8s/k8s_reset.sh
 
 #####5，安装配置cdh环境
     ！！！一定要装好k8s以后再安装cdh，因为cdh依赖docker启动mysql，但是k8s网络安装期间docker会退出甚至严重会无法再启动
@@ -74,7 +78,7 @@
         被airflow ssh后从控制平面调用的connector ns/pod/svc创建和启动脚本。
     provisioning pvc包括2组各3个kafka-server，每个256G
 
-#####13，创建用作流处理cube数据聚合缓存的codis/pika集群，执行codis.sh
+#####13，创建用作流处理cube数据聚合缓存的codis/pika集群，执行serv/codis.sh
     被airflow ssh后从控制平面调用的codis/pika集群在serv/servyat命名空间删除/创建的脚本。执行serv/codis_pika.sh。
     svc包括：
         codis-proxy
@@ -85,16 +89,14 @@
 
 #####15，flink基于k8s安装，执行flink.sh。
 
-#####16，定制租用aws hbase集群，执行aws_hbase.sh
-    创建hbase/zookeeper环境设置供后续tsdb安装配置使用。
-    移植drop的脚本到aws环境
+#####16，创建用作流处理历史聚合快照保存opentsdb集群
+    定制租用aws hbase集群，创建hbase/zookeeper环境设置供后续tsdb安装配置使用，执行serv/tsdb_awshbase.sh
+    执行serv/tsdb.sh    
+        定制修改helm，创建指向aws hbase集群hbase-site.xml的configMap，配置aws zk
+        移植被airflow ssh后从控制平面调用的 hbase/tsdb 库创建脚本到从serv/servyat命名空间heml删除/创建。
+        移植被airflow调用happybase调用的 hbase/tsdb snap/drop happybase程序到aws
 
-#####17，创建用作流处理历史聚合快照保存opentsdb集群，执行tsdb.sh
-    定制修改helm，创建指向aws hbase集群hbase-site.xml的configMap，配置aws zk
-    移植被airflow ssh后从控制平面调用的 hbase/tsdb 库创建脚本到从serv/servyat命名空间heml删除/创建。
-    移植被airflow调用happybase调用的 hbase/tsdb snap/drop happybase程序到aws
-
-#####18，创建用作新版本发布工作流集群，执行airflow.sh
+#####17，创建用作新版本发布工作流集群，执行airflow.sh
     修改批/流处理的consul入口
     建立批/流处理的新consul入口
     建立批/流处理的新consul配置，全部用dns.ns的方式代替原来的ip，端口用svc的端口代替

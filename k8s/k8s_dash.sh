@@ -2,6 +2,7 @@ cd
 
 #wget -c https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta8/aio/deploy/recommended.yaml
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta8/aio/deploy/recommended.yaml
+#kubectl delete -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta8/aio/deploy/recommended.yaml
 
 #refer to https://www.e-learn.cn/content/qita/2653907
 kubectl -n kubernetes-dashboard edit service kubernetes-dashboard
