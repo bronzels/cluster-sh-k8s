@@ -49,16 +49,31 @@ deb http://mirrors.aliyun.com/ubuntu/ xenial-security universe
 deb http://mirrors.aliyun.com/ubuntu/ xenial-security multiverse
 EOF
 
-#for codis building
 :<<EOF
+#for flink-on-k8s building
+sudo apt-get install -y build-essential
+
+opsys=linux  # or darwin, or windows
+curl -s https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest |\
+grep browser_download |\
+grep $opsys |\
+cut -d '"' -f 4 |\
+xargs curl -O -L
+tar xzvf kustomize_v3.6.1_linux_amd64.tar.gz
+chmod u+x kustomize
+mv kustomize ~/scripts
+
+rev=1.14.4
+EOF
 rev=1.12.9
 wget -c https://dl.google.com/go/go${rev}.linux-amd64.tar.gz
+rm -rf go
 tar -C ~ -xzf ~/go${rev}.linux-amd64.tar.gz
 echo "export PATH=$PATH:$HOME/go/bin" >> ~/.bashrc
+rm -rf ~/gopath
 mkdir ~/gopath
 echo "export GOPATH=$HOME/gopath" >> ~/.bashrc
 sudo apt-get install -y autoconf
-EOF
 
 #ubuntu
 mkdir ~/tmp

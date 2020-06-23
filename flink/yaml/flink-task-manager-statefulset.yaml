@@ -1,0 +1,42 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: flink-taskmanager
+  labels:
+    app: flink
+    role: taskmanager
+spec:
+  serviceName: flink-taskmanager
+  replicas: 4
+  template:
+    metadata:
+      labels:
+        app: flink
+        role: taskmanager
+      annotations:
+        scheduler.alpha.kubernetes.io/affinity: >
+            {
+              "podAntiAffinity": {
+                "preferredDuringSchedulingIgnoredDuringExecution": [{
+                  "weight":100,
+                  "labelSelector": {
+                    "matchExpressions": [{
+                      "key": "role",
+                      "operator": "In",
+                      "values": ["taskmanager"]
+                    }]
+                  },
+                  "topologyKey": "kubernetes.io/hostname"
+                }]
+              }
+            }
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: flink-taskmanager
+        image: master01:30500/bronzels/flink:0.1
+        imagePullPolicy: IfNotPresent
+        args: ["taskmanager"]
+        ports:
+        - name: web-port
+          containerPort: 8081

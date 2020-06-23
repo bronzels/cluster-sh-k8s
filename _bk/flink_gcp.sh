@@ -12,13 +12,10 @@ folder=~/flink-on-k8s-operator/config/samples
 cp -r ${folder} ${folder}.bk
 cd ${folder}
 
-file=flinkoperator_v1beta1_flinksessioncluster.yaml
-sed -i 's@name: flink:1.8.2@name: flink:1.9.0@g' ${file}
-
 kubectl create clusterrolebinding flink-operator-role --clusterrole=cluster-admin --serviceaccount=flink-operator-system:default
 #kubectl delete clusterrolebinding flink-operator-role
 
-helm install myflkop flink-operator-repo/flink-operator --set operatorImage.name=gcr.io/flink-operator/flink-operator
+#helm install myflkop flink-operator-repo/flink-operator --set operatorImage.name=gcr.io/flink-operator/flink-operator
 #helm delete myflkop
 #After deploying the operator, you can verify CRD flinkclusters.flinkoperator.k8s.io has been created:
 kubectl get crds | grep flinkclusters.flinkoperator.k8s.io
@@ -50,6 +47,7 @@ EOF
 
 file=flinkoperator_v1beta1_flinksessioncluster.yaml
 cp ~/flink-on-k8s-operator/config/samples.bk/${file} ${file}
+sed -i 's@name: flink:1.8.2@name: flink:1.9.0@g' ${file}
 sed -i '/    taskmanager.numberOfTaskSlots: "1"/i\    taskmanager.memory.process.size: "4096m"' ${file}
 sed -i 's@    taskmanager.numberOfTaskSlots: "1"@    taskmanager.numberOfTaskSlots: "4"@g' ${file}
 

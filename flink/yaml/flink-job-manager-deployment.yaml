@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flink-jobmanager
+  labels:
+    app: flink
+    role: jobmanager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flink
+      role: jobmanager
+  template:
+    metadata:
+      labels:
+        app: flink
+        role: jobmanager
+    spec:
+      containers:
+      - name: flink-jobmanager
+        image: master01:30500/bronzels/flink:0.1
+        imagePullPolicy: IfNotPresent
+        args: ["jobmanager"]
+        ports:
+        - name: web-port
+          containerPort: 8081
