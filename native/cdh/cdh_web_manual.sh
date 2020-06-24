@@ -25,7 +25,7 @@
     <weight>1.0</weight>
        <maxRunningApps>7</maxRunningApps>
        <minResources>6144 mb, 3 vcores</minResources>
-       <maxResources>204800 mb, 21 vcores</maxResources>
+       <maxResources>204800 mb, 36 vcores</maxResources>
     </queue>
     <queue name="other">
     <minSharePreemptionTimeout>300</minSharePreemptionTimeout>
