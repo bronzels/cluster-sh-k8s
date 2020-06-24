@@ -1,5 +1,5 @@
 #root
-
+cd
 #添加cloudera仓库
 ansible allcdh -m shell -a"curl -s https://archive.cloudera.com/cm6/6.3.1/ubuntu1604/apt/archive.key | apt-key add -"
 wget https://archive.cloudera.com/cm6/6.3.1/ubuntu1804/apt/cloudera-manager.list
@@ -32,5 +32,4 @@ ansible allcdh -m copy -a"src=CDH-6.3.2-1.cdh6.3.2.p0.1605554-bionic.parcel.sha 
 ansible allcdh -m copy -a"src=manifest.json dest=/opt/cloudera/parcel-repo"
 ansible allcdh -m shell -a"ls -l /opt/cloudera/parcel-repo"
 
-ansible allcdh -m shell -a"apt-get install -yq cloudera-manager-daemons cloudera-manager-agent cloudera-manager-server"
-
+#！！！手工，重新登录root

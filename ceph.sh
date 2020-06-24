@@ -7,6 +7,9 @@ git checkout release-1.3
 
 cd ~/rook/cluster/examples/kubernetes/ceph
 
+#开始安装前确保所有slave都在线ready
+kubectl get node -n kube-system
+
 # 如果一旦出现长时间都没有osd pod，ceph status也显示HEALTH WARN，没有任何磁盘空间的话，要把所有已安装的delete，从头重装
 kubectl create -f common.yaml
 #kubectl delete -f common.yaml
@@ -66,17 +69,16 @@ kubectl create -f dashboard-external-https.yaml
 #kubectl delete -f dashboard-external-https.yaml
 kubectl get service -n rook-ceph|grep rook-ceph-mgr-dashboard-external-https
 #！！！手工，找到service映射的nodeport
-curl https://localhost:31157/#/login
+curl https://localhost:32239/#/login
 #！！！手工，账户admin，密码以下命令生成
 kubectl -n rook-ceph get secret rook-ceph-dashboard-password -o jsonpath='{.data.password}'  |  base64 --decode
-#j`9Nvf;r#9|#%WPJ#o-L
+#i;f;P2G`_WF4=:,6:^PW
 
 kubectl create -f toolbox.yaml
 #kubectl delete -f toolbox.yaml
-kubectl -n rook-ceph get pod -l "app=rook-ceph-tools" -o wide | grep rook-ceph-tools | awk '{print $1}'
 #kubectl -n rook-ceph get pod -l "app=rook-ceph-tools" -o wide | grep rook-ceph-tools | awk '{print $1}' | xargs -n1 -i{} kubectl -n rook-ceph exec -it {} bash
-#！！！手工，copy pod名字到以下命令
-kubectl -n rook-ceph exec -it rook-ceph-tools-67788f4dd7-nn8d9 -- bash
+#！！！手工，检查ceph集群状态
+kubectl -n rook-ceph exec -it `kubectl -n rook-ceph get pod -l "app=rook-ceph-tools" -o wide | grep rook-ceph-tools | awk '{print $1}'` -- bash
   #ceph status
   #ceph df
   #ceph osd status

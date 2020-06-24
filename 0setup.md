@@ -39,6 +39,8 @@
       cdh_common_bf.sh
       cdh-6.3.2.sh
       cdh_common_af.sh
+    在cloudera web配置页面，参考cdh_web_manual.sh做额外手工设置
+    测试集群，执行cdh_test.sh
     如果安装发生错误，执行native/cdh_remove.sh
 
 #####！！！以下操作无特殊说明都在操作台master01服务器上ubuntu用户下执行，并在k8s集群上操作

@@ -6,7 +6,7 @@ ARG FLINK_VERSION=1.10.1
 
 COPY flink-${FLINK_VERSION} /opt/flink-${FLINK_VERSION}
 RUN ln -s /opt/flink-${FLINK_VERSION} /opt/flink
-COPY k8sdeploy_dir/str_jar /opt/str_jar
+COPY str_jar /opt/str_jar
 
 ENV FLINK_HOME /opt/flink
 

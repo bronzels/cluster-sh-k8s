@@ -34,16 +34,16 @@ docker run --name=mysql_cdh \
 -d mysql:5.7
 #！！！手工，登录修改mysql root密码
 apt-get install -y mysql-client
-docker ps|grep mysql
-docker exec -it c7a41a846736 bash
+docker exec -it `docker ps  |grep mysql | awk '{print $1}'` bash
   mysql -P3306 -uroot -proot
       FLUSH PRIVILEGES;
       USE mysql;
       ALTER USER 'root'@'%' IDENTIFIED BY 'root';
       GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'root' WITH GRANT OPTION;
       FLUSH PRIVILEGES;
-mysql -h hk-prod-bigdata-slave-1-245 -P3306 -uroot -proot -e "SHOW DATABASES"
+mysql -h hk-prod-bigdata-slave-0-234 -P3306 -uroot -proot -e "SHOW DATABASES"
 
+mkdir ~/cdh
 cd ~/cdh
 cat << \EOF > db.sql
 -- 创建数据库
@@ -78,22 +78,15 @@ GRANT ALL ON navms.* TO 'navms'@'%' IDENTIFIED BY 'navms';
 GRANT ALL ON oozie.* TO 'oozie'@'%' IDENTIFIED BY 'oozie';
 EOF
 
-mysql -h hk-prod-bigdata-slave-1-245 -P3306 -uroot -proot -Dmysql < ./db.sql
-mysql -h hk-prod-bigdata-slave-1-245 -P3306 -uroot -proot -e "SHOW DATABASES"
+mysql -h hk-prod-bigdata-slave-0-234 -P3306 -uroot -proot -Dmysql < ./db.sql
+mysql -h hk-prod-bigdata-slave-0-234 -P3306 -uroot -proot -e "SHOW DATABASES"
 
+cd ~/cdh
 wget -c https://cdn.mysql.com//archives/mysql-connector-java-5.1/mysql-connector-java-5.1.46.tar.gz
 tar xzvf mysql-connector-java-5.1.46.tar.gz
 cp mysql-connector-java-5.1.46/mysql-connector-java-5.1.46.jar mysql-connector-java.jar
+ansible allcdh -m copy -a"src=~/cdh/mysql-connector-java.jar dest=/usr/share/java"
+ansible allcdh -m shell -a"ls -l /usr/share/java/mysql-connector-java.jar"
 #ansible allcdh -m copy -a"src=mysql-connector-java.jar dest=/opt/cloudera/cm/schema/../lib/"
 #ansible allcdh -m shell -a"ls -l /opt/cloudera/cm/schema/../lib/mysql-connector-java.jar"
-
-/opt/cloudera/cm/schema/scm_prepare_database.sh mysql scm scm scm
-/opt/cloudera/cm/schema/scm_prepare_database.sh mysql amon amon amon
-/opt/cloudera/cm/schema/scm_prepare_database.sh mysql rman rman rman
-/opt/cloudera/cm/schema/scm_prepare_database.sh mysql hue hue hue
-/opt/cloudera/cm/schema/scm_prepare_database.sh mysql hive hive hive
-/opt/cloudera/cm/schema/scm_prepare_database.sh mysql sentry sentry sentry
-/opt/cloudera/cm/schema/scm_prepare_database.sh mysql nav nav nav
-/opt/cloudera/cm/schema/scm_prepare_database.sh mysql navms navms navms
-/opt/cloudera/cm/schema/scm_prepare_database.sh mysql oozie oozie oozie
 

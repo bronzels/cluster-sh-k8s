@@ -7,6 +7,10 @@ cp /tmp/spark_shared_jars.tar.gz ~/tmp
 tar xzvf ~/tmp/spark_shared_jars.tar.gz
 ansible slavecdh -m copy -a"src=~/spark_shared_jars dest=~/"
 
+#！！！手工，如果重新启动，务必重新mount因为ubuntu18 fstab需要输入UID实在麻烦没有设置，重启要手工加载
+ansible allcdh -m shell -a"mount /dev/nvme0n1p1 /app"
+ansible allcdh -m shell -a"df|grep '/app'"
+
 cp /tmp/sqoop.tar.gz ~/tmp
 tar xzvf ~/tmp/sqoop.tar.gz
 

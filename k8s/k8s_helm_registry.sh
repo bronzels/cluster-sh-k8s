@@ -46,6 +46,7 @@ helm install -f values.yaml dkreg .
 #{"repositories":[]}
 curl http://localhost:30500/v2/_catalog
 
+#以下image用作flink的base image，必须执行
 cp ~/source.list.ubuntu.16.04 source.list
 
 docker images|grep ubu16ssh
@@ -75,11 +76,8 @@ EOF
 docker build -f Dockerfile.ubu16ssh -t master01:30500/bronzels/ubu16ssh:0.1 ./
 docker push master01:30500/bronzels/ubu16ssh:0.1
 
+#以上测试可以跳过
 :<<EOF
-        command:
-          - /bin/sh
-          - '-c'
-          - set -e -x;tail -f /dev/null
 EOF
 cat << EOF > ubu16ssh-deploy-svc.yaml
 apiVersion: apps/v1

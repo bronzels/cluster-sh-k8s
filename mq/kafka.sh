@@ -15,10 +15,10 @@ kubectl get pvc -n mqstr
 
 
 kubectl -n default run test-zookeeper-mqstr -ti --image=zookeeper:3.5.5 --rm=true --restart=Never -- zkCli.sh -server mykafka-zookeeper.mqstr:2181 ls /
-kubectl -n default run test-zookeeper-mqstr -ti --image=zookeeper:3.5.5 --rm=true --restart=Never -- zkCli.sh -server mykafka-zookeeper-0.mykafka-zookeeper-headless.mqstr:2181,mykafka-zookeeper-1.mykafka-zookeeper-headless.mqstr:2181,mykafka-zookeeper-2.mykafka-zookeeper-headless.mqstr:2181 ls /
+kubectl -n default run test-zookeeper-mqstr -ti --image=zookeeper:3.5.5 --rm=true --restart=Never -- zkCli.sh -server mykafka-zookeeper-headless.mqstr:2181 ls /
 
 kubectl -n default run test-kafka-producer-mqstr -ti --image=strimzi/kafka:0.18.0-kafka-2.5.0 --rm=true --restart=Never -- bin/kafka-console-producer.sh --broker-list mykafka.mqstr:9092 --topic test
-kubectl -n default run test-kafka-consumer-mqstr -ti --image=strimzi/kafka:0.18.0-kafka-2.5.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server mykafka.mqstr:9092 --topic test
+kubectl -n default run test-kafka-consumer-mqstr -ti --image=strimzi/kafka:0.18.0-kafka-2.5.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server mykafka.mqstr:9092 --topic test --from-beginning
 kubectl -n default run test-kafka-consumer-mqstr -ti --image=strimzi/kafka:0.18.0-kafka-2.5.0 --env="KAFKA_HEAP_OPTS=-Xmx1024M" --rm=true --restart=Never -- bin/kafka-run-class.sh kafka.tools.GetOffsetShell --broker-list mykafka.mqstr:9092 --topic test --time -1 --offsets 1
 
 
@@ -37,10 +37,11 @@ kubectl get pod -n mqdw
 kubectl get svc -n mqdw -o wide
 kubectl get pvc -n mqdw
 
-kubectl -n default run test-zookeeper-mqstr -ti --image=zookeeper:3.5.5 --rm=true --restart=Never -- zkCli.sh -server mykafka-zookeeper.mqdw:2181 ls /
+kubectl -n default run test-zookeeper-mqdw -ti --image=zookeeper:3.5.5 --rm=true --restart=Never -- zkCli.sh -server mykafka-zookeeper.mqdw:2181 ls /
+kubectl -n default run test-zookeeper-mqdw -ti --image=zookeeper:3.5.5 --rm=true --restart=Never -- zkCli.sh -server mykafka-zookeeper-headless.mqdw:2181 ls /
 
 kubectl -n default run test-kafka-producer-mqdw -ti --image=strimzi/kafka:0.18.0-kafka-2.5.0 --rm=true --restart=Never -- bin/kafka-console-producer.sh --broker-list mykafka.mqdw:9092 --topic test
-kubectl -n default run test-kafka-consumer-mqdw -ti --image=strimzi/kafka:0.18.0-kafka-2.5.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server mykafka.mqdw:9092 --topic test
+kubectl -n default run test-kafka-consumer-mqdw -ti --image=strimzi/kafka:0.18.0-kafka-2.5.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server mykafka.mqdw:9092 --topic test --from-beginning
 kubectl -n default run test-kafka-consumer-mqdw -ti --image=strimzi/kafka:0.18.0-kafka-2.5.0 --env="KAFKA_HEAP_OPTS=-Xmx1024M" --rm=true --restart=Never -- bin/kafka-run-class.sh kafka.tools.GetOffsetShell --broker-list mykafka.mqdw:9092 --topic test --time -1 --offsets 1
 
 :<<EOF
