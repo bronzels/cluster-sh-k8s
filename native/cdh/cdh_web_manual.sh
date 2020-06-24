@@ -6,6 +6,8 @@
 
 #设置yarn的scheduler资源
 #在yarn的configuration页面，
+  #找到：yarn.nodemanager.resource.memory-mb
+    #设置为：102400(缺省47493MiB)
   #找到：yarn.nodemanager.resource.cpu-vcores
     #设置为：12(缺省16)
   #找到：mapreduce.map.memory.mb

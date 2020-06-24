@@ -33,20 +33,29 @@ g++ -v
 EOF
 
 cat << \EOF > ~/sources.list.ubuntu.16.04
-deb http://mirrors.aliyun.com/ubuntu/ xenial main restricted
-deb-src http://mirrors.aliyun.com/ubuntu/ xenial main restricted multiverse universe #Added by software-properties
-deb http://mirrors.aliyun.com/ubuntu/ xenial-updates main restricted
-deb-src http://mirrors.aliyun.com/ubuntu/ xenial-updates main restricted multiverse universe #Added by software-properties
-deb http://mirrors.aliyun.com/ubuntu/ xenial universe
-deb http://mirrors.aliyun.com/ubuntu/ xenial-updates universe
-deb http://mirrors.aliyun.com/ubuntu/ xenial multiverse
-deb http://mirrors.aliyun.com/ubuntu/ xenial-updates multiverse
-deb http://mirrors.aliyun.com/ubuntu/ xenial-backports main restricted universe multiverse
-deb-src http://mirrors.aliyun.com/ubuntu/ xenial-backports main restricted universe multiverse #Added by software-properties
-deb http://mirrors.aliyun.com/ubuntu/ xenial-security main restricted
-deb-src http://mirrors.aliyun.com/ubuntu/ xenial-security main restricted multiverse universe #Added by software-properties
-deb http://mirrors.aliyun.com/ubuntu/ xenial-security universe
-deb http://mirrors.aliyun.com/ubuntu/ xenial-security multiverse
+#deb http://mirrors.aliyun.com/ubuntu/ xenial main restricted
+#deb-src http://mirrors.aliyun.com/ubuntu/ xenial main restricted multiverse universe #Added by software-properties
+#deb http://mirrors.aliyun.com/ubuntu/ xenial-updates main restricted
+#deb-src http://mirrors.aliyun.com/ubuntu/ xenial-updates main restricted multiverse universe #Added by software-properties
+#deb http://mirrors.aliyun.com/ubuntu/ xenial universe
+#deb http://mirrors.aliyun.com/ubuntu/ xenial-updates universe
+#deb http://mirrors.aliyun.com/ubuntu/ xenial multiverse
+#deb http://mirrors.aliyun.com/ubuntu/ xenial-updates multiverse
+#deb http://mirrors.aliyun.com/ubuntu/ xenial-backports main restricted universe multiverse
+#deb-src http://mirrors.aliyun.com/ubuntu/ xenial-backports main restricted universe multiverse #Added by software-properties
+#deb http://mirrors.aliyun.com/ubuntu/ xenial-security main restricted
+#deb-src http://mirrors.aliyun.com/ubuntu/ xenial-security main restricted multiverse universe #Added by software-properties
+#deb http://mirrors.aliyun.com/ubuntu/ xenial-security universe
+#deb http://mirrors.aliyun.com/ubuntu/ xenial-security multiverse
+
+deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ xenial main restricted universe multiverse
+deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ xenial main restricted universe multiverse
+deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ xenial-updates main restricted universe multiverse
+deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ xenial-updates main restricted universe multiverse
+deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ xenial-backports main restricted universe multiverse
+deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ xenial-backports main restricted universe multiverse
+deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ xenial-security main restricted universe multiverse
+deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ xenial-security main restricted universe multiverse
 EOF
 
 :<<EOF
@@ -69,11 +78,13 @@ rev=1.12.9
 wget -c https://dl.google.com/go/go${rev}.linux-amd64.tar.gz
 rm -rf go
 tar -C ~ -xzf ~/go${rev}.linux-amd64.tar.gz
+:<<EOF
 echo "export PATH=$PATH:$HOME/go/bin" >> ~/.bashrc
 rm -rf ~/gopath
 mkdir ~/gopath
 echo "export GOPATH=$HOME/gopath" >> ~/.bashrc
 sudo apt-get install -y autoconf
+EOF
 
 #ubuntu
 mkdir ~/tmp

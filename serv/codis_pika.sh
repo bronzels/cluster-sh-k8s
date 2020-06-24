@@ -1,9 +1,5 @@
 #pika
 cd ~
-rev=1.12.9
-wget -c https://dl.google.com/go/go${rev}.linux-amd64.tar.gz
-tar -xzf ~/go${rev}.linux-amd64.tar.gz
-
 rm -rf pika
 git clone https://github.com/Qihoo360/pika.git
 cd ~/pika
@@ -22,16 +18,9 @@ sed -i 's@db-path : ./db/@db-path : /data/db/@g'  $file
 sed -i 's@dump-path : ./dump/@dump-path : /data/dump/@g'  $file
 sed -i 's@db-sync-path : ./dbsync/@db-sync-path : /data/dbsync/@g'  $file
 
-:<<EOF
-file=Dockerfile
-cp ${file} ${file}.bk
-sed -i 's@https://mirrors.ustc.edu.cn/epel/epel-release-latest-7.noarch.rpm@http://mirrors.aliyun.com/epel/epel-release-latest-7.noarch.rpm@g' ${file}
-sed -i 's@FROM centos:latest@FROM centos:7@g' ${file}
-EOF
-
 cd ~
 cp ~/sources.list.ubuntu.16.04 sources.list
-#COPY ./sources.list /etc/apt
+COPY ./sources.list /etc/apt
 
 cd ~/pika
 file=Dockerfile
@@ -43,6 +32,7 @@ USER root:root
 
 ENV PIKA /pika
 COPY pika /pika
+COPY sources.list /etc/apt
 
 RUN apt-get update && \
     apt-get install -y build-essential git autoconf
@@ -91,6 +81,7 @@ docker build -t master01:30500/codis/codis-image:0.1 ./
 docker push master01:30500/codis/codis-image:0.1
 
 cd ~/codis/kubernetes
+find ~/codis/kubernetes -name "*.yaml" | xargs grep "image: codis-image"
 find ~/codis/kubernetes -name "*.yaml" | xargs sed -i 's@image: codis-image@image: master01:30500/codis/codis-image:0.1@g'
 find ~/codis/kubernetes -name "*.yaml"  | xargs grep "apps/v1beta1"
 find ~/codis/kubernetes -name "*.yaml" | xargs sed -i 's@apps/v1beta1@apps/v1@g'
@@ -151,34 +142,45 @@ sed -i 's@kubectl exec@kubectl exec -n \${codisns}@g' ${file}
 sed -i 's@kubectl scale@kubectl scale -n \${codisns}@g' ${file}
 EOF
 
-file=mycodis_cp_op.sh
-~/scripts/k8s_funcs.sh
+file=~/scripts/mycodis-cp-op.sh
+rm -f ${file}
+#cat ~/scripts/k8s_funcs.sh > ${file}
 cat << \EOF > ${file}
 #!/bin/bash
 
-set -e
+. ${HOME}/scripts/k8s_funcs.sh
+
+#set -e
 
 op=$1
+echo "op:${op}"
 codisns=$2
+echo "codisns:${codisns}"
+
+cd ~/codis/kubernetes
 
 function mycodis_cp_op_stop(){
+  echo "now in mycodis_cp_op_stop"
   kubectl delete -n ${codisns} -f .
   wait_pod_deleted "${codisns}" "codis-dashboard" 300
   wait_pod_deleted "${codisns}" "codis-fe" 300
   wait_pod_deleted "${codisns}" "codis-ha" 300
-  wait_pod_deleted "${codisns}" "codis-ha" 300
   wait_pod_deleted "${codisns}" "codis-proxy" 300
   wait_pod_deleted "${codisns}" "codis-server" 300
+  echo "now before zookeeper del"
   kubectl delete -n ${codisns} -f zookeeper/
+  echo "now after zookeeper del"
   wait_pod_deleted "${codisns}" "zk" 300
   #wait_pod_deleted "${codisns}" "" 300
 }
 
 function mycodis_cp_op_deletepvc(){
+  echo "now in mycodis_cp_op_deletepvc"
   kubectl get pvc -n ${codisns} | grep codis-server | awk '{print $1}' | xargs kubectl -n ${codisns} delete pvc
 }
 
 function mycodis_cp_op_start(){
+  echo "now in mycodis_cp_op_start"
   echo "start create zookeeper cluster"
   kubectl create -n ${codisns} -f zookeeper/zookeeper-service.yaml
   kubectl create -n ${codisns} -f zookeeper/zookeeper.yaml
@@ -211,20 +213,23 @@ product_name="codis-test"
 case "$op" in
 
 ### 停止codis集群
-"stop")
+stop)
+    echo "now in stop"
     mycodis_cp_op_stop
 
     ;;
 
 ### 停止codis集群，并且清理原来codis遗留数据
-"clean")
+clean)
+    echo "now in clean"
     mycodis_cp_op_stop
     mycodis_cp_op_deletepvc
 
     ;;
 
 ### 创建新的codis集群
-"startnew")
+startnew)
+    echo "now in startnew"
     mycodis_cp_op_stop
     mycodis_cp_op_deletepvc
     mycodis_cp_op_start
@@ -232,13 +237,15 @@ case "$op" in
     ;;
 
 ### 启动codis集群
-"start")
+start)
+    echo "now in start"
     mycodis_cp_op_start
 
     ;;
 
 ### 重启codis集群
-"restart")
+restart)
+    echo "now in restart"
     mycodis_cp_op_stop
     mycodis_cp_op_start
 
@@ -246,11 +253,13 @@ case "$op" in
 
 ### 扩容／缩容 codis proxy
 scale-proxy)
+    echo "now in scale-proxy"
     kubectl scale -n ${codisns} rc codis-proxy --replicas=$3
     ;;
 
 ### 扩容／[缩容] codis server
 scale-server)
+    echo "now in scale-server"
     cur=$(kubectl get statefulset -n ${codisns} codis-server |tail -n 1 |awk '{print $4}')
     des=$3
     echo $cur
@@ -285,23 +294,22 @@ scale-server)
 esac
 EOF
 chmod a+x ${file}
-diff ${file} ../kubernetes.bk/${file}
+diff ${file} ../kubernetes.bk/start.sh
 
 #serv
 #codis-service.yaml
 file=codis-service.yaml
 cp ${file}.template ${file}
 #sed -i 's@nodePort: 31080@nodePort: 31080@g' ${file}
-curl http://master01:31080
 
 cd ~/codis/kubernetes
-./mycodis_cp_op.sh start serv
-./mycodis_cp_op.sh stop serv
+~/scripts/mycodis-cp-op.sh start serv
+~/scripts/mycodis-cp-op.sh stop serv
 #./start.sh stop serv
 #kubectl get pvc -n serv | awk '{print $1}' | grep datadir-codis-server | xargs kubectl delete pvc -n serv
 
-ansible slave -m shell -a"docker images|grep pika"
-ansible slave -m shell -a"docker ps -a|grep codis"
+curl http://master01:31080
+
 :<<EOF
 kubectl exec -it codis-server-0 -n serv bash
 kubectl get pod -n serv | awk '{print $1}' | grep codis-server | xargs kubectl describe pod -n serv
@@ -321,12 +329,13 @@ kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never --
 file=codis-service.yaml
 cp ${file}.template ${file}
 sed -i 's@nodePort: 31080@nodePort: 31081@g' ${file}
-curl http://master01:31081
 
 cd ~/codis/kubernetes
-./start.sh servyat buildup
+~/scripts/mycodis-cp-op.sh start servyat
+~/scripts/mycodis-cp-op.sh stop servyat
 #./start.sh servyat cleanup
 #kubectl get pvc -n servyat | awk '{print $1}' | grep datadir-codis-server | xargs kubectl delete pvc -n servyat
+curl http://master01:31081
 
 kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.servyat -p 19000  set fool4 bar4
 kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.servyat -p 19000  get fool4

@@ -39,7 +39,9 @@ if [ $op == "start" ]; then
     -Dresourcemanager.taskmanager-timeout=3600000 \
     -Dkubernetes.service.exposed.type=NodePort \
     -Dkubernetes.container-start-command-template="%java% %classpath% %jvmmem% %jvmopts% %logging% %class% %args%" \
-    -Dkubernetes.jobmanager.service-account=flink
+    -Dkubernetes.jobmanager.service-account=flink \
+    -Dcontainerized.master.env.HTTP2_DISABLE=true \
+    -Dcontainerized.taskmanager.env.HTTP2_DISABLE=true
 fi
 EOF
 chmod a+x ${file}

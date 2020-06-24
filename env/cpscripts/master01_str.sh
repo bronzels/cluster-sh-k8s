@@ -1,4 +1,4 @@
-#upload k8sdeploy.tar.gz to master01 /tmp
+#如果是项目定制开发的流处理部分有修改，把k8sdeploy.sh打包生成k8sdeploy.tar.gz上传到跳板机
 #ubuntu
 cd ~
 

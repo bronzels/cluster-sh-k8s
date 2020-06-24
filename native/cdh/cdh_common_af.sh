@@ -59,9 +59,11 @@ export ZOOKEEPER_HOME=/opt/cloudera/parcels/CDH/lib/zookeeper
 export HCAT_HOME=/opt/cloudera/parcels/CDH/lib/hive-hcatalog
 export HIVE_HOME=/opt/cloudera/parcels/CDH/lib/hive
 
-export SPARK_HOME=/opt/cloudera/parcels/CDH/lib/hive
+export SPARK_HOME=/opt/cloudera/parcels/CDH/lib/spark
 
-export PATH=$PATH:${HADOOP_HOME}/bin:${HIVE_HOME}/bin:${SPARK_HOME}/bin
+export PATH=$PATH:${HADOOP_HOME}/bin:${HIVE_HOME}/bin:${SPARK_HOME}/bin:${ZOOKEEPER_HOME}/bin
+
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 EOF
 
 groupadd supergroup

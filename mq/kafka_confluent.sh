@@ -86,7 +86,9 @@ RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 COPY confluent-5.3.2 /opt/confluent-5.3.2
 RUN ln -sf /opt/confluent-5.3.2 /opt/confluent
 
-CMD /opt/confluent/bin/connect-distributed /opt/confluent/config/connect-distributed.properties 2> /opt/confluent/logs/stderr.log > /opt/confluent/logs/stdout.log
+WORKDIR /opt/confluent
+
+CMD bin/connect-distributed /opt/confluent/config/connect-distributed.properties 2> /opt/confluent/logs/stderr.log > /opt/confluent/logs/stdout.log
 EOF
 #
 #RUN echo $JAVA_HOME
@@ -94,6 +96,14 @@ EOF
 #WORKDIR /opt/confluent
 #RUN sed -i 's/\r$//' /opt/confluent/bin/connect-distributed  && \
 #        chmod +x /opt/confluent/bin/connect-distributed
+
+docker images|grep "<none>"|awk '{print $3}'|xargs docker rmi -f
+
+docker images|grep mykc-conn
+docker images|grep mykc-conn|awk '{print $3}'|xargs docker rmi -f
+ansible slavek8s -i /etc/ansible/hosts-ubuntu -m shell -a"docker images|grep mykc-conn|awk '{print \$3}'|xargs docker rmi -f"
+docker images|grep mykc-conn
+
 docker build -f Dockerfile-conn.yaml -t master01:30500/bigdata/mykc-conn:0.1 ./
 docker push master01:30500/bigdata/mykc-conn:0.1
 
@@ -160,11 +170,36 @@ spec:
     targetPort: 8083
 EOF
 
+
+file=~/scripts/myconnector-cp-start-log-check.sh
+rm -f ${file}
+cat ~/scripts/k8s_funcs.sh > ${file}
+cat << \EOF >> ${file}
+
+ns=$1
+echo "ns:${ns}"
+name=$2
+echo "name:${name}"
+
+podnsname=${ns}-${name}
+wait_pod_specific_log_line "${podnsname}" "myconn" "/opt/confluent/logs/stdout.log" "INFO Kafka Connect started" 900
+funcrst=`echo $?`
+if [ ${funcrst} -eq 0 ]; then
+  echo "$podnsname connector log line is not detected and timeout"
+  exit 1
+fi
+
+#kubectl get pod -n ${podnsname} | awk '{print $1}' | grep myconn | xargs -I CNAME  sh -c "kubectl exec -n ${podnsname} CNAME -- cat /opt/confluent/logs/stdout.log|grep 'INFO Kafka Connect started'"
+
+EOF
+chmod a+x ${file}
+
 file=~/scripts/myconnector-cp-op.sh
 rm -f ${file}
-~/scripts/k8s_funcs.sh
-cat << \EOF > ${file}
+cat ~/scripts/k8s_funcs.sh > ${file}
+cat << \EOF >> ${file}
 #!/bin/bash
+
 
 op=$1
 echo "op:${op}"
@@ -269,6 +304,8 @@ funcrst=`echo $?`
 if [ ${funcrst} -eq 0 ]; then
   echo "$podnsname connector pod is not running"
   exit 1
+else
+  ~/scripts/myconnector-cp-start-log-check.sh ${ns} ${name}
 fi
 
 #kubectl get pod -n ${podnsname} | awk '{print $1}' | grep myconn | xargs -I CNAME  sh -c "kubectl exec -n ${podnsname} CNAME -- cat /opt/confluent/logs/stdout.log|grep 'INFO Kafka Connect started'"
@@ -276,36 +313,12 @@ fi
 EOF
 chmod a+x ${file}
 
-~/scripts/myconnector-restart.sh start mqstr json mysqlsrctest
-~/scripts/myconnector-restart.sh stop mqstr json mysqlsrctest
+~/scripts/myconnector-cp-op.sh start mqstr json mysqlsrctest
+~/scripts/myconnector-cp-op.sh stop mqstr json mysqlsrctest
 #kubectl delete -f ~/mykc/kafka-connect-mqstr-mysqlsrctest.yaml
 #rm -f ~/mykc/kafka-connect-mqstr-mysqlsrctest.yaml
 
-file=~/scripts/myconnector-start-log-check.sh
-rm -f ${file}
-cat ~/scripts/k8s_funcs.sh > ${file}
-cat << \EOF >> ${file}
-
-ns=$1
-echo "ns:${ns}"
-name=$2
-echo "name:${name}"
-
-podnsname=${ns}-${name}
-wait_pod_specific_log_line "${podnsname}" "myconn" "/opt/confluent/logs/stdout.log" "INFO Kafka Connect started" 900
-funcrst=`echo $?`
-if [ ${funcrst} -eq 0 ]; then
-  echo "$podnsname connector log line is not detected and timeout"
-  exit 1
-fi
-
-#kubectl get pod -n ${podnsname} | awk '{print $1}' | grep myconn | xargs -I CNAME  sh -c "kubectl exec -n ${podnsname} CNAME -- cat /opt/confluent/logs/stdout.log|grep 'INFO Kafka Connect started'"
-
-EOF
-chmod a+x ${file}
-
-~/scripts/myconnector-start-log-check.sh  mqstr mysqlsrctest
-
+~/scripts/myconnector-cp-start-log-check.sh mqstr mysqlsrctest
 
 :<<EOF
 kubectl get pod -n mqstr-mysqlsrctest | grep myconn | awk '{print $1}'

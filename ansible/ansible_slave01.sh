@@ -14,12 +14,6 @@ ansible allcdh -m shell -a"df|grep '/app'"
 cp /tmp/sqoop.tar.gz ~/tmp
 tar xzvf ~/tmp/sqoop.tar.gz
 
-cat << \EOF > deploy_spark_jars.sh
-ansible allcdh -m copy -a"src=~/k8sdeploy_dir/spark_jars.tgz dest=~/spark_shared_jars/"
-ansible allcdh -m shell -a"cd ~/spark_shared_jars;tar xzvf spark_jars.tgz;cd spark_jars;cp *.jar ../;cd ..;rm -rf spark_jars.tgz spark_jars/"
-EOF
-chmod a+x deploy_spark_jars.sh
-
 #root
 #scripts for airflow to ssh and execute
 rm -rf ~/scripts/

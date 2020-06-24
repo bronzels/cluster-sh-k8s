@@ -85,7 +85,7 @@ cat << \EOF > ${file}
 
 cd ~/charts/stable/presto
 
-set -e
+#set -e
 
 #  --set server.config.query.maxMemory=30GB \
 #  --set server.config.query.maxMemoryPerNode=8GB \

@@ -50,7 +50,7 @@ echo "ns:${ns}"
 rev=$2
 echo "rev:${rev}"
 
-set -e
+#set -e
 
 ZOOKEEPER_QUORUM=`cat hbase/zookeeper_quorum`
 

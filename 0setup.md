@@ -36,12 +36,14 @@
 #####5，安装配置cdh环境
     ！！！一定要装好k8s以后再安装cdh，因为cdh依赖docker启动mysql，但是k8s网络安装期间docker会退出甚至严重会无法再启动
     安装和配置cdh环境，在slave01环境先后执行native/
-      cdh_common_bf.sh
-      cdh-6.3.2.sh
-      cdh_common_af.sh
+      slaves，格式化和挂载cdh数据盘
+      cdh/cdh_common_bf.sh
+      cdh/cdh-6.3.2.sh
+      cdh/cdh_common_af.sh
     在cloudera web配置页面，参考cdh_web_manual.sh做额外手工设置
     测试集群，执行cdh_test.sh
     如果安装发生错误，执行native/cdh_remove.sh
+    安装kylin，执行kylin.sh
 
 #####！！！以下操作无特殊说明都在操作台master01服务器上ubuntu用户下执行，并在k8s集群上操作
 #####6，新建集群后再加入新机器
