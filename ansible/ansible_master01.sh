@@ -104,6 +104,14 @@ echo "export PATH=$PATH:$HOME/jdk/bin" >> ~/.bashrc
 java -version
 #！！！手工，重新登录ubuntu
 
-
-
+#for presto plugin mouting
+:<<EOF
+mkdir ${HOME}/nfsmnt
+docker run -d -p 2049:2049 --name mynfs --privileged -v ${HOME}/nfsmnt:/nfsshare -e SHARED_DIRECTORY=/nfsshare itsthenetwork/nfs-server-alpine:latest
+mkdir ${HOME}/nfsmnted
+sudo mount -v -o vers=4,loud 10.10.7.44:/ ~/nfsmnted
+touch ~/nfsmnt/x
+ls ~/nfsmnted
+umount ~/nfsmnted
+EOF
 

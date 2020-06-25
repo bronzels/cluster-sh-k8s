@@ -173,8 +173,11 @@ EOF
 
 file=~/scripts/myconnector-cp-start-log-check.sh
 rm -f ${file}
-cat ~/scripts/k8s_funcs.sh > ${file}
-cat << \EOF >> ${file}
+#cat ~/scripts/k8s_funcs.sh > ${file}
+cat << \EOF > ${file}
+#!/bin/bash
+
+. ${HOME}/scripts/k8s_funcs.sh
 
 ns=$1
 echo "ns:${ns}"
@@ -196,10 +199,11 @@ chmod a+x ${file}
 
 file=~/scripts/myconnector-cp-op.sh
 rm -f ${file}
-cat ~/scripts/k8s_funcs.sh > ${file}
-cat << \EOF >> ${file}
+#cat ~/scripts/k8s_funcs.sh > ${file}
+cat << \EOF > ${file}
 #!/bin/bash
 
+. ${HOME}/scripts/k8s_funcs.sh
 
 op=$1
 echo "op:${op}"
@@ -210,6 +214,8 @@ kind=$3
 echo "kind:${kind}"
 name=$4
 echo "name:${name}"
+
+cd ~/mykc/
 
 podnsname=${ns}-${name}
 podnsname=${podnsname//_/-}

@@ -65,7 +65,8 @@
     同时还汇总组件和namepsace的对应关系。
 
 #####8，在default命名空间安装以下安装共享的组件，执行default.sh
-    安装prometheus。
+    安装prometheus；
+    安装NFS Server Provisioner。
 
 #####9，创建后续postgre/kafka/hadoop/kudu等需要卷存储依赖的动态provision，执行ceph.sh
 

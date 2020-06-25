@@ -1,6 +1,15 @@
 #如果是项目定制开发contrib-connector有修改，把k8sdeploy.sh打包生成confluent_jars.tgz上传到跳板机/tmp
 #如果是新的第三方connector，相应目录打包生成confluent_jars.tgz上传到跳板机/tmp
-~/scripts/deploy_confluent_jars.sh
+cd ~
+
+tar xzvf /tmp/k8sdeploy.tar.gz
+
+rev=5.3.2
+destdir=${HOME}/mykc/confluent-${rev}/share/java
+cd ${destdir}
+rm -rf kafka-connect-contrib
+
+tar xzvf /tmp/confluent_jars.tgz
 
 docker images|grep "<none>"|awk '{print $3}'|xargs docker rmi -f
 

@@ -121,11 +121,13 @@ sed -i '/  serviceName:/i\  selector:\n      matchLabels:\n        app: codis-ha
 
 file=codis-service.yaml
 sed -i 's@6379@9221@g' ${file}
-cp ${file} ${file}.template
+mv ${file} ${file}.template
 
 file=codis-proxy.yaml
 sed -i 's@replicas: 2@replicas: 3@g' ${file}
 
+find ~/codis/kubernetes -name "*.yaml" | xargs grep 'value: "codis-test"'
+find ~/codis/kubernetes -name "*.yaml" | xargs sed -i 's@value: \"codis-test\"@value: \"str\"@g'
 
 :<<EOF
 file=start.sh
@@ -159,14 +161,31 @@ echo "codisns:${codisns}"
 
 cd ~/codis/kubernetes
 
+#serv
+#codis-service.yaml
+file=codis-service
+cp ${file}.yaml.template ${file}-${codisns}.yaml
+if [ $codisns == "serv" ]; then
+  echo "in serv"
+  #sed -i 's@nodePort: 31080@nodePort: 31080@g' ${file}-${codisns}.yaml
+else
+  echo "in servyat"
+  sed -i 's@nodePort: 31080@nodePort: 31081@g' ${file}-${codisns}.yaml
+fi
+
 function mycodis_cp_op_stop(){
   echo "now in mycodis_cp_op_stop"
-  kubectl delete -n ${codisns} -f .
-  wait_pod_deleted "${codisns}" "codis-dashboard" 300
+  kubectl delete -n ${codisns} -f codis-fe.yaml
   wait_pod_deleted "${codisns}" "codis-fe" 300
+  kubectl delete -n ${codisns} -f codis-dashboard.yaml
+  wait_pod_deleted "${codisns}" "codis-dashboard" 300
+  kubectl delete -n ${codisns} -f codis-ha.yaml
   wait_pod_deleted "${codisns}" "codis-ha" 300
+  kubectl delete -n ${codisns} -f codis-proxy.yaml
   wait_pod_deleted "${codisns}" "codis-proxy" 300
+  kubectl delete -n ${codisns} -f codis-server.yaml
   wait_pod_deleted "${codisns}" "codis-server" 300
+  kubectl delete -n ${codisns} -f codis-service-${codisns}.yaml
   echo "now before zookeeper del"
   kubectl delete -n ${codisns} -f zookeeper/
   echo "now after zookeeper del"
@@ -188,7 +207,7 @@ function mycodis_cp_op_start(){
   wait_pod_running "${codisns}" "zk" 3 600
   echo "finish create zookeeper cluster"
 
-  kubectl create -n ${codisns} -f codis-service.yaml
+  kubectl create -n ${codisns} -f codis-service-${codisns}.yaml
   kubectl create -n ${codisns} -f codis-dashboard.yaml
   #while [ $(kubectl get pods -n ${codisns} -l app=codis-dashboard |grep Running |wc -l) != 1 ]; do sleep 1; done;
   wait_pod_running "${codisns}" "codis-dashboard" 1 600
@@ -208,8 +227,6 @@ function mycodis_cp_op_start(){
   fi
 }
 
-product_name="codis-test"
-#product_auth="auth"
 case "$op" in
 
 ### 停止codis集群
@@ -296,19 +313,28 @@ EOF
 chmod a+x ${file}
 diff ${file} ../kubernetes.bk/start.sh
 
-#serv
-#codis-service.yaml
-file=codis-service.yaml
-cp ${file}.template ${file}
-#sed -i 's@nodePort: 31080@nodePort: 31080@g' ${file}
-
 cd ~/codis/kubernetes
 ~/scripts/mycodis-cp-op.sh start serv
 ~/scripts/mycodis-cp-op.sh stop serv
-#./start.sh stop serv
+~/scripts/mycodis-cp-op.sh restart serv
 #kubectl get pvc -n serv | awk '{print $1}' | grep datadir-codis-server | xargs kubectl delete pvc -n serv
 
 curl http://master01:31080
+
+kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.serv -p 19000  set fool2 bar2
+kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.serv -p 19000  get fool2
+kubectl -n default run test-zookeeper-serv -ti --image=zookeeper:3.5.5 --rm=true --restart=Never -- zkCli.sh -server zookeeper.serv:2181 ls /codis3/str
+
+cd ~/codis/kubernetes
+~/scripts/mycodis-cp-op.sh start servyat
+~/scripts/mycodis-cp-op.sh stop servyat
+~/scripts/mycodis-cp-op.sh restart servyat
+#kubectl get pvc -n servyat | awk '{print $1}' | grep datadir-codis-server | xargs kubectl delete pvc -n servyat
+curl http://master01:31081
+
+kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.servyat -p 19000  set fool4 bar4
+kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.servyat -p 19000  get fool4
+kubectl -n default run test-zookeeper-serv -ti --image=zookeeper:3.5.5 --rm=true --restart=Never -- zkCli.sh -server zookeeper.servyat:2181 ls /codis3/str
 
 :<<EOF
 kubectl exec -it codis-server-0 -n serv bash
@@ -320,22 +346,5 @@ kubectl exec -it codis-server-0 -n serv  -- bash
 kubectl get pod -n serv
 kubectl get pvc -n serv
 kubectl get svc -n serv
+
 EOF
-kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.serv -p 19000  set fool2 bar2
-kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.serv -p 19000  get fool2
-
-#serv
-#codis-service.yaml
-file=codis-service.yaml
-cp ${file}.template ${file}
-sed -i 's@nodePort: 31080@nodePort: 31081@g' ${file}
-
-cd ~/codis/kubernetes
-~/scripts/mycodis-cp-op.sh start servyat
-~/scripts/mycodis-cp-op.sh stop servyat
-#./start.sh servyat cleanup
-#kubectl get pvc -n servyat | awk '{print $1}' | grep datadir-codis-server | xargs kubectl delete pvc -n servyat
-curl http://master01:31081
-
-kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.servyat -p 19000  set fool4 bar4
-kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.servyat -p 19000  get fool4

@@ -197,7 +197,8 @@ ansible-playbook -i /etc/ansible/hosts-ubuntu ~/ssh-addkey.yml
 sed -i 's@ ansible_ssh_pass=root@@g' /etc/ansible/hosts
 sed -i 's@ ansible_ssh_pass=ubuntu@@g' /etc/ansible/hosts-ubuntu
 
-sudo apt install -y unzip zip tar make
+apt install -y unzip zip tar make nfs-common
+ansible all -m shell -a"apt install -y nfs-common"
 
 #root
 ansible all -m shell -a"ls ~"

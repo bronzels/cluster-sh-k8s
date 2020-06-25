@@ -42,9 +42,12 @@ EOF
 
 file=~/scripts/myopentsdb-cp-restart.sh
 rm -f ${file}
-cat ~/scripts/k8s_funcs.sh > ${file}
-cat << \EOF >> ${file}
+#cat ~/scripts/k8s_funcs.sh > ${file}
+cat << \EOF > ${file}
 #!/bin/bash
+
+. ${HOME}/scripts/k8s_funcs.sh
+
 ns=$1
 echo "ns:${ns}"
 rev=$2
