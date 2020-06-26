@@ -63,9 +63,11 @@ cat << \EOF >> hbase-site.xml
 EOF
 #thrift on 10.10.20.191:9090
 
-cat << \EOF >> zookeeper_quorum
+cat << \EOF > zookeeper_quorum
 10.10.20.191:2181
 EOF
 
 cd ~
 tar czvf ~/tmp/aws-hbase.tar.gz hbase/
+rm -rf hbase
+

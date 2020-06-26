@@ -28,6 +28,7 @@ cat << \EOF > ${file}
 . ${HOME}/scripts/k8s_funcs.sh
 
 op=$1
+echo "op:${op}"
 
 cd ~/flink
 if [ $op == "stop" -o $op == "restart" ]; then
