@@ -62,9 +62,15 @@ cd ~/gradiant/charts/opentsdb
 ZOOKEEPER_QUORUM=`cat hbase/zookeeper_quorum`
 echo "ZOOKEEPER_QUORUM:$ZOOKEEPER_QUORUM"
 
+if [ $ns == "serv" ]; then
+  externalPort=31042
+else
+  externalPort=31043
+fi
+
 if [ $op == "stop" -o $op == "restart" ]; then
   helm uninstall myopts -n ${ns}
-  wait_pod_deleted "${ns}" "myopts-opentsdb" 4
+  wait_pod_deleted "${ns}" "myopts-opentsdb" 300
 fi
 
 if [ $op == "start" -o $op == "restart" ]; then
@@ -73,6 +79,7 @@ helm install myopts -n ${ns} \
   --set antiAffinity="hard" \
   --set daemons=4 \
   --set nodePort.enabled=true \
+  --set nodePort.externalPort=${externalPort} \
   --set env.init.META_TABLE=tsdb-meta${rev} \
   --set env.init.TREE_TABLE=tsdb-tree${rev} \
   --set env.init.TSDB_TABLE=tsdb${rev} \
@@ -98,7 +105,7 @@ helm install myopts -n ${ns} \
   --set conf\."tsd\.storage\.enable_appends"=true \
   --set conf\."tsd\.core\.uid\.random_metrics"=true \
   ./
-  wait_pod_running "${ns}" "myopts-opentsdb" 4
+  wait_pod_running "${ns}" "myopts-opentsdb" 4 300
 fi
 EOF
 chmod a+x ${file}

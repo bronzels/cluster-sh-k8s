@@ -147,6 +147,26 @@ wget -c https://docs.projectcalico.org/v3.9/manifests/calico.yaml
 kubectl apply -f calico.yaml
 #kubectl delete -f calico.yaml
 
+:<<EOF
+kubectl get podpreset
+#if return, error: the server doesn't have a resource type "podpreset", then should be enabled first
+file=/etc/kubernetes/manifests/kube-apiserver.yaml
+cp ${file} ${file}.bk
+ansible masterk8s -m shell -a"cp ${file} ${file}.bk"
+ansible masterk8s -m shell -a"sed -i '/    - --enable-admission-plugins/a\    - --runtime-config=settings.k8s.io/v1alpha1=true' ${file}"
+--runtime-config=settings.k8s.io/v1alpha1=true
+ansible masterk8s -m shell -a"cat ${file}"
+kubectl get pod -n kube-system
+kubectl get podpreset
+    volumeMounts:
+      - name: mytz-config
+        mountPath: /etc/localtime
+  volumes:
+    - name: mytz-config
+      hostPath:
+        path: /usr/share/zoneinfo/Asia/Shanghai
+EOF
+
 #ubuntu
 file=~/scripts/k8s_funcs.sh
 cat << \EOF > ${file}

@@ -197,8 +197,16 @@ ansible-playbook -i /etc/ansible/hosts-ubuntu ~/ssh-addkey.yml
 sed -i 's@ ansible_ssh_pass=root@@g' /etc/ansible/hosts
 sed -i 's@ ansible_ssh_pass=ubuntu@@g' /etc/ansible/hosts-ubuntu
 
-apt install -y unzip zip tar make nfs-common
+#used for unpacking/installing
+apt install -y unzip zip tar make
+
+#used for nfs mount in deployment yaml
 ansible all -m shell -a"apt install -y nfs-common"
+
+#used for
+# cdh db initialization
+# airflow ssh to cp to stop/start mysql slave sync
+apt-get install -y mysql-client
 
 #root
 ansible all -m shell -a"ls ~"
