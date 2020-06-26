@@ -90,7 +90,9 @@ EOF
 mkdir ~/tmp
 cp /tmp/confluent-5.3.2.zip ~/tmp
 
-#apt-get install -y openjdk-8-jdk
+#for flink native on k8s
+apt-get install -y openjdk-8-jdk
+:<<EOF
 cd ~
 #rev=251
 #rev=171
@@ -100,9 +102,10 @@ tar xzvf ~/tmp/jdk-8u${rev}-linux-x64.tar.gz
 rm -f jdk
 ln -s jdk1.8.0_${rev} jdk
 echo "export JAVA_HOME=$HOME/jdk" >> ~/.bashrc
-echo "export PATH=$PATH:$HOME/jdk/bin" >> ~/.bashrc
-java -version
+echo "export PATH=$HOME/jdk/bin:$PATH" >> ~/.bashrc
 #！！！手工，重新登录ubuntu
+java -version
+EOF
 
 #for presto plugin mouting
 :<<EOF

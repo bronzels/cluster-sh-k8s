@@ -4,6 +4,7 @@ cd ~
 
 tar xzvf /tmp/k8sdeploy.tar.gz
 
+:<<EOF
 cd ~/flinkdeploy
 
 cp -rf ~/k8sdeploy_dir/str_jar ~/flinkdeploy/str_jar
@@ -17,3 +18,4 @@ docker images|grep flink
 
 docker build -f ~/pika/Dockerfile -t master01:30500/bronzels/flink:0.1 ./
 docker push master01:30500/bronzels/flink:0.1
+EOF

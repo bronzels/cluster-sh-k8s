@@ -19,18 +19,23 @@ EOF
 kubectl create serviceaccount flink
 kubectl create clusterrolebinding flink-role-binding-flink --clusterrole=edit --serviceaccount=default:flink
 
+#    -Dkubernetes.namespace=str
 file=~/scripts/myflink-cp-op.sh
 rm -f ${file}
 cat << \EOF > ${file}
 #!/bin/bash
+
+. ${HOME}/scripts/k8s_funcs.sh
+
 op=$1
 
 cd ~/flink
-if [ $op == "stop" ]; then
+if [ $op == "stop" -o $op == "restart" ]; then
   echo 'stop' | bin/kubernetes-session.sh -Dkubernetes.cluster-id=myflink -Dexecution.attached=true
+  wait_pod_deleted "default" "myflink" 300
 fi
 
-if [ $op == "start" ]; then
+if [ $op == "start" -o $op == "restart" ]; then
   bin/kubernetes-session.sh \
     -Dkubernetes.cluster-id=myflink \
     -Dtaskmanager.memory.process.size=40960m \
@@ -42,20 +47,18 @@ if [ $op == "start" ]; then
     -Dkubernetes.jobmanager.service-account=flink \
     -Dcontainerized.master.env.HTTP2_DISABLE=true \
     -Dcontainerized.taskmanager.env.HTTP2_DISABLE=true
+  wait_pod_running "default" "myflink" 1
 fi
 EOF
 chmod a+x ${file}
 
 ~/scripts/myflink-cp-op.sh start
 ~/scripts/myflink-cp-op.sh stop
-
-./bin/kubernetes-session.sh \
-  -Dkubernetes.cluster-id=myflink \
-  -Dtaskmanager.memory.process.size=4096m \
-  -Dkubernetes.taskmanager.cpu=2 \
-  -Dtaskmanager.numberOfTaskSlots=4 \
-  -Dresourcemanager.taskmanager-timeout=3600000
+~/scripts/myflink-cp-op.sh restart
 
 kubectl get pod | grep myflink
 #检查得到Jobmanager ui的NodePort
 kubectl get svc | grep myflink
+
+cd ~/flink
+bin/flink run -d -e kubernetes-session -Dkubernetes.cluster-id=myflink examples/streaming/WindowJoin.jar
