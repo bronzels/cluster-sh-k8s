@@ -1,8 +1,5 @@
-#如果是项目定制开发contrib-connector有修改，把k8sdeploy.sh打包生成confluent_jars.tgz上传到跳板机/tmp
-#如果是新的第三方connector，相应目录打包生成confluent_jars.tgz上传到跳板机/tmp
-cd ~
-
-tar xzvf /tmp/k8sdeploy.tar.gz
+#如果是项目定制开发contrib-connector有修改
+#把k8sdeploy.sh打包生成k8sdeploy.tar.gz上传到master01，解压到home目录
 
 rev=5.3.2
 destdir=${HOME}/mykc/confluent-${rev}/share/java

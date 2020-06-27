@@ -16,8 +16,32 @@ log4j.appender.console.layout=org.apache.log4j.PatternLayout
 log4j.appender.console.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %-60c %x - %m%n
 EOF
 
+
 kubectl create serviceaccount flink
 kubectl create clusterrolebinding flink-role-binding-flink --clusterrole=edit --serviceaccount=default:flink
+
+rm -rf ~/flinkdeploy
+mkdir ~/flinkdeploy
+cd ~/flinkdeploy
+cp ~/k8sdeploy_dir/flink_com_libfiles.tar.gz
+
+file=Dockerfile
+cat << \EOF >> ${file}
+FROM flink:latest
+MAINTAINER bronzels <bronzels@hotmail.com>
+
+ADD flink_com_libfiles.tar.gz /opt/flink/lib
+EOF
+
+docker images|grep "<none>"|awk '{print $3}'|xargs docker rmi -f
+
+docker images|grep flink
+docker images|grep flink|awk '{print $3}'|xargs docker rmi -f
+ansible slavek8s -i /etc/ansible/hosts-ubuntu -m shell -a"docker images|grep flink|awk '{print \$3}'|xargs docker rmi -f"
+docker images|grep flink
+
+docker build -f ~/pika/Dockerfile -t master01:30500/bronzels/flink:0.1 ./
+docker push master01:30500/bronzels/flink:0.1
 
 #    -Dkubernetes.namespace=str
 file=~/scripts/myflink-cp-op.sh
@@ -38,6 +62,7 @@ fi
 
 if [ $op == "start" -o $op == "restart" ]; then
   bin/kubernetes-session.sh \
+    -Dkubernetes.container.image=master01:30500/bronzels/flink:0.1
     -Dkubernetes.cluster-id=myflink \
     -Dtaskmanager.memory.process.size=40960m \
     -Dkubernetes.taskmanager.cpu=4 \

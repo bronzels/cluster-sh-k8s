@@ -1,8 +1,5 @@
-#如果是项目定制开发的流处理部分有修改，把k8sdeploy.sh打包生成k8sdeploy.tar.gz上传到跳板机
-#ubuntu
-cd ~
-
-tar xzvf /tmp/k8sdeploy.tar.gz
+#如果是项目定制开发的dag部分有修改
+#把k8sdeploy.sh打包生成k8sdeploy.tar.gz上传到master01，解压到home目录
 
 cd ~/kube-airflow
 

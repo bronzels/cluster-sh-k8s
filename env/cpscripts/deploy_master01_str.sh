@@ -1,13 +1,10 @@
-#如果是项目定制开发的流处理部分有修改，把k8sdeploy.sh打包生成k8sdeploy.tar.gz上传到跳板机
-#ubuntu
-cd ~
+#如果是项目定制开发的流处理部分有修改
+# 把k8sdeploy.sh打包生成k8sdeploy.tar.gz上传到master01，解压到home目录
 
-tar xzvf /tmp/k8sdeploy.tar.gz
 
-:<<EOF
 cd ~/flinkdeploy
 
-cp -rf ~/k8sdeploy_dir/str_jar ~/flinkdeploy/str_jar
+cp ~/k8sdeploy_dir/flink_com_libfiles.tar.gz
 
 docker images|grep "<none>"|awk '{print $3}'|xargs docker rmi -f
 
@@ -18,4 +15,3 @@ docker images|grep flink
 
 docker build -f ~/pika/Dockerfile -t master01:30500/bronzels/flink:0.1 ./
 docker push master01:30500/bronzels/flink:0.1
-EOF

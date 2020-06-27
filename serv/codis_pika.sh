@@ -80,14 +80,15 @@ cp -r kubernetes kubernetes.bk
 docker build -t master01:30500/codis/codis-image:0.1 ./
 docker push master01:30500/codis/codis-image:0.1
 
-cd ~/codis/kubernetes
 find ~/codis/kubernetes -name "*.yaml" | xargs grep "image: codis-image"
 find ~/codis/kubernetes -name "*.yaml" | xargs sed -i 's@image: codis-image@image: master01:30500/codis/codis-image:0.1@g'
 find ~/codis/kubernetes -name "*.yaml"  | xargs grep "apps/v1beta1"
 find ~/codis/kubernetes -name "*.yaml" | xargs sed -i 's@apps/v1beta1@apps/v1@g'
-#./output/bin/pika -c ./conf/pika.conf
+
+cd ~/codis/kubernetes
 file=codis-server.yaml
 cp ~/codis/kubernetes.bk/$file $file
+#./output/bin/pika -c ./conf/pika.conf
 sed -i 's@image: codis-image@image: master01:30500/pikadb/pika_codis:0.1@g' ${file}
 sed -i 's@6379@9221@g' ${file}
 sed -i 's@replicas: 4@replicas: 6@g' ${file}
@@ -120,7 +121,26 @@ sed -i '/  serviceName:/i\  selector:\n      matchLabels:\n        app: codis-da
 sed -i '/  serviceName:/i\  selector:\n      matchLabels:\n        app: codis-ha' codis-ha.yaml
 
 file=codis-service.yaml
+cp ~/codis/kubernetes.bk/$file $file
 sed -i 's@6379@9221@g' ${file}
+cat << \EOF >> ${file}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: codis-proxy
+  name: codis-proxy-ext
+spec:
+  type: NodePort
+  ports:
+  - port: 19000
+    name: proxy
+    nodePort: 31900
+  selector:
+    app: codis-proxy
+EOF
 mv ${file} ${file}.template
 
 file=codis-proxy.yaml
@@ -168,9 +188,11 @@ cp ${file}.yaml.template ${file}-${codisns}.yaml
 if [ $codisns == "serv" ]; then
   echo "in serv"
   #sed -i 's@nodePort: 31080@nodePort: 31080@g' ${file}-${codisns}.yaml
+  #sed -i 's@nodePort: 31900@nodePort: 31900@g' ${file}-${codisns}.yaml
 else
   echo "in servyat"
   sed -i 's@nodePort: 31080@nodePort: 31081@g' ${file}-${codisns}.yaml
+  sed -i 's@nodePort: 31900@nodePort: 31901@g' ${file}-${codisns}.yaml
 fi
 
 function mycodis_cp_op_stop(){
@@ -324,6 +346,8 @@ curl http://master01:31080
 kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.serv -p 19000  set fool2 bar2
 kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.serv -p 19000  get fool2
 kubectl -n default run test-zookeeper-serv -ti --image=zookeeper:3.5.5 --rm=true --restart=Never -- zkCli.sh -server zookeeper.serv:2181 ls /codis3/str
+kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h 10.10.0.234 -p 31900  set fool3 bar3
+kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h 10.10.0.234 -p 31900  get fool3
 
 cd ~/codis/kubernetes
 ~/scripts/mycodis-cp-op.sh start servyat
@@ -335,6 +359,8 @@ curl http://master01:31081
 kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.servyat -p 19000  set fool4 bar4
 kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.servyat -p 19000  get fool4
 kubectl -n default run test-zookeeper-serv -ti --image=zookeeper:3.5.5 --rm=true --restart=Never -- zkCli.sh -server zookeeper.servyat:2181 ls /codis3/str
+kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h 10.10.0.234 -p 31901  set fool5 bar5
+kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h 10.10.0.234 -p 31901  get fool5
 
 :<<EOF
 kubectl exec -it codis-server-0 -n serv bash

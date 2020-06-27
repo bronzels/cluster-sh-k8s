@@ -13,7 +13,7 @@ cd ~
 tar xzvf /tmp/k8sdeploy.tar.gz
 
 cd ${MYHOME}
-cp ~/k8sdeploy_dir/dags/* dags/
+cp -rf ~/k8sdeploy_dir/dags/* dags/
 cp ~/k8sdeploy_dir/requirements.txt requirements/dags.txt
 
 kubectl delete -f airflow.all.yaml -n fl
