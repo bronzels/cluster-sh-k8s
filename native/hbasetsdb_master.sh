@@ -21,13 +21,8 @@ exit
 rm -rf ~/scripts
 mkdir ~/scripts
 
-#把本工程的env/hbscript目录下（不带目录）所有脚本，解压到hadoop用户的~/scripts/目录
-cd ~/scripts;unzip /tmp/hbscripts.zip
-#把项目工程的env-k8s/comhbscript目录下（不带目录）所有脚本，解压到hadoop用户的~/scripts/目录
-cd ~/scripts;unzip /tmp/comcpscripts.zip
-
 cat << \EOF >> ~/.bashrc
-export PATH=$PATH:/bin
+export PATH=$PATH:$HOME/scripts
 EOF
 
 #！！！手工，重新登录ubuntu

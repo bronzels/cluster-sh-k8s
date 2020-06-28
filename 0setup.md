@@ -130,11 +130,14 @@
         cd ${HOME}
         tar xzvf /tmp/k8sdeploy-scripts.tar.gz
         cp ${HOME}/k8sdeploy-scripts/cpscripts/* ${HOME}/scripts
+        chmod a+x ${HOME}/scripts/*.sh
       hadoop相关脚本，上传到slave01，root用户下
         cd ${HOME}
         tar xzvf /tmp/k8sdeploy-scripts.tar.gz
         cp ${HOME}/k8sdeploy-scripts/scripts/* ${HOME}/scripts
+        chmod a+x ${HOME}/scripts/*.sh
       tsdb/hbase相关脚本，上传到tsdb/hbase集群master，hadoop用户下
         cd ${HOME}
         tar xzvf /tmp/k8sdeploy-scripts.tar.gz
         cp ${HOME}/k8sdeploy-scripts/hbscripts/* ${HOME}/scripts
+        chmod a+x ${HOME}/scripts/*.sh

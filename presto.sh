@@ -240,11 +240,11 @@ kubectl describe pod `kubectl get pod -n dw | grep coordinator | awk '{print $1}
 kubectl exec -n dw -t `kubectl get pod -n dw | grep coordinator | awk '{print $1}'`  -- ls -l /presto/plugin/comprplg
 kubectl logs -n dw mypres-presto-coordinator-5b4d7bf85d-d629x
 
-kubectl -n default run test-presto -ti --image=master01:30500/wiwdata/presto:0.1 --rm=true --restart=Never -- presto --server http://10.10.7.44:30080 --catalog hive --schema default
+kubectl -n default run test-presto -ti --image=master01:30500/wiwdata/presto:0.1 --rm=true --restart=Never -- presto --server http://10.10.0.234:30080 --catalog hive --schema default
   SHOW TABLES;
   SELECT COUNT(1) FROM kylin_sales;
 
-kubectl -n default run test-presto -ti --image=master01:30500/wiwdata/presto:0.1 --rm=true --restart=Never -- presto --server http://10.10.7.44:30080 --catalog kudu_without_emulation
+kubectl -n default run test-presto -ti --image=master01:30500/wiwdata/presto:0.1 --rm=true --restart=Never -- presto --server http://10.10.0.234:30080 --catalog kudu_without_emulation
   把项目目定制开发的com-schema.sql的数仓版本改为v1
   执行com-schema.sql，插入需要模拟的schema
 
