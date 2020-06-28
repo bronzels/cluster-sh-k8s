@@ -81,7 +81,10 @@ FROM anapsix/alpine-java:8_server-jre_unlimited
 MAINTAINER bronzels@hotmail.com
 USER root:root
 
-RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+RUN apk update \
+    && apk add tzdata \
+    && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && echo "Asia/Shanghai" > /etc/timezone
 
 COPY confluent-5.3.2 /opt/confluent-5.3.2
 RUN ln -sf /opt/confluent-5.3.2 /opt/confluent
@@ -327,9 +330,8 @@ chmod a+x ${file}
 ~/scripts/myconnector-cp-start-log-check.sh mqstr mysqlsrctest
 
 :<<EOF
-kubectl get pod -n mqstr-mysqlsrctest | grep myconn | awk '{print $1}'
 kubectl get svc -n mqstr-mysqlsrctest | grep myconn
-kubectl exec -it myconn-5fd6f987bc-kd4vz -n mqstr-mysqlsrctest bash
+kubectl exec -it `kubectl get pod -n mqstr-mysqlsrctest | grep myconn | awk '{print $1}'` -n mqstr-mysqlsrctest bash
 EOF
 
 kubectl run curl-json -it --image=radial/busyboxplus:curl --restart=Never --rm -- curl myconnsvc.mqstr-mysqlsrctest:8083
