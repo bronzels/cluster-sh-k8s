@@ -4,7 +4,7 @@
 #把k8sdeploy.sh打包生成k8sdeploy.tar.gz上传到master01，解压到home目录
 
 #if there are libraries, either com or 3rd, tared into spark_jars.tar.gz
-cp ~/k8sdeploy_dir/spark_shared_jars ~/spark
+cp ~/k8sdeploy_dir/spark_shared_jars.tar.gz ~/spark
 
 docker images|grep "<none>"|awk '{print $3}'|xargs docker rmi -f
 

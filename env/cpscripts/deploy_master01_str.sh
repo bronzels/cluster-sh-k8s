@@ -4,7 +4,8 @@
 
 cd ~/flinkdeploy
 
-cp ~/k8sdeploy_dir/flink_com_libfiles.tar.gz
+#如果依赖库没有更改，只是主程序修改，没必要执行以下步骤：
+cp ~/k8sdeploy_dir/flink_com_libfiles.tar.gz ./
 
 docker images|grep "<none>"|awk '{print $3}'|xargs docker rmi -f
 
@@ -15,3 +16,5 @@ docker images|grep flink
 
 docker build -f ~/pika/Dockerfile -t master01:30500/bronzels/flink:0.1 ./
 docker push master01:30500/bronzels/flink:0.1
+
+~/scripts/myflink-cp-op.sh restart

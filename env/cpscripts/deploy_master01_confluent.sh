@@ -6,7 +6,10 @@ destdir=${HOME}/mykc/confluent-${rev}/share/java
 cd ${destdir}
 rm -rf kafka-connect-contrib
 
-tar xzvf /tmp/confluent_jars.tgz
+cp -rf ~/k8sdeploy_dir/kafka-connect-contrib ./
+cp -rf ~/k8sdeploy_dir/comkcplug ./
+
+cd ${HOME}/mykc
 
 docker images|grep "<none>"|awk '{print $3}'|xargs docker rmi -f
 

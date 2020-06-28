@@ -23,10 +23,10 @@ kubectl create clusterrolebinding flink-role-binding-flink --clusterrole=edit --
 rm -rf ~/flinkdeploy
 mkdir ~/flinkdeploy
 cd ~/flinkdeploy
-cp ~/k8sdeploy_dir/flink_com_libfiles.tar.gz
+cp ~/k8sdeploy_dir/flink_com_libfiles.tar.gz ./
 
 file=Dockerfile
-cat << \EOF >> ${file}
+cat << \EOF > ${file}
 FROM flink:latest
 MAINTAINER bronzels <bronzels@hotmail.com>
 
@@ -40,7 +40,7 @@ docker images|grep flink|awk '{print $3}'|xargs docker rmi -f
 ansible slavek8s -i /etc/ansible/hosts-ubuntu -m shell -a"docker images|grep flink|awk '{print \$3}'|xargs docker rmi -f"
 docker images|grep flink
 
-docker build -f ~/pika/Dockerfile -t master01:30500/bronzels/flink:0.1 ./
+docker build -t master01:30500/bronzels/flink:0.1 ./
 docker push master01:30500/bronzels/flink:0.1
 
 #    -Dkubernetes.namespace=str

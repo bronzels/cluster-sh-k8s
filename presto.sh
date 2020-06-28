@@ -170,8 +170,7 @@ find ${MYHOME}/presto/templates -name "*.yaml"  | xargs grep "apps/v1beta2"
 
 cd ${MYHOME}/image
 
-mkdir comprplg
-cp /tmp/fmkcplugin-0.0.1-SNAPSHOT.jar ./comprplg/
+cp -rf ~/k8sdeploy_dir/comprplg ./
 
 file=Dockerfile
 cp ${MYHOME}.bk/presto/${file} ${file}
@@ -190,7 +189,6 @@ docker images|grep presto
 
 python3 manager.py build --version 0.218
 
-docker images|grep presto
 docker tag wiwdata/presto:0.218 master01:30500/wiwdata/presto:0.1
 docker push master01:30500/wiwdata/presto:0.1
 
@@ -206,6 +204,8 @@ rm -f ${file}
 cat << \EOF > ${file}
 #!/bin/bash
 
+. ${HOME}/scripts/k8s_funcs.sh
+
 cd ~/presto-chart/presto
 
 #set -e
@@ -215,6 +215,8 @@ cd ~/presto-chart/presto
 #  --set server.jvm.maxHeapSize=36G
 if [ $1 == "stop" -o $1 == "restart" ]; then
   helm uninstall mypres -n dw
+  wait_pod_deleted "dw" "mypres-presto-coordinator" 600
+  wait_pod_deleted "dw" "mypres-presto-worker" 600
 fi
 
 if [ $1 == "start" -o $1 == "restart" ]; then
@@ -224,6 +226,10 @@ if [ $1 == "start" -o $1 == "restart" ]; then
     --set image.repository="master01:30500/wiwdata/presto" \
     --set image.tag="0.1" \
     ./
+  wait_pod_running "dw" "mypres-presto-coordinator" 1 600
+  wait_pod_running "dw" "mypres-presto-worker" 4 600
+
+  wait_pod_log_line "dw" "mypres-presto-coordinator" "======== SERVER STARTED ========" 900
 fi
 EOF
 chmod a+x ${file}

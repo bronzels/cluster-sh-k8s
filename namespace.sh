@@ -46,8 +46,6 @@ kubectl create namespace serv
 kubectl create namespace servyat
   #codis
   #opentsdb
-kubectl create namespace str
-  #flink
 kubectl create namespace dw
   #presto
 kubectl create namespace fl

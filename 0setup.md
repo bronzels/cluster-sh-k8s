@@ -115,28 +115,34 @@
     清理和启动pika的脚本，移植到ssh到控制平面调用restart codis/pika脚本
     重启tsdb的脚本，移植到ssh到控制平面调用restart tsdb集群脚本
 
-######18，新版本发布之前，k8s环境准备，执行/env/cpscripts/（或master01 ~/scripts/)
-    在项目定制工程里，shell目录，执行k8sdeploy.sh，准备k8sdeploy.tar.gz，上传到master01
+######18，项目定制部分部署
+    在项目定制工程里，shell目录，执行k8sdeploy.sh，准备k8sdeploy.tar.gz，上传到master01/slave01
       cd ~
+      rm -rf k8sdeploy_dir
       tar xzvf /tmp/k8sdeploy.tar.gz
-      然后
-        批处理相关修改，deploy_master01_batch.sh
+      然后在master01/slave01
+        #批处理相关修改，deploy_master01_batch.sh
+        批处理相关修改，deploy_slave01_batch.sh
         流处理相关修改，deploy_master01_str.sh
         airflow dag相关修改，deploy_master01_dags.sh
         数仓confluent插件相关修改，deploy_master01_confluent.sh
         presto UDF插件相关修改，deploy_master01_presto.sh
     在项目定制工程里，shell目录，执行k8sdeploy-scripts.sh，准备k8sdeploy-scripts.tar.gz
-      cp相关脚本，上传到master01，ubuntu用户下
+      cd ~
+      rm -rf k8sdeploy-scripts
+      tar xzvf /tmp/k8sdeploy-scripts.tar.gz
+      饭后
+        cp相关脚本，上传到master01，ubuntu用户下
         cd ${HOME}
         tar xzvf /tmp/k8sdeploy-scripts.tar.gz
         cp ${HOME}/k8sdeploy-scripts/cpscripts/* ${HOME}/scripts
         chmod a+x ${HOME}/scripts/*.sh
-      hadoop相关脚本，上传到slave01，root用户下
+        hadoop相关脚本，上传到slave01，root用户下
         cd ${HOME}
         tar xzvf /tmp/k8sdeploy-scripts.tar.gz
         cp ${HOME}/k8sdeploy-scripts/scripts/* ${HOME}/scripts
         chmod a+x ${HOME}/scripts/*.sh
-      tsdb/hbase相关脚本，上传到tsdb/hbase集群master，hadoop用户下
+        tsdb/hbase相关脚本，上传到tsdb/hbase集群master，hadoop用户下
         cd ${HOME}
         tar xzvf /tmp/k8sdeploy-scripts.tar.gz
         cp ${HOME}/k8sdeploy-scripts/hbscripts/* ${HOME}/scripts

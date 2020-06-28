@@ -349,6 +349,45 @@ function wait_pod_specific_log_line(){
   done
 }
 
+function wait_pod_log_line(){
+  k8sfunc_ns=$1
+  echo "k8sfunc_ns:${k8sfunc_ns}"
+  if_namespace_exists "${k8sfunc_ns}"
+  funcrst=`echo $?`
+  echo "line:$LINENO, funcrst:${funcrst}"
+  if [ ${funcrst} -eq 0 ]; then
+    echo "no such k8sfunc_ns:${k8sfunc_ns}"
+    return 0
+  fi
+  k8sfunc_name2grep=$2
+  echo "k8sfunc_name2grep:${k8sfunc_name2grep}"
+  k8sfunc_logline=$3
+  echo "k8sfunc_logline:${k8sfunc_logline}"
+  timeoutsec=$4
+  echo "timeoutsec:${timeoutsec}"
+
+  time_start=`date +"%s"`
+  time_total=0
+  while [ 1 ]
+  do
+    result=`kubectl get pod -n ${k8sfunc_ns} | awk '{print $1}' | grep ${k8sfunc_name2grep} | xargs -I CNAME  sh -c "kubectl logs -n ${k8sfunc_ns} CNAME | grep '${k8sfunc_logline}'"`
+    if [[ -z ${result} ]] ;then
+      sleep 5
+    else
+      echo "success, specific log line:${k8sfunc_logline} detected in ${k8sfunc_name2grep} pod as result:"
+      echo "${result}"
+      return 1
+    fi
+    time_check=`date +"%s"`
+    let time_total=time_check-time_start
+    echo "time_total:${time_total}"
+    if [ ${time_total} -gt ${timeoutsec} ] ;then
+       echo "failed to detect specific log line, timeout"
+       return 0
+    fi
+  done
+}
+
 function fix_statfulset_rev_beta1(){
   k8sfunc_file=$1
   sed -i 's@apps\/v1beta1@apps\/v1@g' ${k8sfunc_file}
@@ -361,4 +400,4 @@ function fix_statfulset_rev_beta2(){
 
 EOF
 chmod a+x ${file}
-${file}
+. ${file}
