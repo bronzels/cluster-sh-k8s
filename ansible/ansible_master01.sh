@@ -118,3 +118,11 @@ ls ~/nfsmnted
 umount ~/nfsmnted
 EOF
 
+#for airflow
+mkdir ~/.pip
+cat << \EOF > ~/.pip/pip.conf
+[global]
+index-url = https://mirrors.aliyun.com/pypi/simple
+[install]
+trusted-host=mirrors.aliyun.com
+EOF
