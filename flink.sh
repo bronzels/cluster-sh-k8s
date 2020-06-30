@@ -56,13 +56,13 @@ echo "op:${op}"
 
 cd ~/flink
 if [ $op == "stop" -o $op == "restart" ]; then
-  echo 'stop' | bin/kubernetes-session.sh -Dkubernetes.cluster-id=myflink -Dexecution.attached=true
+  echo 'stop' | bin/kubernetes-session.sh -Dkubernetes.cluster-id=flink -Dexecution.attached=true
   wait_pod_deleted "default" "myflink" 300
 fi
 
 if [ $op == "start" -o $op == "restart" ]; then
   bin/kubernetes-session.sh \
-    -Dkubernetes.container.image=master01:30500/bronzels/flink:0.1
+    -Dkubernetes.container.image=master01:30500/bronzels/flink:0.1 \
     -Dkubernetes.cluster-id=myflink \
     -Dtaskmanager.memory.process.size=40960m \
     -Dkubernetes.taskmanager.cpu=4 \
@@ -73,7 +73,7 @@ if [ $op == "start" -o $op == "restart" ]; then
     -Dkubernetes.jobmanager.service-account=flink \
     -Dcontainerized.master.env.HTTP2_DISABLE=true \
     -Dcontainerized.taskmanager.env.HTTP2_DISABLE=true
-  wait_pod_running "default" "myflink" 1
+  wait_pod_running "default" "myflink" 1 300
 fi
 EOF
 chmod a+x ${file}

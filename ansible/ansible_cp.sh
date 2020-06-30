@@ -213,3 +213,5 @@ ansible all -m shell -a"ls ~"
 
 #ubuntu
 ansible all -i /etc/ansible/hosts-ubuntu -m shell -a"ls ~"
+
+mkdir ~/released/

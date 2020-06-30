@@ -116,14 +116,17 @@
     重启tsdb的脚本，移植到ssh到控制平面调用restart tsdb集群脚本
 
 ######18，项目定制部分部署
-    在项目定制工程里，shell目录，执行k8sdeploy.sh，准备k8sdeploy.tar.gz，上传到master01/slave01
+    如果因为mysql同步出错的原因重新跑，并没有任何程序dag修改，master01直接执行~/scripts/myairflow-cp-op.sh restart
+    在项目定制工程里，shell目录，执行k8sdeploy.sh，准备${version_prefix}-k8sdeploy.tar.gz，上传到master01/slave01（root）
       cd ~
       rm -rf k8sdeploy_dir
-      tar xzvf /tmp/k8sdeploy.tar.gz
-      然后在master01/slave01
+      export version_prefix="2_2_4_0_0"
+      cp /tmp/${version_prefix}-k8sdeploy.tar.gz ~/released/
+      tar xzvf ~/released/${version_prefix}-k8sdeploy.tar.gz
+      然后在master01/slave01（root）
         #批处理相关修改，deploy_master01_batch.sh
         批处理相关修改，deploy_slave01_batch.sh
-        流处理相关修改，deploy_master01_str.sh
+        流处理相关修改，deploy_master01_str.sh（web监控端口每次新创建，从脚本返回内容里查找）
         airflow dag相关修改，deploy_master01_dags.sh
         数仓confluent插件相关修改，deploy_master01_confluent.sh
         presto UDF插件相关修改，deploy_master01_presto.sh
@@ -131,19 +134,19 @@
       cd ~
       rm -rf k8sdeploy-scripts
       tar xzvf /tmp/k8sdeploy-scripts.tar.gz
-      饭后
+      然后
         cp相关脚本，上传到master01，ubuntu用户下
-        cd ${HOME}
-        tar xzvf /tmp/k8sdeploy-scripts.tar.gz
-        cp ${HOME}/k8sdeploy-scripts/cpscripts/* ${HOME}/scripts
-        chmod a+x ${HOME}/scripts/*.sh
+            cd ${HOME}
+            tar xzvf /tmp/k8sdeploy-scripts.tar.gz
+            cp ${HOME}/k8sdeploy-scripts/cpscripts/* ${HOME}/scripts
+            chmod a+x ${HOME}/scripts/*.sh
         hadoop相关脚本，上传到slave01，root用户下
-        cd ${HOME}
-        tar xzvf /tmp/k8sdeploy-scripts.tar.gz
-        cp ${HOME}/k8sdeploy-scripts/scripts/* ${HOME}/scripts
-        chmod a+x ${HOME}/scripts/*.sh
+            cd ${HOME}
+            tar xzvf /tmp/k8sdeploy-scripts.tar.gz
+            cp ${HOME}/k8sdeploy-scripts/scripts/* ${HOME}/scripts
+            chmod a+x ${HOME}/scripts/*.sh
         tsdb/hbase相关脚本，上传到tsdb/hbase集群master，hadoop用户下
-        cd ${HOME}
-        tar xzvf /tmp/k8sdeploy-scripts.tar.gz
-        cp ${HOME}/k8sdeploy-scripts/hbscripts/* ${HOME}/scripts
-        chmod a+x ${HOME}/scripts/*.sh
+            cd ${HOME}
+            tar xzvf /tmp/k8sdeploy-scripts.tar.gz
+            cp ${HOME}/k8sdeploy-scripts/hbscripts/* ${HOME}/scripts
+            chmod a+x ${HOME}/scripts/*.sh

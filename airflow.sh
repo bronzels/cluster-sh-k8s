@@ -186,11 +186,11 @@ if [ $1 == "start" -o $1 == "restart" ]; then
     --set airflow.image.repository="master01:30500/bronzels/airflow" \
     --set airflow.image.tag="1.10.10-python3.6" \
     stable/airflow
+  kubectl apply -f ./myaf-web-ext.yaml -n fl
   wait_pod_running "fl" "myaf-" 6 600
   wait_pod_log_line "fl" "myaf-scheduler" "Launched DagFileProcessorManager with pid" 900
   wait_pod_log_line "fl" "myaf-worker" "Events of group {task} enabled by remote" 900
-  wait_pod_log_line "fl" "myaf-web" "*** running webserver..." 900
-  kubectl apply -f ./myaf-web-ext.yaml -n fl
+  wait_pod_log_line "fl" "myaf-web" "Filling up the DagBag from /opt/airflow/dags" 900
 fi
 EOF
 chmod a+x ${file}
@@ -207,6 +207,8 @@ kubectl get svc -n fl
 kubectl logs `kubectl get pod -n fl | grep myaf-scheduler | awk '{print $1}'` -n fl
 kubectl logs `kubectl get pod -n fl | grep myaf-worker | awk '{print $1}'` -n fl
 kubectl logs `kubectl get pod -n fl | grep myaf-web | awk '{print $1}'` -n fl
+
+kubectl logs `kubectl get pod -n fl | grep myaf-web | awk '{print $1}'` -n fl | more
 
 kubectl exec -it `kubectl get pod -n fl | grep myaf-scheduler | awk '{print $1}'` -n fl -- ls /opt/airflow/dags
 kubectl exec -it `kubectl get pod -n fl | grep myaf-worker | awk '{print $1}'` -n fl -- ls /opt/airflow/dags
