@@ -96,38 +96,96 @@ kubectl exec -it busy-box-test1 -n fl -- ls /mnt/busy-box/dags
 kubectl delete pod busy-box-test1 -n fl
 #wait_pod_deleted "fl" "busy-box-test1" 600
 
-helm install myaf -n fl \
-  --set airflow.config.AIRFLOW__SMTP__SMTP_HOST="smtp.exmail.qq.com" \
-  --set airflow.config.AIRFLOW__SMTP__SMTP_STARTTLS="False" \
-  --set airflow.config.AIRFLOW__SMTP__SMTP_SSL="True" \
-  --set airflow.config.AIRFLOW__SMTP__SMTP_PORT="465" \
-  --set airflow.config.AIRFLOW__SMTP__SMTP_USER="big-data@followme.cn" \
-  --set airflow.config.AIRFLOW__SMTP__SMTP_PASSWORD="sf323mNoK" \
-  --set airflow.config.AIRFLOW__SMTP__SMTP_MAIL_FROM="big-data@followme.cn" \
-  --set airflow.config.AIRFLOW__CORE__LOAD_EXAMPLES="False" \
-  --set dags.installRequirements=true \
-  --set dags.persistence.enabled=true\
-  --set dags.persistence.existingClaim="myaf-nfs-pvc" \
-  --set dags.persistence.subPath="dags" \
-  stable/airflow
-wait_pod_running "fl" "myaf-" 6 600
+file=Dockerfile
+cat << \EOF > ${file}
+FROM apache/airflow:1.10.10-python3.6
+MAINTAINER bronzels@hotmail.com
+
+USER root:root
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+           libsasl2-dev \
+           libmysqld-dev \
+           build-essential \
+    && apt-get autoremove -yqq --purge \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+USER ${AIRFLOW_UID}
+
+EOF
+
+docker images|grep "<none>"|awk '{print $3}'|xargs docker rmi -f
+
+docker images|grep airflow
+docker images|grep airflow|awk '{print $3}'|xargs docker rmi -f
+sudo ansible slavek8s -m shell -a"docker images|grep airflow|awk '{print \$3}'|xargs docker rmi -f"
+docker images|grep airflow
+
+docker build -t master01:30500/bronzels/airflow:1.10.10-python3.6 ./
+docker push master01:30500/bronzels/airflow:1.10.10-python3.6
+
+file=~/scripts/myairflow-cp-op.sh
+rm -f ${file}
+cat << \EOF > ${file}
+#!/bin/bash
+
+. ${HOME}/scripts/k8s_funcs.sh
+
+cd ~/myairflow
+
+#set -e
+
+if [ $1 == "stop" -o $1 == "restart" ]; then
+  helm delete myaf -n fl
+  wait_pod_deleted "fl" "myaf-" 600
+fi
+
+if [ $1 == "start" -o $1 == "restart" ]; then
+  helm install myaf -n fl \
+    --set airflow.config.AIRFLOW__SMTP__SMTP_HOST="smtp.exmail.qq.com" \
+    --set airflow.config.AIRFLOW__SMTP__SMTP_STARTTLS="False" \
+    --set airflow.config.AIRFLOW__SMTP__SMTP_SSL="True" \
+    --set airflow.config.AIRFLOW__SMTP__SMTP_PORT="465" \
+    --set airflow.config.AIRFLOW__SMTP__SMTP_USER="big-data@followme.cn" \
+    --set airflow.config.AIRFLOW__SMTP__SMTP_PASSWORD="sf323mNoK" \
+    --set airflow.config.AIRFLOW__SMTP__SMTP_MAIL_FROM="big-data@followme.cn" \
+    --set airflow.config.AIRFLOW__CORE__LOAD_EXAMPLES="False" \
+    --set dags.installRequirements=true \
+    --set dags.persistence.enabled=true\
+    --set dags.persistence.existingClaim="myaf-nfs-pvc" \
+    --set dags.persistence.subPath="dags" \
+    --set airflow.image.repository="master01:30500/bronzels/airflow" \
+    --set airflow.image.tag="1.10.10-python3.6" \
+    stable/airflow
+  wait_pod_running "fl" "myaf-" 6 600
+  wait_pod_log_line "fl" "myaf-scheduler" "INFO - Creating tables" 900
+  wait_pod_log_line "fl" "myaf-worker" "*** running scheduler..." 900
+  wait_pod_log_line "fl" "myaf-web" "*** running webserver..." 900
+fi
+EOF
+chmod a+x ${file}
+
+~/scripts/myairflow-cp-op.sh start
+~/scripts/myairflow-cp-op.sh stop
+~/scripts/myairflow-cp-op.sh restart
 
 :<<EOF
-helm delete myaf -n fl
-wait_pod_deleted "fl" "myaf-" 600
-
 kubectl get pod -n fl
 kubectl get svc -n fl
 
-kubectl exec -it `kubectl get pod -n fl | grep myaf-scheduler | awk '{print $1}'` -n fl -- ls /opt/airflow/dags
-kubectl exec -it `kubectl get pod -n fl | grep myaf-worker | awk '{print $1}'` -n fl -- ls /opt/airflow/dags
 
-kubectl logs`kubectl get pod -n fl | grep myaf-scheduler | awk '{print $1}'` -n fl
+kubectl logs `kubectl get pod -n fl | grep myaf-scheduler | awk '{print $1}'` -n fl
 kubectl logs `kubectl get pod -n fl | grep myaf-worker | awk '{print $1}'` -n fl
 kubectl logs `kubectl get pod -n fl | grep myaf-web | awk '{print $1}'` -n fl
 
-kubectl exec -n fl -t `kubectl get pod -n fl | grep myaf-web | awk '{print $1}'`  -- ls /usr/local/airflow
+kubectl exec -it `kubectl get pod -n fl | grep myaf-scheduler | awk '{print $1}'` -n fl -- ls /opt/airflow/dags
+kubectl exec -it `kubectl get pod -n fl | grep myaf-worker | awk '{print $1}'` -n fl -- ls /opt/airflow/dags
+kubectl exec -n fl -t `kubectl get pod -n fl | grep myaf-web | awk '{print $1}'`  -- ls /opt/airflow/dags
+
 kubectl exec -n fl -t `kubectl get pod -n fl | grep myaf-web | awk '{print $1}'`  -- python -V
+#Python 3.6.10
 
 NOTES:
 Congratulations. You have just deployed Apache Airflow!
