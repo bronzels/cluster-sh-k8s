@@ -96,6 +96,32 @@ kubectl exec -it busy-box-test1 -n fl -- ls /mnt/busy-box/dags
 kubectl delete pod busy-box-test1 -n fl
 #wait_pod_deleted "fl" "busy-box-test1" 600
 
+file=myaf-web-ext.yaml
+cat << \EOF > ${file}
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    meta.helm.sh/release-name: myaf
+    meta.helm.sh/release-namespace: fl
+  labels:
+    app: airflow
+    component: web
+    release: myaf
+  name: myaf-web-ext
+spec:
+  ports:
+  - name: web
+    port: 8080
+    protocol: TCP
+    nodePort: 30180
+  selector:
+    app: airflow
+    component: web
+    release: myaf
+  type: NodePort
+EOF
+
 file=Dockerfile
 cat << \EOF > ${file}
 FROM apache/airflow:1.10.10-python3.6
@@ -140,6 +166,7 @@ cd ~/myairflow
 if [ $1 == "stop" -o $1 == "restart" ]; then
   helm delete myaf -n fl
   wait_pod_deleted "fl" "myaf-" 600
+  kubectl delete -f ./myaf-web-ext.yaml -n fl
 fi
 
 if [ $1 == "start" -o $1 == "restart" ]; then
@@ -160,9 +187,10 @@ if [ $1 == "start" -o $1 == "restart" ]; then
     --set airflow.image.tag="1.10.10-python3.6" \
     stable/airflow
   wait_pod_running "fl" "myaf-" 6 600
-  wait_pod_log_line "fl" "myaf-scheduler" "INFO - Creating tables" 900
-  wait_pod_log_line "fl" "myaf-worker" "*** running scheduler..." 900
+  wait_pod_log_line "fl" "myaf-scheduler" "Launched DagFileProcessorManager with pid" 900
+  wait_pod_log_line "fl" "myaf-worker" "Events of group {task} enabled by remote" 900
   wait_pod_log_line "fl" "myaf-web" "*** running webserver..." 900
+  kubectl apply -f ./myaf-web-ext.yaml -n fl
 fi
 EOF
 chmod a+x ${file}
