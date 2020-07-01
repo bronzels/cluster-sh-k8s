@@ -187,6 +187,8 @@ function if_namespace_exists(){
 }
 
 function wait_pod_deleted(){
+  echo "in wait_pod_deleted"
+
   k8sfunc_ns=$1
   echo "k8sfunc_ns:${k8sfunc_ns}"
   if_namespace_exists "${k8sfunc_ns}"
@@ -194,7 +196,7 @@ function wait_pod_deleted(){
   echo "line:$LINENO, funcrst:${funcrst}"
   if [ ${funcrst} -eq 0 ]; then
     echo "no such k8sfunc_ns:${k8sfunc_ns}"
-    return 0
+    return 1
   fi
   k8sfunc_name2grep=$2
   echo "k8sfunc_name2grep:${k8sfunc_name2grep}"
@@ -208,7 +210,7 @@ function wait_pod_deleted(){
     result=`kubectl get pod -n ${k8sfunc_ns} | grep ${k8sfunc_name2grep}`
     if [[ -z ${result} ]] ;then
       echo "success, no pods named ${k8sfunc_name2grep} anymore"
-      return 1
+      return 0
     else
       echo "result:"
       echo "${result}"
@@ -219,12 +221,15 @@ function wait_pod_deleted(){
     echo "time_total:${time_total}"
     if [ ${time_total} -gt ${timeoutsec} ] ;then
        echo "failed to wait untill all pod deleted, timeout"
-       return 0
+       return 1
     fi
   done
+  return 0
 }
 
 function wait_pod_running(){
+  echo "in wait_pod_running"
+
   k8sfunc_ns=$1
   echo "k8sfunc_ns:${k8sfunc_ns}"
   if_namespace_exists "${k8sfunc_ns}"
@@ -232,7 +237,7 @@ function wait_pod_running(){
   echo "line:$LINENO, funcrst:${funcrst}"
   if [ ${funcrst} -eq 0 ]; then
     echo "no such k8sfunc_ns:${k8sfunc_ns}"
-    return 0
+    return 1
   fi
   k8sfunc_name2grep=$2
   echo "k8sfunc_name2grep:${k8sfunc_name2grep}"
@@ -269,7 +274,7 @@ function wait_pod_running(){
     done
     if [ ${running_total} -eq ${k8sfunc_replicas} ] ;then
       echo "success, all ${k8sfunc_replicas} pods named ${k8sfunc_name2grep} running 1/1"
-      return 1
+      return 0
     else
       echo "k8sfunc_replicas:${k8sfunc_replicas}, running_total:${running_total}"
     fi
@@ -279,9 +284,10 @@ function wait_pod_running(){
     echo "time_total:${time_total}"
     if [ ${time_total} -gt ${timeoutsec} ] ;then
        echo "failed to wait untill all pod deleted, timeout"
-       return 0
+       return 1
     fi
   done
+  return 0
 }
 
 function if_resource_with_exactname_exists(){
@@ -292,7 +298,7 @@ function if_resource_with_exactname_exists(){
   echo "line:$LINENO, funcrst:${funcrst}"
   if [ ${funcrst} -eq 0 ]; then
     echo "no such k8sfunc_ns:${k8sfunc_ns}"
-    return 0
+    return 1
   fi
   res=$2
   echo "res:${res}"
@@ -306,9 +312,12 @@ function if_resource_with_exactname_exists(){
   else
     return 1
   fi
+  return 0
 }
 
 function wait_pod_specific_log_line(){
+  echo "in wait_pod_specific_log_line"
+
   k8sfunc_ns=$1
   echo "k8sfunc_ns:${k8sfunc_ns}"
   if_namespace_exists "${k8sfunc_ns}"
@@ -316,7 +325,7 @@ function wait_pod_specific_log_line(){
   echo "line:$LINENO, funcrst:${funcrst}"
   if [ ${funcrst} -eq 0 ]; then
     echo "no such k8sfunc_ns:${k8sfunc_ns}"
-    return 0
+    return 1
   fi
   k8sfunc_name2grep=$2
   echo "k8sfunc_name2grep:${k8sfunc_name2grep}"
@@ -337,19 +346,22 @@ function wait_pod_specific_log_line(){
     else
       echo "success, specific log line:${k8sfunc_logline} detected in ${k8sfunc_name2grep} pod as result:"
       echo "${result}"
-      return 1
+      return 0
     fi
     time_check=`date +"%s"`
     let time_total=time_check-time_start
     echo "time_total:${time_total}"
     if [ ${time_total} -gt ${timeoutsec} ] ;then
        echo "failed to detect specific log line, timeout"
-       return 0
+       return 1
     fi
   done
+  return 0
 }
 
 function wait_pod_log_line(){
+  echo "in wait_pod_log_line"
+
   k8sfunc_ns=$1
   echo "k8sfunc_ns:${k8sfunc_ns}"
   if_namespace_exists "${k8sfunc_ns}"
@@ -357,7 +369,7 @@ function wait_pod_log_line(){
   echo "line:$LINENO, funcrst:${funcrst}"
   if [ ${funcrst} -eq 0 ]; then
     echo "no such k8sfunc_ns:${k8sfunc_ns}"
-    return 0
+    return 1
   fi
   k8sfunc_name2grep=$2
   echo "k8sfunc_name2grep:${k8sfunc_name2grep}"
@@ -376,16 +388,17 @@ function wait_pod_log_line(){
     else
       echo "success, specific log line:${k8sfunc_logline} detected in ${k8sfunc_name2grep} pod as result:"
       echo "${result}"
-      return 1
+      return 0
     fi
     time_check=`date +"%s"`
     let time_total=time_check-time_start
     echo "time_total:${time_total}"
     if [ ${time_total} -gt ${timeoutsec} ] ;then
        echo "failed to detect specific log line, timeout"
-       return 0
+       return 1
     fi
   done
+  return 0
 }
 
 function fix_statfulset_rev_beta1(){
@@ -396,6 +409,29 @@ function fix_statfulset_rev_beta1(){
 function fix_statfulset_rev_beta2(){
   k8sfunc_file=$1
   sed -i 's@apps\/v1beta2@apps\/v1@g' ${k8sfunc_file}
+}
+
+function delete_pvc_by_ns2name(){
+  k8sfunc_ns=$1
+  echo "k8sfunc_ns:${k8sfunc_ns}"
+  k8sfunc_name2grep=$2
+  echo "k8sfunc_name2grep:${k8sfunc_name2grep}"
+  kubectl get pvc -n ${k8sfunc_ns} | grep ${k8sfunc_name2grep} | awk '{print $1}' | xargs kubectl -n ${k8sfunc_ns} delete pvc
+}
+
+function uinstall_helm_if_found(){
+  k8sfunc_ns=$1
+  echo "k8sfunc_ns:${k8sfunc_ns}"
+  k8sfunc_name=$2
+  echo "k8sfunc_name:${k8sfunc_name}"
+
+  found=`helm list -n ${k8sfunc_ns} | grep ${k8sfunc_name}`
+  if [[ -n ${found} ]]; then
+    echo "found"
+    helm uninstall ${k8sfunc_name} -n ${k8sfunc_ns}
+  else
+    echo "not found"
+  fi
 }
 
 EOF

@@ -1,5 +1,10 @@
+#!/bin/bash
+set -x
+
 ns=$1
+echo "ns:${ns}"
 name=$2
+echo "name:${name}"
 
 if [ ${op} == "start" ]; then
   op=resume

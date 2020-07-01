@@ -1,13 +1,6 @@
-prefix=$1
+#!/bin/bash
 
-file=~/tsdb_hbase2dropkylin.cmd
-rm -f $file
-touch $file
-
-echo "disable_all 'KYLIN.*'" >> $file 
-echo "drop_all 'KYLIN.*'" >> $file 
-
-echo 'exit' >> $file
-
-#cat $file
-hbase shell -n $file
+exec hbase shell <<EOF
+disable_all 'KYLIN.*'
+drop_all 'KYLIN.*'
+EOF

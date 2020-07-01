@@ -1,8 +1,11 @@
 #!/bin/bash
 # Small script to setup the HBase tables used by OpenTSDB.
+set -x
 
 op=$1
+echo "op:${op}"
 table_prefix=$2
+echo "table_prefix:${table_prefix}"
 
 :<<EOF
 test -n "$HBASE_HOME" || {

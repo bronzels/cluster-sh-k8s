@@ -1,5 +1,7 @@
 #!/bin/bash
+
 ns=$1
+echo "ns:${ns}"
 
 for((i=0;i<=5;i++));
 do

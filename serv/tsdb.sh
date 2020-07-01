@@ -69,43 +69,43 @@ else
 fi
 
 if [ $op == "stop" -o $op == "restart" ]; then
-  helm uninstall myopts -n ${ns}
+  uinstall_helm_if_found "${ns}" "myopts"
   wait_pod_deleted "${ns}" "myopts-opentsdb" 300
 fi
 
 if [ $op == "start" -o $op == "restart" ]; then
-helm install myopts -n ${ns} \
-  --set hbase.enabled=false \
-  --set antiAffinity="hard" \
-  --set daemons=4 \
-  --set nodePort.enabled=true \
-  --set nodePort.externalPort=${externalPort} \
-  --set env.init.META_TABLE=tsdb-meta${rev} \
-  --set env.init.TREE_TABLE=tsdb-tree${rev} \
-  --set env.init.TSDB_TABLE=tsdb${rev} \
-  --set env.init.UID_TABLE=tsdb-uid${rev} \
-  --set conf."tsd\.storage\.hbase\.zk_quorum"="$ZOOKEEPER_QUORUM" \
-  --set conf\."tsd\.network\.worker_threads"=8 \
-  --set conf\."tsd\.core\.auto_create_metrics"=true \
-  --set conf\."tsd\.storage\.hbase\.data_table"=tsdb${rev} \
-  --set conf\."tsd\.storage\.hbase\.meta_table"=tsdb-meta${rev} \
-  --set conf\."tsd\.storage\.hbase\.tree_table"=tsdb-tree${rev} \
-  --set conf\."tsd\.storage\.hbase\.uid_table"=tsdb-uid${rev} \
-  --set conf\."tsd\.http\.request\.enable_chunked"=true \
-  --set conf\."tsd\.http\.request\.max_chunk"=65535 \
-  --set conf\."tsd\.storage\.enable_compaction"=false \
-  --set conf\."tsd\.storage\.fix_duplicates"=true \
-  --set conf\."tsd\.core\.uid\.random_metrics"=true \
-  --set conf\."tsd\.storage\.hbase\.prefetch_meta"=true \
-  --set conf\."tsd\.storage\.salt\.width"=1 \
-  --set conf\."tsd\.storage\.salt\.buckets"=20 \
-  --set conf\."tsd\.core\.meta\.enable_tsuid_tracking"=true \
-  --set conf\."tsd\.core\.meta\.enable_tsuid_incrementing"=true \
-  --set conf\."tsd\.core\.meta\.enable_realtime_ts"=false \
-  --set conf\."tsd\.storage\.enable_appends"=true \
-  --set conf\."tsd\.core\.uid\.random_metrics"=true \
-  ./
-  wait_pod_running "${ns}" "myopts-opentsdb" 4 300
+  helm install myopts -n ${ns} \
+    --set hbase.enabled=false \
+    --set antiAffinity="hard" \
+    --set daemons=4 \
+    --set nodePort.enabled=true \
+    --set nodePort.externalPort=${externalPort} \
+    --set env.init.META_TABLE=tsdb-meta${rev} \
+    --set env.init.TREE_TABLE=tsdb-tree${rev} \
+    --set env.init.TSDB_TABLE=tsdb${rev} \
+    --set env.init.UID_TABLE=tsdb-uid${rev} \
+    --set conf."tsd\.storage\.hbase\.zk_quorum"="$ZOOKEEPER_QUORUM" \
+    --set conf\."tsd\.network\.worker_threads"=8 \
+    --set conf\."tsd\.core\.auto_create_metrics"=true \
+    --set conf\."tsd\.storage\.hbase\.data_table"=tsdb${rev} \
+    --set conf\."tsd\.storage\.hbase\.meta_table"=tsdb-meta${rev} \
+    --set conf\."tsd\.storage\.hbase\.tree_table"=tsdb-tree${rev} \
+    --set conf\."tsd\.storage\.hbase\.uid_table"=tsdb-uid${rev} \
+    --set conf\."tsd\.http\.request\.enable_chunked"=true \
+    --set conf\."tsd\.http\.request\.max_chunk"=65535 \
+    --set conf\."tsd\.storage\.enable_compaction"=false \
+    --set conf\."tsd\.storage\.fix_duplicates"=true \
+    --set conf\."tsd\.core\.uid\.random_metrics"=true \
+    --set conf\."tsd\.storage\.hbase\.prefetch_meta"=true \
+    --set conf\."tsd\.storage\.salt\.width"=1 \
+    --set conf\."tsd\.storage\.salt\.buckets"=20 \
+    --set conf\."tsd\.core\.meta\.enable_tsuid_tracking"=true \
+    --set conf\."tsd\.core\.meta\.enable_tsuid_incrementing"=true \
+    --set conf\."tsd\.core\.meta\.enable_realtime_ts"=false \
+    --set conf\."tsd\.storage\.enable_appends"=true \
+    --set conf\."tsd\.core\.uid\.random_metrics"=true \
+    ./
+    wait_pod_running "${ns}" "myopts-opentsdb" 4 300
 fi
 EOF
 chmod a+x ${file}

@@ -1,4 +1,8 @@
+#!/bin/bash
+set -x
+
 prefix=$1
+echo "prefix:${prefix}"
 
 tables=(
 tsdb-meta

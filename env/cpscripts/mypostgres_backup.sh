@@ -1,5 +1,7 @@
 #!/bin/bash
+
 db=$1
+echo "db:${db}"
 
 kubectl -n md exec -ti mdpostgre-postgresql-0 -- \
   rm -rf ./${db}

@@ -118,11 +118,8 @@
 ######18，项目定制部分部署
     如果因为mysql同步出错的原因重新跑，并没有任何程序dag修改，master01直接执行~/scripts/myairflow-cp-op.sh restart
     在项目定制工程里，shell目录，执行k8sdeploy.sh，准备${version_prefix}-k8sdeploy.tar.gz，上传到master01/slave01（root）
-      cd ~
-      rm -rf k8sdeploy_dir
-      export version_prefix="2_2_4_0_0"
-      cp /tmp/${version_prefix}-k8sdeploy.tar.gz ~/released/
-      tar xzvf ~/released/${version_prefix}-k8sdeploy.tar.gz
+      例如：
+        deploy.sh 2_2_4_0_0
       然后在master01/slave01（root）
         #批处理相关修改，deploy_master01_batch.sh
         批处理相关修改，deploy_slave01_batch.sh
@@ -136,17 +133,8 @@
       tar xzvf /tmp/k8sdeploy-scripts.tar.gz
       然后
         cp相关脚本，上传到master01，ubuntu用户下
-            cd ${HOME}
-            tar xzvf /tmp/k8sdeploy-scripts.tar.gz
-            cp ${HOME}/k8sdeploy-scripts/cpscripts/* ${HOME}/scripts
-            chmod a+x ${HOME}/scripts/*.sh
+            deploy-scripts.sh cpscripts
         hadoop相关脚本，上传到slave01，root用户下
-            cd ${HOME}
-            tar xzvf /tmp/k8sdeploy-scripts.tar.gz
-            cp ${HOME}/k8sdeploy-scripts/scripts/* ${HOME}/scripts
-            chmod a+x ${HOME}/scripts/*.sh
+            deploy-scripts.sh scripts
         tsdb/hbase相关脚本，上传到tsdb/hbase集群master，hadoop用户下
-            cd ${HOME}
-            tar xzvf /tmp/k8sdeploy-scripts.tar.gz
-            cp ${HOME}/k8sdeploy-scripts/hbscripts/* ${HOME}/scripts
-            chmod a+x ${HOME}/scripts/*.sh
+            deploy-scripts.sh hbscripts

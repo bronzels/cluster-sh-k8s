@@ -1,4 +1,5 @@
 #!/bin/bash
+
 catalog=$1
 echo "catalog:${catalog}"
 schema=$2

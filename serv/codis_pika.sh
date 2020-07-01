@@ -217,7 +217,7 @@ function mycodis_cp_op_stop(){
 
 function mycodis_cp_op_deletepvc(){
   echo "now in mycodis_cp_op_deletepvc"
-  kubectl get pvc -n ${codisns} | grep codis-server | awk '{print $1}' | xargs kubectl -n ${codisns} delete pvc
+  delete_pvc_by_ns2name "${codisns}" "codis-server"
 }
 
 function mycodis_cp_op_start(){
@@ -240,7 +240,9 @@ function mycodis_cp_op_start(){
   wait_pod_running "${codisns}" "codis-server" $servers 600
   kubectl exec -n ${codisns} -it codis-server-0 -- codis-admin  --dashboard=codis-dashboard:18080 --rebalance --confirm
   kubectl create -n ${codisns} -f codis-ha.yaml
+  wait_pod_running "${codisns}" "codis-ha" 1 600
   kubectl create -n ${codisns} -f codis-fe.yaml
+  wait_pod_running "${codisns}" "codis-fe" 1 600
   sleep 60
   sleep 60
   kubectl exec -n ${codisns} -it codis-dashboard-0 -- redis-cli -h codis-proxy -p 19000 PING
@@ -267,8 +269,8 @@ clean)
     ;;
 
 ### 创建新的codis集群
-startnew)
-    echo "now in startnew"
+restartnew)
+    echo "now in restartnew"
     mycodis_cp_op_stop
     mycodis_cp_op_deletepvc
     mycodis_cp_op_start

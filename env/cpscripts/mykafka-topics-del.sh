@@ -1,4 +1,6 @@
 #!/bin/bash
+set -x
+
 ns=$1
 echo "ns:${ns}"
 prefix=$2

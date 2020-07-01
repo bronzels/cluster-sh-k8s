@@ -7,7 +7,8 @@ mv linux-amd64 helm-${rev_helm}-linux-amd64
 ln -s helm-${rev_helm}-linux-amd64 helm
 chmod a+x $HOME/helm/helm
 echo "export KUBECONFIG=$HOME/.kube/config" >> ~/.bashrc
-echo "export PATH=$PATH:$HOME/helm" >> ~/.bashrc
+#echo "export PATH=$PATH:$HOME/helm" >> ~/.bashrc
+sudo ln -s $HOME/helm/helm /usr/bin/helm
 #！！！手工，重新登录ubuntu
 #helm repo add stable https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
 #helm repo add incubator https://aliacs-app-catalog.oss-cn-hangzhou.aliyuncs.com/charts-incubator/

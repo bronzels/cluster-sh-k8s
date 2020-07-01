@@ -163,14 +163,17 @@ cd ~/myairflow
 
 #set -e
 
-if [ $1 == "stop" -o $1 == "restart" ]; then
-  helm delete myaf -n fl
+if [ $1 == "stop" -o $1 == "clean" -o $1 == "restart" -o $1 == "restartnew" ]; then
+  ${HOME}/helm/helm delete myaf -n fl
   wait_pod_deleted "fl" "myaf-" 600
   kubectl delete -f ./myaf-web-ext.yaml -n fl
+  if [ $1 == "clean" -o $1 == "restartnew" ]; then
+    delete_pvc_by_ns2name "fl" "data-myaf-postgresql"
+  fi
 fi
 
-if [ $1 == "start" -o $1 == "restart" ]; then
-  helm install myaf -n fl \
+if [ $1 == "start" -o $1 == "restart" -o $1 == "restartnew" ]; then
+  ${HOME}/helm/helm install myaf -n fl \
     --set airflow.config.AIRFLOW__SMTP__SMTP_HOST="smtp.exmail.qq.com" \
     --set airflow.config.AIRFLOW__SMTP__SMTP_STARTTLS="False" \
     --set airflow.config.AIRFLOW__SMTP__SMTP_SSL="True" \

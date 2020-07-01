@@ -1,6 +1,6 @@
+#!/bin/bash
 #如果是项目定制开发的流处理部分有修改
 # 把k8sdeploy.sh打包生成k8sdeploy.tar.gz上传到master01，解压到home目录
-#!/usr/bin/env bash
 
 :<<EOF
 #example:
@@ -11,6 +11,7 @@ EOF
 rb="no"
 for var in "$*"
 do
+  echo "var:${var}"
   if [ "$var" == "-rb" ]; then
     rb="yes"
   fi

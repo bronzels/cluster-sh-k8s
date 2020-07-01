@@ -319,7 +319,7 @@ else
 fi
 
 #kubectl get pod -n ${podnsname} | awk '{print $1}' | grep myconn | xargs -I CNAME  sh -c "kubectl exec -n ${podnsname} CNAME -- cat /opt/confluent/logs/stdout.log|grep 'INFO Kafka Connect started'"
-
+exit 0
 EOF
 chmod a+x ${file}
 

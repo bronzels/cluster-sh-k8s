@@ -1,4 +1,5 @@
 #!/bin/bash
+
 ns=$1
 echo "ns:${ns}"
 

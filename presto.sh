@@ -214,7 +214,7 @@ cd ~/presto-chart/presto
 #  --set server.config.query.maxMemoryPerNode=8GB \
 #  --set server.jvm.maxHeapSize=36G
 if [ $1 == "stop" -o $1 == "restart" ]; then
-  helm uninstall mypres -n dw
+  uinstall_helm_if_found "dw" "mypres"
   wait_pod_deleted "dw" "mypres-presto-coordinator" 600
   wait_pod_deleted "dw" "mypres-presto-worker" 600
 fi

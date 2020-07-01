@@ -1,4 +1,7 @@
-db_name=$1
+#!/bin/bash
+
+db=$1
+echo "db:${db}"
 
 kubectl run mdpostgre-postgresql-client --rm --tty -i --restart='Never' --namespace md --image docker.io/bitnami/postgresql:11.7.0-debian-10-r9 --env="PGPASSWORD=postgres" --command -- \
   psql --host mdpostgre-postgresql -d postgres -U postgres -p 5432 \
