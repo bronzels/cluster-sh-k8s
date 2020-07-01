@@ -38,7 +38,7 @@ kylin.job.scheduler.default=2
 kylin.job.lock=org.apache.kylin.storage.hbase.util.ZookeeperJobLock
 EOF
 
-echo "export KYLIN_HOME=${HOME}/kylin" >> ~/.bashrc
+echo "export KYLIN_HOME=${HOME}/kylin" >> ~/other-env.sh
 
 #！！！手工，重新登录root
 echo $KYLIN_HOME

@@ -14,7 +14,10 @@ ansible all -m shell -a"ip addr|grep 10.10."
 rm -rf ~/scripts/
 mkdir ~/scripts/
 
-echo "export PATH=$PATH:$HOME/scripts" >> ~/.bashrc
+echo "source /home/ubuntu/other-env.sh" >> ~/.bashrc
+
+echo "export PATH=$PATH:$HOME/scripts" >> ~/other-env.sh
+
 #！！！手工，重新登录ubuntu
 
 #把本工程的env/cpscript目录下（不带目录）所有脚本，解压到ubuntu用户的~/scripts/目录
@@ -79,10 +82,10 @@ wget -c https://dl.google.com/go/go${rev}.linux-amd64.tar.gz
 rm -rf go
 tar -C ~ -xzf ~/go${rev}.linux-amd64.tar.gz
 :<<EOF
-echo "export PATH=$PATH:$HOME/go/bin" >> ~/.bashrc
+echo "export PATH=$PATH:$HOME/go/bin" >> ~/other-env.sh
 rm -rf ~/gopath
 mkdir ~/gopath
-echo "export GOPATH=$HOME/gopath" >> ~/.bashrc
+echo "export GOPATH=$HOME/gopath" >> ~/other-env.sh
 sudo apt-get install -y autoconf
 EOF
 
@@ -101,8 +104,8 @@ cp /tmp/jdk-8u${rev}-linux-x64.tar.gz ~/tmp
 tar xzvf ~/tmp/jdk-8u${rev}-linux-x64.tar.gz
 rm -f jdk
 ln -s jdk1.8.0_${rev} jdk
-echo "export JAVA_HOME=$HOME/jdk" >> ~/.bashrc
-echo "export PATH=$HOME/jdk/bin:$PATH" >> ~/.bashrc
+echo "export JAVA_HOME=$HOME/jdk" >> ~/other-env.sh
+echo "export PATH=$HOME/jdk/bin:$PATH" >> ~/other-env.sh
 #！！！手工，重新登录ubuntu
 java -version
 EOF
@@ -126,3 +129,8 @@ index-url = https://mirrors.aliyun.com/pypi/simple
 [install]
 trusted-host=mirrors.aliyun.com
 EOF
+
+#for kubernetes yaml manupulation
+sudo apt install python-pip -yqq
+sudo pip install yq
+sudo pip install y2j

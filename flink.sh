@@ -16,6 +16,7 @@ log4j.appender.console.layout=org.apache.log4j.PatternLayout
 log4j.appender.console.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %-60c %x - %m%n
 EOF
 
+echo "env.java.home: /home/ubuntu/jdk" >> flink/conf/flink-conf.yaml
 
 kubectl create serviceaccount flink
 kubectl create clusterrolebinding flink-role-binding-flink --clusterrole=edit --serviceaccount=default:flink
@@ -56,7 +57,7 @@ echo "op:${op}"
 
 cd ~/flink
 if [ $op == "stop" -o $op == "restart" ]; then
-  echo 'stop' | bin/kubernetes-session.sh -Dkubernetes.cluster-id=flink -Dexecution.attached=true
+  echo 'stop' | bin/kubernetes-session.sh -Dkubernetes.cluster-id=myflink -Dexecution.attached=true
   wait_pod_deleted "default" "myflink" 300
 fi
 

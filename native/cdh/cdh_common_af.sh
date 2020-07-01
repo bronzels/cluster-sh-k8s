@@ -41,10 +41,23 @@ curl http://slave01:7180/
 浏览器输入http://slave01:7180/
 用户/密码：admin/admin
 按照向导搭建集群。
+注意：
+  安装以下组件：
+    HBase
+    HDFS
+    Hive
+    Kudu
+    Spark 2
+    Sqoop 1 Client
+    YARN (MR2 Included)
+    ZooKeeper
+  所有本地目录设置指向/app数据盘挂载位置
 有问题查看日志解决
 EOF
 
-cat << \EOF >> /root/.bashrc
+echo "source /root/other-env.sh" >> /root/.bashrc
+
+cat << \EOF >> /root/other-env.sh
 export HADOOP_HOME=/opt/cloudera/parcels/CDH/lib/hadoop
 export HADOOP_CONF_DIR=/etc/hadoop/conf
 
@@ -69,3 +82,7 @@ EOF
 groupadd supergroup
 usermod -a -G supergroup root
 hdfs dfsadmin -refreshUserToGroupsMappings
+
+cd ~
+ln -s /opt/cloudera/parcels/CDH/lib/sqoop sqoop
+cp ~/cdh/mysql-connector-java.jar sqoop/lib/

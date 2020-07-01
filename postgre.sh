@@ -1,9 +1,90 @@
+mkdir ~/mypostgre
+cd ~/mypostgre
+
 helm install mdpostgre bitnami/postgresql -n md \
     --set service.type=NodePort \
     --set service.nodePort=31432 \
     --set postgresqlPassword=postgres \
     --set global.storageClass=rook-ceph-block \
     --set persistence.size=128Gi
+    
+kubectl delete -f mdpostgre-nfs-pv.yaml
+cat << \EOF > mdpostgre-nfs-pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mdpostgre-nfs-pv
+  labels:
+    storage: mdpostgre-nfs-pv
+  annotations:
+    kubernetes.io.description: pv-storage
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs
+  mountOptions:
+    - vers=4
+    - port=2149
+  nfs:
+    path: /
+    server: 10.10.7.44
+EOF
+kubectl apply -f mdpostgre-nfs-pv.yaml
+kubectl get pv|grep mdpostgre-nfs-pv
+kubectl get pvc -n md
+
+kubectl delete -f mdpostgre-nfs-pvc.yaml -n md
+cat << \EOF > mdpostgre-nfs-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mdpostgre-nfs-pvc
+  labels:
+    storage: mdpostgre-nfs-pvc
+  annotations:
+    kubernetes.io/description: "PersistentVolumeClaim for PV"
+spec:
+  selector:
+    matchLabels:
+      storage: mdpostgre-nfs-pv
+  accessModes:
+    - ReadWriteMany
+  volumeMode: Filesystem
+  storageClassName: nfs
+  resources:
+    requests:
+      storage: 1Gi
+EOF
+kubectl apply -f mdpostgre-nfs-pvc.yaml -n md
+kubectl get pvc -n md
+
+#    command: ["sleep", "60000"]
+cat << \EOF > mdpostgre-postgresql-client.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mdpostgre-postgresql-client
+spec:
+  restartPolicy: Never
+  containers:
+  - name: mdpostgre-postgresql-client
+    image: docker.io/bitnami/postgresql:11.7.0-debian-10-r9
+    volumeMounts:
+    - name: mdpostgre-postgresql-client-pv1
+      mountPath: /opt/bitnami/postgresql/com
+    env:
+    - name: POSTGRESQL_PASSWORD
+      value: "postgres"
+    - name: PGPASSWORD
+      value: "postgres"
+  volumes:
+  - name: mdpostgre-postgresql-client-pv1
+    persistentVolumeClaim:
+      claimName: mdpostgre-nfs-pvc
+EOF
+
 :<<EOF
 helm uninstall mdpostgre -n md
 kubectl get pvc -n md|grep mdpostgre|awk '{print $1}'|xargs kubectl -n md delete pvc
@@ -19,6 +100,9 @@ kubectl run mdpostgre-postgresql-client --rm --tty -i --restart='Never' --namesp
 kubectl get pod -n md
 kubectl get svc -n md
 kubectl get pvc -n md
+
+kubectl exec -n md -t `kubectl get pod -n md | grep mdpostgre-postgresql | awk '{print $1}'`  -- /bin/sh
+
 EOF
 
 :<<EOF
