@@ -298,7 +298,7 @@ function if_resource_with_exactname_exists(){
   echo "line:$LINENO, funcrst:${funcrst}"
   if [ ${funcrst} -eq 0 ]; then
     echo "no such k8sfunc_ns:${k8sfunc_ns}"
-    return 1
+    return 0
   fi
   res=$2
   echo "res:${res}"

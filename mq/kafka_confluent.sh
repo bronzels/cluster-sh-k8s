@@ -189,6 +189,9 @@ name=$2
 echo "name:${name}"
 
 podnsname=${ns}-${name}
+podnsname=${podnsname//_/-}
+echo "podnsname:${podnsname}"
+
 wait_pod_specific_log_line "${podnsname}" "myconn" "/opt/confluent/logs/stdout.log" "INFO Kafka Connect started" 900
 funcrst=`echo $?`
 if [ ${funcrst} -eq 0 ]; then
@@ -268,7 +271,7 @@ else
   #until kubectl get pod ${pod0name} 2>&1 >/dev/null; do sleep 10; done
   wait_pod_deleted "${podnsname}" "myconn" 300
   funcrst=`echo $?`
-  if [ ${funcrst} -eq 0 ]; then
+  if [ ${funcrst} -eq 1 ]; then
     echo "$podnsname connector pod is not deleted"
     exit 1
   else
@@ -311,7 +314,7 @@ echo "wait $podnsname connector created by operator"
 #kubectl wait deployment/myconn --for=condition=Ready --timeout=300s -n ${podnsname}
 wait_pod_running "${podnsname}" "myconn" 1 300
 funcrst=`echo $?`
-if [ ${funcrst} -eq 0 ]; then
+if [ ${funcrst} -eq 1 ]; then
   echo "$podnsname connector pod is not running"
   exit 1
 else
