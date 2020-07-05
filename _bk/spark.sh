@@ -19,10 +19,10 @@ wget -c https://downloads.apache.org/hive/hive-${hiveitrev}/apache-hive-${hiveit
 tar xzvf apache-hive-${hiveitrev}-bin.tar.gz
 
 rm -rf hadoop-${hadoopitrev}/etc/hadoop
-scp -r 10.10.0.234:/etc/hadoop/conf hadoop-${hadoopitrev}/etc/hadoop
+scp -r 10.10.0.31:/etc/hadoop/conf hadoop-${hadoopitrev}/etc/hadoop
 
 rm -rf apache-hive-${hiveitrev}-bin/conf
-scp -r 10.10.0.234:/opt/cloudera/parcels/CDH/lib/hive/conf apache-hive-${hiveitrev}-bin/conf
+scp -r 10.10.0.31:/opt/cloudera/parcels/CDH/lib/hive/conf apache-hive-${hiveitrev}-bin/conf
 
 cp ~/k8sdeploy_dir/spark_shared_jars.tar.gz ./
 
@@ -32,9 +32,9 @@ cd ${MYHOME}
 
 file=entrypoint.sh
 cp ${MYHOME}.bk/${file} ${file}
-sed -i '/# echo commands to the terminal output/a\echo \"10.10.7.44 master01\" >> /etc/hosts' ${file}
-sed -i '/# echo commands to the terminal output/a\echo \"10.10.7.44 hk-prod-bigdata-master-7-44\" >> /etc/hosts' ${file}
-sed -i '/# echo commands to the terminal output/a\echo \"10.10.0.234 hk-prod-bigdata-slave-0-234\" >> /etc/hosts' ${file}
+sed -i '/# echo commands to the terminal output/a\echo \"10.10.5.13 master01\" >> /etc/hosts' ${file}
+sed -i '/# echo commands to the terminal output/a\echo \"10.10.5.13 hk-prod-bigdata-master-7-44\" >> /etc/hosts' ${file}
+sed -i '/# echo commands to the terminal output/a\echo \"10.10.0.31 hk-prod-bigdata-slave-0-234\" >> /etc/hosts' ${file}
 sed -i '/# echo commands to the terminal output/a\echo \"10.10.10.34 hk-prod-bigdata-slave-10-34\" >> /etc/hosts' ${file}
 sed -i '/# echo commands to the terminal output/a\echo \"10.10.3.233 hk-prod-bigdata-slave-3-233\" >> /etc/hosts' ${file}
 sed -i '/# echo commands to the terminal output/a\echo \"10.10.5.226 hk-prod-bigdata-slave-5-226\" >> /etc/hosts' ${file}

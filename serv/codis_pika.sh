@@ -1,5 +1,5 @@
 #pika
-cd ~
+cd
 rm -rf pika
 git clone https://github.com/Qihoo360/pika.git
 cd ~/pika
@@ -18,9 +18,11 @@ sed -i 's@db-path : ./db/@db-path : /data/db/@g'  $file
 sed -i 's@dump-path : ./dump/@dump-path : /data/dump/@g'  $file
 sed -i 's@db-sync-path : ./dbsync/@db-sync-path : /data/dbsync/@g'  $file
 
+:<<EOF
 cd ~
 cp ~/sources.list.ubuntu.16.04 sources.list
-COPY ./sources.list /etc/apt
+COPY sources.list /etc/apt
+EOF
 
 cd ~/pika
 file=Dockerfile
@@ -32,7 +34,6 @@ USER root:root
 
 ENV PIKA /pika
 COPY pika /pika
-COPY sources.list /etc/apt
 
 RUN apt-get update && \
     apt-get install -y build-essential git autoconf
@@ -348,8 +349,6 @@ curl http://master01:31080
 kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.serv -p 19000  set fool2 bar2
 kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.serv -p 19000  get fool2
 kubectl -n default run test-zookeeper-serv -ti --image=zookeeper:3.5.5 --rm=true --restart=Never -- zkCli.sh -server zookeeper.serv:2181 ls /codis3/str
-kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h 10.10.0.234 -p 31900  set fool3 bar3
-kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h 10.10.0.234 -p 31900  get fool3
 
 cd ~/codis/kubernetes
 ~/scripts/mycodis-cp-op.sh start servyat
@@ -361,8 +360,8 @@ curl http://master01:31081
 kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.servyat -p 19000  set fool4 bar4
 kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.servyat -p 19000  get fool4
 kubectl -n default run test-zookeeper-serv -ti --image=zookeeper:3.5.5 --rm=true --restart=Never -- zkCli.sh -server zookeeper.servyat:2181 ls /codis3/str
-kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h 10.10.0.234 -p 31901  set fool5 bar5
-kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h 10.10.0.234 -p 31901  get fool5
+kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h 10.10.0.31 -p 31901  set fool5 bar5
+kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h 10.10.0.31 -p 31901  get fool5
 
 :<<EOF
 kubectl exec -it codis-server-0 -n serv bash

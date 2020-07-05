@@ -1,4 +1,6 @@
 #ubuntu
+cd
+
 mkdir ~/hbase
 cd ~/hbase
 
@@ -68,6 +70,6 @@ cat << \EOF > zookeeper_quorum
 EOF
 
 cd ~
-tar czvf ~/tmp/aws-hbase.tar.gz hbase/
+tar czvf /tmp/aws-hbase.tar.gz hbase/
 rm -rf hbase
 

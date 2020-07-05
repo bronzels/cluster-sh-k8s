@@ -1,5 +1,6 @@
 #！！！手工, 新机器加入集群跳过所有cat EOF文件生成步骤
 
+sudo su -
 #root
 #controlplane/master01
 
@@ -8,7 +9,7 @@ rm -f $file
 cat << \EOF > ${file}
 #!/bin/bash
 
-vhost="hk-prod-bigdata-master-14-114"
+vhost="hk-prod-bigdata-master-4-158"
 usr=root
 
 who=`whoami`
@@ -59,7 +60,7 @@ file=/root/kubejoin-master.sh
 rm -f $file
 cat >> $file << EOF
   kubeadm join api.k8s.at.bronzels:6443 --token 42ypg3.xns4cl9xka8nd2r7 \
-    --discovery-token-ca-cert-hash sha256:6c07dab8c05c3570725073be93d13eae457390c18afe2e9a0e1c04c37279da55 \
+    --discovery-token-ca-cert-hash sha256:6f6f511f1000d92df7a49fa68aa66afb35cc2b9e8201b28210c00db527600fac \
     --control-plane
 EOF
 ansible masterk8sexpcp -m copy -a"src=$file dest=/root"
@@ -67,5 +68,6 @@ ansible masterk8sexpcp -m shell -a"chmod a+x $file"
 
 ansible masterk8sexpcp -m shell -a"/root/kubejoin-master.sh"
 
+exit
 kubectl get node -n kube-system
 

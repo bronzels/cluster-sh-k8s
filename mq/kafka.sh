@@ -1,3 +1,5 @@
+cd
+
 helm install mykafka incubator/kafka -n mqstr \
   --set replicas=3 \
   --set persistence.size=256Gi \

@@ -32,4 +32,3 @@ ansible allcdh -m copy -a"src=CDH-6.3.2-1.cdh6.3.2.p0.1605554-bionic.parcel.sha 
 ansible allcdh -m copy -a"src=manifest.json dest=/opt/cloudera/parcel-repo"
 ansible allcdh -m shell -a"ls -l /opt/cloudera/parcel-repo"
 
-#！！！手工，重新登录root

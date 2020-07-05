@@ -10,7 +10,7 @@ deploy_master01_dags.sh -rb
 EOF
 
 rb="no"
-for var in "$*"
+for var in $*
 do
   echo "var:${var}"
   if [ "$var" == "-rb" ]; then

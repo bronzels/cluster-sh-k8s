@@ -28,7 +28,7 @@ cp ~/k8sdeploy_dir/flink_com_libfiles.tar.gz ./
 
 file=Dockerfile
 cat << \EOF > ${file}
-FROM flink:latest
+FROM flink:1.10.1-scala_2.11
 MAINTAINER bronzels <bronzels@hotmail.com>
 
 ADD flink_com_libfiles.tar.gz /opt/flink/lib
@@ -65,7 +65,7 @@ if [ $op == "start" -o $op == "restart" ]; then
   bin/kubernetes-session.sh \
     -Dkubernetes.container.image=master01:30500/bronzels/flink:0.1 \
     -Dkubernetes.cluster-id=myflink \
-    -Dtaskmanager.memory.process.size=40960m \
+    -Dtaskmanager.memory.process.size=53248m \
     -Dkubernetes.taskmanager.cpu=4 \
     -Dtaskmanager.numberOfTaskSlots=8 \
     -Dresourcemanager.taskmanager-timeout=3600000 \

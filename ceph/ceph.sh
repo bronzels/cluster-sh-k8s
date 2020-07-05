@@ -10,7 +10,6 @@ cd ~/rook/cluster/examples/kubernetes/ceph
 #开始安装前确保所有slave都在线ready
 kubectl get node -n kube-system
 
-# 如果一旦出现长时间都没有osd pod，ceph status也显示HEALTH WARN，没有任何磁盘空间的话，要把所有已安装的delete，从头重装
 kubectl create -f common.yaml
 #kubectl delete -f common.yaml
 kubectl create -f operator.yaml
@@ -25,39 +24,19 @@ sudo ansible slavek8s -m shell -a"fdisk -l|grep '2 TiB'"
 #！！！手工，找到数据盘对应设备名，填入到一下sed命令
 sed -i "s@#deviceFilter:@deviceFilter: "^nvme1n1"@g" ${file}
 sed -i "s@count: 3@count: 4@g" ${file}
+kubectl create -f cluster.yaml
 #kubectl delete -f cluster.yaml
-#！！！手工，至少等15分钟
+#！！！，至少等15分钟
 # 有error/crashbackoff都不要担心，硬盘初始化需要时间。
 # 要等到rook-ceph-osd-prepare/4个都complete，rook-ceph-osd/4个都在1/1 running才进行下一步
 # 如果出现错误，不要删除下面的storageclass，有可能要等待很长时间没有提示，如果ssh应该跳板机中断，那就既不能删除又不能新增storageclass了。
-sudo ansible slavek8s -m shell -a"rm -rf $HOME/rook/ceph"
-sudo ansible slavek8s -m shell -a"dmsetup remove_all"
-sudo ansible slavek8s -m shell -a"wipefs /dev/nvme1n1"
-sudo ansible slavek8s -m shell -a"sgdisk  --zap-all /dev/nvme1n1"
-#！！！手工，umount相关mount，再rm -rf（lvremove不行） 相关devmapper，不然重新安装也不行
-sudo ansible slavek8s -m shell -a"mount|grep ceph"
-sudo ansible slavek8s -m shell -a"mount|grep ceph| awk '{print \$3}'|xargs umount"
-sudo ansible slavek8s -m shell -a"mount|grep ceph"
-sudo ansible slavek8s -m shell -a"ls /dev|grep ceph"
-sudo ansible slavek8s -m shell -a"ls /dev|grep ceph|xargs -I CNAME  sh -c 'rm -rf /dev/CNAME'"
-sudo ansible slavek8s -m shell -a"ls /dev|grep ceph"
-:<<EOF
-sudo ansible slavek8s -m shell -a"fdisk -l|grep ceph"
-sudo ansible slavek8s -m shell -a"fdisk -l|grep ceph|xargs -I CNAME  sh -c 'rm -rf /dev/CNAME'"
-sudo ansible slavek8s -m shell -a"fdisk -l|grep ceph"
-sudo ansible slavek8s -m shell -a"ls /dev/mapper|grep ceph"
-sudo ansible slavek8s -m shell -a"ls /dev/mapper|grep ceph|xargs -I CNAME  sh -c 'rm -rf /dev/mapper/CNAME'"
-sudo ansible slavek8s -m shell -a"ls /dev/mapper|grep ceph"
-EOF
-#！！！手工，rm -rf（lvremove不行） 相关devmapper，不然重新安装也不行
-
-kubectl create -f cluster.yaml
 
 file=csi/rbd/storageclass.yaml
 cp ${file} ${file}.bk
 sed -i "s@csi.storage.k8s.io/fstype: ext4@csi.storage.k8s.io/fstype: xfs@g" ${file}
 kubectl create -f csi/rbd/storageclass.yaml
 #kubectl delete -f csi/rbd/storageclass.yaml
+# 如果出现错误，不要删除下面的storageclass，有可能要等待很长时间没有提示，如果ssh应该跳板机中断，那就既不能删除又不能新增storageclass了。
 kubectl patch storageclass rook-ceph-block -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 kubectl get storageclass
 
@@ -69,10 +48,11 @@ kubectl create -f dashboard-external-https.yaml
 #kubectl delete -f dashboard-external-https.yaml
 kubectl get service -n rook-ceph|grep rook-ceph-mgr-dashboard-external-https
 #！！！手工，找到service映射的nodeport
-curl https://localhost:32239/#/login
+curl https://localhost:31350/#/login
 #！！！手工，账户admin，密码以下命令生成
 kubectl -n rook-ceph get secret rook-ceph-dashboard-password -o jsonpath='{.data.password}'  |  base64 --decode
-#i;f;P2G`_WF4=:,6:^PW
+#admin
+#_VIbW5C@2*[?,<VT%lLX
 
 kubectl create -f toolbox.yaml
 #kubectl delete -f toolbox.yaml
@@ -174,5 +154,4 @@ kubectl exec -it busy-box-test2 /bin/sh
   #exit
 
 kubectl delete -f busy-box-test2.yaml
-
-kubectl get pvc -n default|grep busybox|awk '{print $1}'|xargs kubectl -n default delete pvc
+#kubectl get pvc -n default|grep busybox|awk '{print $1}'|xargs kubectl -n default delete pvc

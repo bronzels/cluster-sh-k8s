@@ -1,4 +1,5 @@
 #！！！手工, 新机器加入集群跳过所有cat EOF文件生成步骤
+sudo su -
 #root
 ansible allk8s -m shell -a"ufw disable"
 ansible allk8s -m shell -a"apt install -y selinux-utils"
@@ -32,15 +33,6 @@ ansible allk8sexpcp -m copy -a"src=/etc/apt/sources.list.d/kubernetes.list dest=
 ansible allk8s -m shell -a"apt-get update"
 ansible allk8s -m shell -a"apt-get install -y kubelet kubeadm kubectl"
 
-#root
-ansible allk8s -m shell -a"kubeadm reset -f"
-
-ansible allk8s -m shell -a"ipvsadm --clear"
-
-ansible allk8s -m shell -a"rm -rf /root/.kube"
-ansible allk8s -m shell -a"rm -rf /etc/kubernetes/*"
-ansible allk8s -m shell -a"rm -rf /home/ubuntu/.kube"
-
 ansible allk8s -m shell -a"systemctl enable kubelet"
 
 #kubeadm init --kubernetes-version=v1.18.3 --apiserver-advertise-address=10.10.2.81 --pod-network-cidr=10.244.0.0/16
@@ -49,7 +41,7 @@ cat << \EOF > kubeadm-config-old.yaml
 apiVersion: kubeadm.k8s.io/v1beta1
 kind: ClusterConfiguration
 ###指定k8s的版本###
-kubernetesVersion: v1.18.3
+kubernetesVersion: v1.18.5
 
 ### apiServerCertSANs 填所有的masterip,lbip其它可能需要通过它访问apiserver的地址,域名或主机名等 ###
 ### 如阿里fip,证书中会允许这些ip ###
@@ -69,6 +61,7 @@ networking:
 EOF
 #kubeadm config migrate --old-config kubeadm-config-old.yaml --new-config kubeadm-config.yaml
 
+#！！！手工, 检查看庄k8s版本，替换kubernetesVersion: v1.18.5
 cat << \EOF > kubeadm-config.yaml
 apiVersion: kubeadm.k8s.io/v1beta2
 bootstrapTokens:
@@ -106,7 +99,7 @@ etcd:
     dataDir: /var/lib/etcd
 imageRepository: k8s.gcr.io
 kind: ClusterConfiguration
-kubernetesVersion: v1.18.3
+kubernetesVersion: v1.18.5
 networking:
   dnsDomain: cluster.local
   podSubnet: 192.168.0.0/16
@@ -115,58 +108,42 @@ scheduler: {}
 EOF
 
 #！！！手工，替换正确的control plan IP地址
-sed -i 's@10.10.3.189@10.10.7.44@g' kubeadm-config.yaml
-sed -i 's@hk-prod-bigdata-master-3-189@hk-prod-bigdata-master-7-44@g' kubeadm-config.yaml
+sed -i 's@10.10.3.189@10.10.5.13@g' kubeadm-config.yaml
+sed -i 's@hk-prod-bigdata-master-3-189@hk-prod-bigdata-master-5-13@g' kubeadm-config.yaml
 
 ansible masterk8sexpcp -m copy -a"src=~/kubeadm-config.yaml dest=~"
+
+kubeadm init --config kubeadm-config.yaml
+#kubeadm token create --print-join-command|sed 's/${LOCAL_IP}/${VIP}/g'
 
 :<<EOF
 error execution phase preflight: [preflight] Some fatal errors occurred:
 	[ERROR FileContent--proc-sys-net-bridge-bridge-nf-call-iptables]: /proc/sys/net/bridge/bridge-nf-call-iptables does not exist
 	[ERROR FileContent--proc-sys-net-ipv4-ip_forward]: /proc/sys/net/ipv4/ip_forward contents are not set to 1
 EOF
+#如果出现以上错误，执行以下步骤
 ansible all -m shell -a"modprobe br_netfilter"
 ansible all -m shell -a"echo 1 > /proc/sys/net/bridge/bridge-nf-call-iptables"
-
-kubeadm init --config kubeadm-config.yaml
-#kubeadm token create --print-join-command|sed 's/${LOCAL_IP}/${VIP}/g'
 
 #root
 mkdir -p $HOME/.kube
 \cp -f /etc/kubernetes/admin.conf $HOME/.kube/config
 chown $(id -u):$(id -g) $HOME/.kube/config
 
+exit
 #ubuntu
 mkdir -p $HOME/.kube
 sudo \cp -f /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
+sudo su -
 #root
 #kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 wget -c https://docs.projectcalico.org/v3.9/manifests/calico.yaml
 kubectl apply -f calico.yaml
 #kubectl delete -f calico.yaml
 
-:<<EOF
-kubectl get podpreset
-#if return, error: the server doesn't have a resource type "podpreset", then should be enabled first
-file=/etc/kubernetes/manifests/kube-apiserver.yaml
-cp ${file} ${file}.bk
-ansible masterk8s -m shell -a"cp ${file} ${file}.bk"
-ansible masterk8s -m shell -a"sed -i '/    - --enable-admission-plugins/a\    - --runtime-config=settings.k8s.io/v1alpha1=true' ${file}"
---runtime-config=settings.k8s.io/v1alpha1=true
-ansible masterk8s -m shell -a"cat ${file}"
-kubectl get pod -n kube-system
-kubectl get podpreset
-    volumeMounts:
-      - name: mytz-config
-        mountPath: /etc/localtime
-  volumes:
-    - name: mytz-config
-      hostPath:
-        path: /usr/share/zoneinfo/Asia/Shanghai
-EOF
-
+exit
 #ubuntu
 file=~/scripts/k8s_funcs.sh
 cat << \EOF > ${file}
@@ -436,4 +413,3 @@ function uinstall_helm_if_found(){
 
 EOF
 chmod a+x ${file}
-. ${file}

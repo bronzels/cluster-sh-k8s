@@ -10,37 +10,10 @@ docker rm `docker ps -a | grep mynfs-af | awk '{print $1}'`
 docker run -d -p 2149:2049 --name mynfs-af --privileged -v ${HOME}/nfsmnt:/nfsshare -e SHARED_DIRECTORY=/nfsshare itsthenetwork/nfs-server-alpine:latest
 sudo netstat -nlap|grep 2149
 mkdir testafmnt
-sudo mount -v -o vers=4,loud,port=2149 10.10.7.44:/ testafmnt
-#sudo mount -v -o vers=4,loud 10.10.7.44:/ testafmnt
+sudo mount -v -o vers=4,loud,port=2149 10.10.5.13:/ testafmnt
+#sudo mount -v -o vers=4,loud 10.10.5.13:/ testafmnt
 ls testafmnt
 sudo umount testafmnt
-
-kubectl delete -f myaf-nfs-pv.yaml
-cat << \EOF > myaf-nfs-pv.yaml
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: myaf-nfs-pv
-  labels:
-    storage: myaf-nfs-pv
-  annotations:
-    kubernetes.io.description: pv-storage
-spec:
-  capacity:
-    storage: 1Gi
-  accessModes:
-    - ReadWriteMany
-  storageClassName: nfs
-  mountOptions:
-    - vers=4
-    - port=2149
-  nfs:
-    path: /
-    server: 10.10.7.44
-EOF
-kubectl apply -f myaf-nfs-pv.yaml
-kubectl get pv|grep myaf-nfs-pv
-kubectl get pvc -n fl
 
 kubectl delete -f myaf-nfs-pvc.yaml -n fl
 cat << \EOF > myaf-nfs-pvc.yaml
@@ -63,6 +36,34 @@ spec:
 EOF
 kubectl apply -f myaf-nfs-pvc.yaml -n fl
 kubectl get pvc -n fl
+
+kubectl delete -f myaf-nfs-pv.yaml
+cat << \EOF > myaf-nfs-pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: myaf-nfs-pv
+  labels:
+    storage: myaf-nfs-pv
+  annotations:
+    kubernetes.io.description: pv-storage
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs
+  mountOptions:
+    - vers=4
+    - port=2149
+  nfs:
+    path: /
+    server: 10.10.5.13
+EOF
+kubectl apply -f myaf-nfs-pv.yaml
+kubectl get pv|grep myaf-nfs-pv
+
+
 :<<EOF
   selector:
     matchLabels:
@@ -94,7 +95,7 @@ wait_pod_running "fl" "busy-box-test1" 1 600
 #kubectl delete -f busy-box-test1.yaml
 kubectl exec -it busy-box-test1 -n fl -- ls /mnt/busy-box/dags
 kubectl delete pod busy-box-test1 -n fl
-#wait_pod_deleted "fl" "busy-box-test1" 600
+wait_pod_deleted "fl" "busy-box-test1" 600
 
 file=myaf-web-ext.yaml
 cat << \EOF > ${file}

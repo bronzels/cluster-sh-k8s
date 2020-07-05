@@ -20,8 +20,11 @@ ansible slavecdh -m copy -a"src=/etc/ntp.conf dest=/etc"
 
 #安装JAVA
 ansible allcdh -m shell -a"apt-get install -y openjdk-8-jdk"
-#presto要求jdk版本
+#presto要求jdk版本8u151+
 ansible allcdh -m shell -a"java -version"
+echo "export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64" >> ~/other-env.sh
+
+
 
 #启动docker mysql实例cdh使用
 cd
@@ -40,7 +43,7 @@ docker exec -it `docker ps  |grep mysql | awk '{print $1}'` bash
       ALTER USER 'root'@'%' IDENTIFIED BY 'root';
       GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'root' WITH GRANT OPTION;
       FLUSH PRIVILEGES;
-mysql -h hk-prod-bigdata-slave-0-234 -P3306 -uroot -proot -e "SHOW DATABASES"
+mysql -h 10.10.0.31 -P3306 -uroot -proot -e "SHOW DATABASES"
 
 mkdir ~/cdh
 cd ~/cdh
@@ -77,8 +80,8 @@ GRANT ALL ON navms.* TO 'navms'@'%' IDENTIFIED BY 'navms';
 GRANT ALL ON oozie.* TO 'oozie'@'%' IDENTIFIED BY 'oozie';
 EOF
 
-mysql -h hk-prod-bigdata-slave-0-234 -P3306 -uroot -proot -Dmysql < ./db.sql
-mysql -h hk-prod-bigdata-slave-0-234 -P3306 -uroot -proot -e "SHOW DATABASES"
+mysql -h 10.10.0.31 -P3306 -uroot -proot -Dmysql < ./db.sql
+mysql -h 10.10.0.31 -P3306 -uroot -proot -e "SHOW DATABASES"
 
 cd ~/cdh
 wget -c https://cdn.mysql.com//archives/mysql-connector-java-5.1/mysql-connector-java-5.1.46.tar.gz

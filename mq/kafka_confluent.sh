@@ -70,8 +70,10 @@ EOF
   # 删除config目录下所有文件
   # 删除etc/schema-registry/schema-registry.properties
   # 删除logs目录下所有文件
-#！！！手工，从页面：https://www.confluent.io/download/点击下载，没有wget链接
-unzip ~/tmp/confluent-5.3.2.zip
+#！！！手工，如果不从beta copy重新搭建
+  # 从页面：https://www.confluent.io/download/点击下载，没有wget链接
+  # 下载mysql/mongodb/postgresql的debezium组件，放到confluent/share/java目录下
+unzip /tmp/confluent-5.3.2.zip
 
 file=~/mykc/confluent-5.3.2/etc/kafka/log4j.properties
 cp ${file} ${file}.bk
@@ -92,8 +94,9 @@ RUN ln -sf /opt/confluent-5.3.2 /opt/confluent
 
 WORKDIR /opt/confluent
 
-CMD bin/connect-distributed /opt/confluent/config/connect-distributed.properties 2> /opt/confluent/logs/stderr.log > /opt/confluent/logs/stdout.log
+CMD bin/connect-distributed /opt/confluent/config/connect-distributed.properties
 EOF
+#CMD bin/connect-distributed /opt/confluent/config/connect-distributed.properties 2> /opt/confluent/logs/stderr.log > /opt/confluent/logs/stdout.log
 #
 #RUN echo $JAVA_HOME
 #RUN java -version
@@ -174,7 +177,6 @@ spec:
     targetPort: 8083
 EOF
 
-
 file=~/scripts/myconnector-cp-start-log-check.sh
 rm -f ${file}
 #cat ~/scripts/k8s_funcs.sh > ${file}
@@ -192,7 +194,8 @@ podnsname=${ns}-${name}
 podnsname=${podnsname//_/-}
 echo "podnsname:${podnsname}"
 
-wait_pod_specific_log_line "${podnsname}" "myconn" "/opt/confluent/logs/stdout.log" "INFO Kafka Connect started" 900
+#wait_pod_specific_log_line "${podnsname}" "myconn" "/opt/confluent/logs/stdout.log" "INFO Kafka Connect started" 900
+wait_pod_log_line "${podnsname}" "myconn" "INFO Kafka Connect started" 900
 funcrst=`echo $?`
 if [ ${funcrst} -eq 0 ]; then
   echo "$podnsname connector log line is not detected and timeout"
@@ -334,6 +337,7 @@ chmod a+x ${file}
 ~/scripts/myconnector-cp-start-log-check.sh mqstr mysqlsrctest
 
 :<<EOF
+kubectl logs `kubectl get pod -n mqstr-mysqlsrctest | grep myconn | awk '{print $1}'` -n mqstr-mysqlsrctest
 kubectl get svc -n mqstr-mysqlsrctest | grep myconn
 kubectl exec -it `kubectl get pod -n mqstr-mysqlsrctest | grep myconn | awk '{print $1}'` -n mqstr-mysqlsrctest bash
 EOF

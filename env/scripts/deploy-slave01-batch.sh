@@ -15,7 +15,7 @@ lib="no"
 while getopts ":l:" opt; do
   case $opt in
     l)
-      echo lib="$OPTARG"
+      lib="$OPTARG"
       ;;
     \?)
       echo "Invalid option: -$OPTARG"
@@ -30,7 +30,7 @@ set -x
 ansible allcdh -m copy -a"src=~/k8sdeploy_dir/spark_shared_jars.tar.gz dest=~/"
 if [ "$lib" != "no" ]; then
   if [ "$lib" == "all" ]; then
-    ansible allcdh -m shell -a"set -x;cd ~/spark_shared_jars/;rm -f *;tar xzvf ~/spark_shared_jars.tar.gz"
+    ansible allcdh -m shell -a"set -x;rm -rf ~/spark_shared_jars;mkdir ~/spark_shared_jars;cd ~/spark_shared_jars/;tar xzvf ~/spark_shared_jars.tar.gz"
   else
     ansible allcdh -m shell -a"set -x;cd ~/spark_shared_jars/;tar xzvf ~/spark_shared_jars.tar.gz"
   fi

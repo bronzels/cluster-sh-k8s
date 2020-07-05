@@ -1,17 +1,12 @@
 #rook-ceph
 kubectl create namespace md
   #postgre
-#kubectl create namespace mq
-#kubectl delete namespace mq
-  #shared by configmap for connectors
-    #json/avro/bson
-    #log4j
 kubectl create namespace mqstr
   #zookeeper
   #kafka
 kubectl create namespace mqdw
-  #kafka
   #zookeeper
+  #kafka
 #k8s master
   #ssh
   #scripts/kubectl
@@ -48,6 +43,8 @@ kubectl create namespace servyat
   #opentsdb
 kubectl create namespace dw
   #presto
+kubectl create namespace str
+  #flink
 kubectl create namespace fl
   #airflow
     #ssh cligw

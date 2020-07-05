@@ -5,35 +5,26 @@
 :<<EOF
 #example:
 deploy_master01_str.sh
-deploy_master01_str.sh -rb
 EOF
-
-rb="no"
-for var in "$*"
-do
-  echo "var:${var}"
-  if [ "$var" == "-rb" ]; then
-    rb="yes"
-  fi
-done
 
 set -x
 
-cd ~/flinkdeploy
+cd ~/str/image
 
-#如果依赖库没有更改，只是主程序修改，可以跳过image building和flink重启
-if [ "$rb" == "yes" ]; then
-  cp -v ~/k8sdeploy_dir/flink_com_libfiles.tar.gz ./
+cp -rfv ~/k8sdeploy_dir/str_jar ./
+cp -v ~/k8sdeploy_dir/flink_com_libfiles.tar.gz ./
+rm -rf scripts
+mkdir scripts
+cp -v ~/scripts/startfmstrall.sh scripts/
 
-  docker images|grep "<none>"|awk '{print $3}'|xargs docker rmi -f
+docker images|grep "<none>"|awk '{print $3}'|xargs docker rmi -f
 
-  docker images|grep flink
-  docker images|grep flink|awk '{print $3}'|xargs docker rmi -f
-  ansible slavek8s -i /etc/ansible/hosts-ubuntu -m shell -a"docker images|grep flink|awk '{print \$3}'|xargs docker rmi -f"
-  docker images|grep flink
+docker images|grep flink
+docker images|grep flink|awk '{print $3}'|xargs docker rmi -f
+ansible slavek8s -i /etc/ansible/hosts-ubuntu -m shell -a"docker images|grep flink|awk '{print \$3}'|xargs docker rmi -f"
+docker images|grep flink
 
-  docker build -f ~/pika/Dockerfile -t master01:30500/bronzels/flink:0.1 ./
-  docker push master01:30500/bronzels/flink:0.1
-fi
+docker build -t master01:30500/bronzels/flink:0.1 ./
+docker push master01:30500/bronzels/flink:0.1
 
 ~/scripts/myflink-cp-op.sh restart

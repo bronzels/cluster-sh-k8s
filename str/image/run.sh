@@ -1,5 +1,7 @@
 #!/bin/bash
 
+service ssh start
+
 FLINK_JOB_MANAGER_SH=$FLINK_HOME/bin/jobmanager.sh
 FLINK_TASK_MANAGER_SH=$FLINK_HOME/bin/taskmanager.sh
 

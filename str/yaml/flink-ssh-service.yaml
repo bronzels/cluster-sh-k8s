@@ -10,5 +10,5 @@ spec:
     app: flink
     role: jobmanager
   ports:
-    - port: 22
-      name: ssh
+  - port: 22
+    name: ssh
