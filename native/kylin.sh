@@ -1,6 +1,6 @@
 cd ~
-#rev=3.0.2
-rev=3.1.0
+rev=3.0.2
+#rev=3.1.0
 
 wget -c https://mirrors.koehn.com/apache/kylin/apache-kylin-${rev}/apache-kylin-${rev}-bin-cdh60.tar.gz
 tar xzvf apache-kylin-${rev}-bin-cdh60.tar.gz
@@ -63,6 +63,9 @@ myzk_cli.sh "ls /"
 myzk_cli.sh "deleteall /kylin"
 hadoop fs -ls /
 hadoop fs -rm -r -f /kylin
+EOF
+exec hbase shell <<EOF
+list
 EOF
 exec hbase shell <<EOF
 disable 'kylin_metadata'
