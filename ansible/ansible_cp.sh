@@ -180,7 +180,6 @@ EOF
 ssh-keyscan hk-prod-bigdata-master-5-13 hk-prod-bigdata-master-4-158 hk-prod-bigdata-slave-0-31 hk-prod-bigdata-slave-13-53 hk-prod-bigdata-slave-3-240 hk-prod-bigdata-slave-5-105
 ansible-playbook -i /etc/ansible/hosts ~/ssh-addkey.yml
 
-exit
 #ubuntu
 ssh-keygen -t rsa -b 2048 -P '' -f ~/.ssh/id_rsa
 
@@ -207,7 +206,7 @@ sed -i 's@ ansible_ssh_pass=root@@g' /etc/ansible/hosts
 sed -i 's@ ansible_ssh_pass=ubuntu@@g' /etc/ansible/hosts-ubuntu
 
 #used for unpacking/installing
-apt install -y unzip zip tar make
+apt-get install -y unzip zip tar make
 
 #used for
 # cdh db initialization
@@ -218,6 +217,5 @@ sudo su -
 #root
 ansible all -m shell -a"ls ~"
 
-exit
 #ubuntu
 ansible all -i /etc/ansible/hosts-ubuntu -m shell -a"ls ~"

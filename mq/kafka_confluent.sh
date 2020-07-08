@@ -197,9 +197,12 @@ echo "podnsname:${podnsname}"
 #wait_pod_specific_log_line "${podnsname}" "myconn" "/opt/confluent/logs/stdout.log" "INFO Kafka Connect started" 900
 wait_pod_log_line "${podnsname}" "myconn" "INFO Kafka Connect started" 900
 funcrst=`echo $?`
-if [ ${funcrst} -eq 0 ]; then
+if [ ${funcrst} -eq 1 ]; then
   echo "$podnsname connector log line is not detected and timeout"
+  set -e
   exit 1
+else
+  exit 0
 fi
 
 #kubectl get pod -n ${podnsname} | awk '{print $1}' | grep myconn | xargs -I CNAME  sh -c "kubectl exec -n ${podnsname} CNAME -- cat /opt/confluent/logs/stdout.log|grep 'INFO Kafka Connect started'"
@@ -340,6 +343,9 @@ chmod a+x ${file}
 kubectl logs `kubectl get pod -n mqstr-mysqlsrctest | grep myconn | awk '{print $1}'` -n mqstr-mysqlsrctest
 kubectl get svc -n mqstr-mysqlsrctest | grep myconn
 kubectl exec -it `kubectl get pod -n mqstr-mysqlsrctest | grep myconn | awk '{print $1}'` -n mqstr-mysqlsrctest bash
+
+kubectl run curl-json -it --image=radial/busyboxplus:curl --restart=Never --rm -- curl -i -X DELETE -H "Accept:application/json" -H "Content-Type:application/json" myconnsvc.mqstr-mysqlsrc-cptrd-2-2-4-0-0-7-5-3:8083/connectors/2_2_4_0_0_7_5_3-deb-connector
+
 EOF
 
 kubectl run curl-json -it --image=radial/busyboxplus:curl --restart=Never --rm -- curl myconnsvc.mqstr-mysqlsrctest:8083

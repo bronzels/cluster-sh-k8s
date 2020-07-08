@@ -12,7 +12,7 @@ helm install myhdp -n hadoop -f values.yaml \
   --set persistence.dataNode.enabled=true \
   --set persistence.dataNode.storageClass=rook-ceph-block \
   --set persistence.nameNode.size=128Gi \
-  --set persistence.dataNode.size=1024Gi \
+  --set persistence.dataNode.size=512Gi \
   --set hdfs.dataNode.resources.requests.memory="4096Mi" \
   --set hdfs.dataNode.resources.requests.cpu="2000m" \
   --set hdfs.dataNode.resources.limits.memory="8196Mi" \
@@ -26,10 +26,13 @@ helm install myhdp -n hadoop -f values.yaml \
 :<<EOF
 helm uninstall myhdp -n hadoop
 kubectl get pvc -n hadoop | awk '{print $1}' | grep dfs-myhdp | xargs kubectl delete pvc -n hadoop
+kubectl get pvc -n hadoop | awk '{print $1}' | grep myhdp-hadoop-hdfs-nn | xargs kubectl delete pvc -n hadoop
 
 kubectl describe pod myhdp-hadoop-hdfs-dn-1 -n hadoop
 kubectl describe pod myhdp-hadoop-yarn-nm-0 -n hadoop
 kubectl exec -it myhdp-hadoop-yarn-rm-0 -n hadoop bash
+
+kubectl get configmap myhdp-hadoop -n hadoop -o yaml
 
 kubectl get pod -n hadoop -o wide
 kubectl get pvc -n hadoop -o wide

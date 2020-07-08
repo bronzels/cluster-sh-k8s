@@ -29,9 +29,11 @@ ansible allcdh -m shell -a"sysctl vm.swappiness=10"
 ansible allcdh -m shell -a"echo 'vm.swappiness=10'>> /etc/sysctl.conf"
 
 #each
-ansible allcdh -m shell -a"systemctl start cloudera-scm-agent"
+ansible allcdh -m shell -a"systemctl restart cloudera-scm-agent"
 #卸载重装如果slave log提示错误
-  #ansible slavecdh -m shell -a"kill -9 、$(pgrep -f supervisord)“
+  #ansible slavecdh -m shell -a"kill -9 `$(pgrep -f supervisord)`"
+  ansible allcdh -m shell -a"pgrep -f supervisord"
+  ansible allcdh -m shell -a"pgrep -f supervisord | xargs kill -9"
 ansible allcdh -m shell -a"tail -100 /var/log/cloudera-scm-agent/cloudera-scm-agent.log"
 
 ansible allcdh -m shell -a"systemctl status cloudera-scm-agent"

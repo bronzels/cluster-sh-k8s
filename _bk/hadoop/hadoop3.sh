@@ -14,7 +14,7 @@ cd image
 
 docker images|grep hadoop
 docker images|grep hadoop|awk '{print $3}'|xargs docker rmi -f
-ansible slave -m shell -a"docker images|grep hadoop|awk '{print \$3}'|xargs docker rmi -f"
+sudo ansible slavek8s -m shell -a"docker images|grep hadoop|awk '{print \$3}'|xargs docker rmi -f"
 docker images|grep hadoop
 
 file=Dockerfile
@@ -36,14 +36,16 @@ rm hadoop-${HADOOPREV}.tar.gz
 docker tag hadoop:${HADOOPREV}-nolib master01:30500/chenseanxy/hadoop:${HADOOPREV}-nolib
 docker push master01:30500/chenseanxy/hadoop:${HADOOPREV}-nolib
 
+cp ~/sources.list.ubuntu.16.04 sources.list
 file=Dockerfile
 cp ${file}.template ${file}
 sed -i 's@FROM java:8-jre@FROM paulosalgado\/oracle-java8-ubuntu-16@g' ${file}
 
-cp ~/source.list.ubuntu.16.04 source.list
+#cp ~/source.list.ubuntu.16.04 source.list
+#COPY ./source.list /etc/apt
 cat << \EOF >> ${file}
 
-COPY ./source.list /etc/apt
+COPY sources.list /etc/apt
 RUN apt-get update
 RUN apt-get install -y openssh-server
 RUN sed -i 's@PermitRootLogin prohibit-password@PermitRootLogin yes@g' /etc/ssh/sshd_config
@@ -56,14 +58,11 @@ EOF
 cp Makefile Makefile-ubu16ssh
 sed -i 's@$(DOCKER) build -t hadoop@$(DOCKER) build -t hadoop-ubu16ssh@g' Makefile-ubu16ssh
 make -f Makefile-ubu16ssh
-rm hadoop-${HADOOPREV}.tar.gz
-
-docker images|grep "<none>"|awk '{print $3}'|xargs docker rmi -f
-docker images|grep ubu16ssh|awk '{print $3}'|xargs docker rmi -f
-ansible slave -m shell -a"docker images|grep ubu16ssh|awk '{print \$3}'|xargs docker rmi -f"
 
 docker tag hadoop-ubu16ssh:${HADOOPREV}-nolib master01:30500/chenseanxy/hadoop-ubu16ssh:${HADOOPREV}-nolib
 docker push master01:30500/chenseanxy/hadoop-ubu16ssh:${HADOOPREV}-nolib
+
+rm hadoop-${HADOOPREV}.tar.gz
 
 cd $HDPHOME
 file=values.yaml

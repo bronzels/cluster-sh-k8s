@@ -12,7 +12,6 @@ ansible all -m shell -a"ip addr|grep 10.10."
 #used for nfs mount in deployment yaml
 ansible all -m shell -a"apt install -y nfs-common"
 
-exit
 #ubuntu
 #scripts for airflow to ssh and execute, or for manual op
 mkdir ~/scripts/
@@ -70,6 +69,16 @@ sudo pip install yq
 #used in postgre scripts
 sudo pip install y2j
 
+#for hive/db-tools building
+wget -c https://services.gradle.org/distributions/gradle-4.10.2-bin.zip
+unzip gradle-4.10.2-bin.zip
+ln -s gradle-4.10.2 gradle
+echo "export GRADLE_HOME=${HOME}/gradle" >> other-env.sh
+echo "export PATH=$PATH:${HOME}/gradle/bin" >> other-env.sh
+source ~/.bashrc
+gradle --version
+
 #run docker in ubuntu,for chartmesum docker setup
 sudo gpasswd -a $USER docker
 newgrp docker
+

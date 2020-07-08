@@ -239,6 +239,10 @@ chmod a+x ${file}
 ~/scripts/myprestoserver-cp-op.sh stop
 ~/scripts/myprestoserver-cp-op.sh restart
 
+kubectl -n default run test-presto -ti --image=master01:30500/wiwdata/presto:0.1 --rm=true --restart=Never -- presto --server http://10.10.0.31:30080 --catalog kudu_without_emulation
+  #把项目目定制开发的com-schema.sql的数仓版本改为v1
+  #执行com-schema.sql，插入需要模拟的schema
+
 :<<EOF
 
 kubectl get pod -n dw
@@ -251,13 +255,8 @@ kubectl -n default run test-presto -ti --image=master01:30500/wiwdata/presto:0.1
   SHOW TABLES;
   SELECT COUNT(1) FROM kylin_sales;
 
-kubectl -n default run test-presto -ti --image=master01:30500/wiwdata/presto:0.1 --rm=true --restart=Never -- presto --server http://10.10.0.31:30080 --catalog kudu_without_emulation
-  把项目目定制开发的com-schema.sql的数仓版本改为v1
-  执行com-schema.sql，插入需要模拟的schema
-
 EOF
 
-:<<EOF
 NOTES:
 Get the application URL by running these commands:
   export NODE_PORT=$(kubectl get --namespace dw -o jsonpath="{.spec.ports[0].nodePort}" services mypres-presto)

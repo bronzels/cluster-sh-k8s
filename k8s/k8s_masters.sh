@@ -68,6 +68,5 @@ ansible masterk8sexpcp -m shell -a"chmod a+x $file"
 
 ansible masterk8sexpcp -m shell -a"/root/kubejoin-master.sh"
 
-exit
 kubectl get node -n kube-system
 

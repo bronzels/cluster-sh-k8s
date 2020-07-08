@@ -15,7 +15,6 @@ sed -i 's@PasswordAuthentication no@#PasswordAuthentication no@g' ${file}
 
 service sshd restart
 
-exit
 #hadoop
 
 rm -rf ~/scripts

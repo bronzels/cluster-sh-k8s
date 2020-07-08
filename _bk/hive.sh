@@ -13,7 +13,7 @@ cd ${MYIMGHOME}
 
 docker images|grep hive
 docker images|grep hive|awk '{print $3}'|xargs docker rmi -f
-ansible slave -m shell -a"docker images|grep hive|awk '{print \$3}'|xargs docker rmi -f"
+sudo ansible slavek8s -m shell -a"docker images|grep hive|awk '{print \$3}'|xargs docker rmi -f"
 docker images|grep hive
 
 file=Dockerfile
@@ -31,11 +31,11 @@ cd ${MYHOME}
 #file=templates/configmap.yaml
 #cp ${MYHOME}.bk/${file} ${file}
 #sed -i '/    <\/configuration>/i\        <property>\n            <name>hive.server2.thrift.bind.host<\/name>\n            <value>0.0.0.0<\/value>\n            <description>Bind host on which to run the HiveServer2 Thrift interface.\n                Can be overridden by setting <\/description>\n        <\/property>\n        <property>\n            <name>hive.server2.thrift.port<\/name>\n            <value>9084<\/value>\n        <\/property>\n        <property>\n            <name>hive.server2.thrift.http.port<\/name>\n            <value>9085<\/value>\n        <\/property>' ${file}
+EOF
 
 groupadd supergroup
 usermod -a -G supergroup hive
 su - hive -s /bin/bash -c "hdfs dfsadmin -refreshUserToGroupsMappings"
-EOF
 
 :<<EOF
 helm install myhv -n hadoop \
@@ -72,6 +72,8 @@ kubectl get configmap -n hadoop | grep myhv
 kubectl get configmap myhv-hive -n hadoop -o yaml
 kubectl get configmap myhv-metastore -n hadoop -o yaml
 
+kubectl exec -it -n hadoop myhv-hive-server-0 -- bash
+
 kubectl get pod -n hadoop|grep myhv
 
 kubectl describe pod -n hadoop myhv-hive-server-0
@@ -82,8 +84,6 @@ kubectl exec -n hadoop -it myhdp-hadoop-hdfs-nn-0 -- /usr/local/hadoop/bin/hdfs 
 kubectl exec -n hadoop -it myhdp-hadoop-hdfs-nn-0 -- /usr/local/hadoop/bin/hdfs dfs -ls /user/hive
 kubectl exec -n hadoop -it myhdp-hadoop-hdfs-nn-0 -- /usr/local/hadoop/bin/hdfs dfs -ls /user/hive/warehouse
 
-kubectl exec -it -n hadoop myhv-metastore-0 -- bash
-#CREATE TABLE IF NOT EXISTS students(id INT,name STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY "\t";
 kubectl exec -it -n hadoop myhv-hive-server-0 -- bash
   hive/bin/hive
     DROP TABLE IF EXISTS students;

@@ -37,7 +37,6 @@ ansible allk8s -m shell -a"cat /etc/docker/daemon.json"
 ansible allk8s -m shell -a"systemctl daemon-reload"
 ansible allk8s -m shell -a"systemctl restart docker"
 
-exit
 #ubuntu
 #ansible allk8s -i /etc/ansible/hosts-ubuntu -m shell -a"sudo gpasswd -a $USER docker"
 #ansible allk8s -i /etc/ansible/hosts-ubuntu -m shell -a"newgrp docker"

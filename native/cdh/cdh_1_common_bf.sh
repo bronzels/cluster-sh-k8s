@@ -36,7 +36,7 @@ docker run --name=mysql_cdh \
 -v /var/lib/mysql:/var/lib/mysql \
 -d mysql:5.7
 #！！！手工，登录修改mysql root密码
-docker exec -it `docker ps  |grep mysql | awk '{print $1}'` bash
+docker exec -it `docker ps  |grep mysql_cdh | awk '{print $1}'` bash
   mysql -P3306 -uroot -proot
       FLUSH PRIVILEGES;
       USE mysql;

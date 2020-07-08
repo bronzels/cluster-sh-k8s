@@ -175,13 +175,14 @@ fi
 
 if [ $1 == "start" -o $1 == "restart" -o $1 == "restartnew" ]; then
   ${HOME}/helm/helm install myaf -n fl \
+    --set workers.replicas=6 \
     --set airflow.config.AIRFLOW__SMTP__SMTP_HOST="smtp.exmail.qq.com" \
     --set airflow.config.AIRFLOW__SMTP__SMTP_STARTTLS="False" \
     --set airflow.config.AIRFLOW__SMTP__SMTP_SSL="True" \
     --set airflow.config.AIRFLOW__SMTP__SMTP_PORT="465" \
-    --set airflow.config.AIRFLOW__SMTP__SMTP_USER="big-data@followme.cn" \
+    --set airflow.config.AIRFLOW__SMTP__SMTP_USER="big-data@vanelink.net" \
     --set airflow.config.AIRFLOW__SMTP__SMTP_PASSWORD="sf323mNoK" \
-    --set airflow.config.AIRFLOW__SMTP__SMTP_MAIL_FROM="big-data@followme.cn" \
+    --set airflow.config.AIRFLOW__SMTP__SMTP_MAIL_FROM="big-data@vanelink.net" \
     --set airflow.config.AIRFLOW__CORE__LOAD_EXAMPLES="False" \
     --set dags.installRequirements=true \
     --set dags.persistence.enabled=true\
@@ -191,9 +192,9 @@ if [ $1 == "start" -o $1 == "restart" -o $1 == "restartnew" ]; then
     --set airflow.image.tag="1.10.10-python3.6" \
     stable/airflow
   kubectl apply -f ./myaf-web-ext.yaml -n fl
-  wait_pod_running "fl" "myaf-" 6 600
+  wait_pod_running "fl" "myaf-" 11 600
   wait_pod_log_line "fl" "myaf-scheduler" "Launched DagFileProcessorManager with pid" 900
-  wait_pod_log_line "fl" "myaf-worker" "Events of group {task} enabled by remote" 900
+  #wait_pod_log_line "fl" "myaf-worker" "Events of group {task} enabled by remote" 900
   wait_pod_log_line "fl" "myaf-web" "Filling up the DagBag from /opt/airflow/dags" 900
 fi
 EOF

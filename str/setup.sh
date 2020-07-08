@@ -94,7 +94,7 @@ kubectl exec -it -n str `kubectl get pod -n str | grep flink-jobmanager | awk '{
 kubectl exec -it -n str `kubectl get pod -n str | grep flink-jobmanager | awk '{print $1}'` -- ls /opt/flink/lib
 kubectl exec -it -n str `kubectl get pod -n str | grep flink-jobmanager | awk '{print $1}'` -- ls /opt/str_jar
 
-kubectl run test-mysr -ti --image=praqma/network-multitool --rm=true --restart=Never -- \
+kubectl run test-myubussh-str -ti --image=praqma/network-multitool --rm=true --restart=Never -- bash
   ssh -p 22 root@flink-ssh-service.str
 
     /opt/flink/bin/flink run -d -m 127.0.0.1:8081 /opt/flink/examples/streaming/WindowJoin.jar

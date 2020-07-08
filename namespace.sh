@@ -42,6 +42,7 @@ kubectl create namespace servyat
   #codis
   #opentsdb
 kubectl create namespace dw
+  #kudu
   #presto
 kubectl create namespace str
   #flink
@@ -53,6 +54,10 @@ kubectl create namespace fl
 #default
   #prometheus operator
   #redis
-  #flink
+kubectl create namespace hadoop
+  #zookeeper
+  #hadoop
+  #hbase
+  #kylin
 
 kubectl get namespaces

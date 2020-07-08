@@ -92,9 +92,9 @@ EOF
 helm uninstall mdpostgre -n md
 kubectl get pvc -n md|grep mdpostgre|awk '{print $1}'|xargs kubectl -n md delete pvc
 
-#kubectl run mdpostgre-postgresql-client --rm --tty -i --restart='Never' --namespace md --image docker.io/bitnami/postgresql:11.7.0-debian-10-r9 --env="PGPASSWORD=postgres" --command -- \
-#  psql --host mdpostgre-postgresql -U postgres -d postgres -p 5432 \
-#  -c "SELECT version()"
+kubectl run mdpostgre-postgresql-client --rm --tty -i --restart='Never' --namespace md --image docker.io/bitnami/postgresql:11.7.0-debian-10-r9 --env="PGPASSWORD=postgres" --command -- \
+  psql --host mdpostgre-postgresql -U postgres -d postgres -p 5432 \
+  -c "SELECT version()"
 
 kubectl run mdpostgre-postgresql-client --rm --tty -i --restart='Never' --namespace md --image docker.io/bitnami/postgresql:11.7.0-debian-10-r9 --env="PGPASSWORD=postgres" --command -- \
   psql --host 10.10.0.31 -U postgres -d postgres -p 31432 \

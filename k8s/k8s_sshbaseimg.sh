@@ -1,5 +1,5 @@
 #以下image用作flink的base image，必须执行
-#cp ~/source.list.ubuntu.16.04 source.list
+#cp ~/sources.list.ubuntu.16.04 sources.list
 
 docker images|grep ubu16ssh
 docker images|grep ubu16ssh|awk '{print $3}'|xargs docker rmi -f
@@ -82,7 +82,7 @@ kubectl apply -f ubu16ssh-deploy-svc.yaml
 kubectl get pod
 kubectl get svc
 
-kubectl run test-ubu16ssh1 -ti --image=master01:30500/bronzels/ubu16ssh:0.1 --rm=true --restart=Never -- bash
+kubectl run test-myubussh -ti --image=praqma/network-multitool --rm=true --restart=Never -- bash
   ssh -p 22 root@myubu16sshsvc
 
 kubectl delete -f ubu16ssh-deploy-svc.yaml
