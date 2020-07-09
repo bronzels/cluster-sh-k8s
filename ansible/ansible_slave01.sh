@@ -1,4 +1,5 @@
 
+sudo su -
 #root
 mkdir ~/released/
 

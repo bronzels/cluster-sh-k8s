@@ -360,8 +360,8 @@ curl http://master01:31081
 kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.servyat -p 19000  set fool4 bar4
 kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h codis-proxy.servyat -p 19000  get fool4
 kubectl -n default run test-zookeeper-serv -ti --image=zookeeper:3.5.5 --rm=true --restart=Never -- zkCli.sh -server zookeeper.servyat:2181 ls /codis3/str
-kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h 10.10.0.31 -p 31901  set fool5 bar5
-kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h 10.10.0.31 -p 31901  get fool5
+kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h 10.10.1.62 -p 31901  set fool5 bar5
+kubectl -n default run test-redis -ti --image=redis --rm=true --restart=Never -- redis-cli -h 10.10.1.62 -p 31901  get fool5
 
 :<<EOF
 kubectl exec -it codis-server-0 -n serv bash

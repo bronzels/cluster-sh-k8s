@@ -27,6 +27,7 @@ set -x
 
 #如果依赖库没有更改，只是主程序修改，没必要执行以下步骤：
 #if there are libraries, either com or 3rd, tared into spark_jars.tar.gz
+:<<EOF
 if [ "$lib" != "no" ]; then
   if [ "$lib" == "all" ]; then
     ansible allcdh -m shell -a"rm -rf ~/spark_shared_jars"
@@ -35,5 +36,15 @@ if [ "$lib" != "no" ]; then
   fi
   ansible allcdh -m copy -a"src=~/k8sdeploy_dir/spark_jars.tgz dest=~/spark_shared_jars/"
   ansible allcdh -m shell -a"cd ~/spark_shared_jars;tar xzvf spark_jars.tgz;cd spark_jars;cp *.jar ../;cd ..;rm -rf spark_jars.tgz spark_jars/"
+fi
+EOF
+if [ "$lib" != "no" ]; then
+  ansible allcdh -m copy -a"src=~/k8sdeploy_dir/spark_shared_jars.tar.gz dest=~/"
+  if [ "$lib" == "all" ]; then
+    ansible allcdh -m shell -a"set -x;rm -rf ~/spark_shared_jars;mkdir ~/spark_shared_jars;cd ~/spark_shared_jars/;tar xzvf ~/spark_shared_jars.tar.gz"
+  else
+    ansible allcdh -m shell -a"set -x;cd ~/spark_shared_jars/;tar xzvf ~/spark_shared_jars.tar.gz"
+  fi
+  ansible allcdh -m shell -a"set -x;rm -f ~/spark_shared_jars.tar.gz"
 fi
 

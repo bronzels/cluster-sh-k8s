@@ -58,7 +58,7 @@ cp ${MYHOME}.bk/${file} ${file}
 sed -i '/{{- define \"presto.coordinator\" -}}/i\{{- define \"presto.catalog\" -}}\n{{ template \"presto.fullname\" . }}-catalog\n{{- end -}}' ${file}
 
 :<<EOF
-sed -i '/      containers:/i\        - name: comprplg-volume\n          nfs:\n            server: 10.10.5.13\n            path: \/'  ${file}
+sed -i '/      containers:/i\        - name: comprplg-volume\n          nfs:\n            server: 10.10.9.83\n            path: \/'  ${file}
 sed -i '/          livenessProbe:/i\            - name: comprplg-volume\n              mountPath: {{ .Values.server.plugin.path }}' ${file}
 EOF
 file=templates/deployment-worker.yaml
@@ -77,7 +77,7 @@ sed -i '/          livenessProbe:/i\            - mountPath: {{ .Values.server.c
 diff ${MYHOME}.bk/${file} ${file}
 
 :<<EOF
-sed -i '/      containers:/i\        - name: comprplg-volume\n          nfs:\n            server: 10.10.5.13\n            path: \/'  ${file}
+sed -i '/      containers:/i\        - name: comprplg-volume\n          nfs:\n            server: 10.10.9.83\n            path: \/'  ${file}
 sed -i '/          ports:/i\            - name: comprplg-volume\n              mountPath: {{ .Values.server.plugin.path }}' ${file}
 EOF
 file=templates/deployment-coordinator.yaml
@@ -149,9 +149,9 @@ EOF
 chmod a+x ${file}
 
 docker run -d -p 2049:2049 --name mynfs-presto --privileged -v ${MYHOME}/comprplg:/nfsshare -e SHARED_DIRECTORY=/nfsshare itsthenetwork/nfs-server-alpine:latest
-sudo mount -t nfs -o port=2049 10.10.5.13:/ test
+sudo mount -t nfs -o port=2049 10.10.9.83:/ test
 #docker run -d -p 2149:2049 --name mynfs-presto --privileged -v ${MYHOME}/comprplg:/nfsshare -e SHARED_DIRECTORY=/nfsshare itsthenetwork/nfs-server-alpine:latest
-#sudo mount -t nfs -o port=2149 10.10.5.13:/ test
+#sudo mount -t nfs -o port=2149 10.10.9.83:/ test
 sudo umount test
 
 ~/scripts/myprestoserver-cp-op.sh start

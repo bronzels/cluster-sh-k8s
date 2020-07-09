@@ -17,7 +17,7 @@ cat << \EOF >> ${file}
 catalog:
   hive.properties: |
     connector.name=hive-hadoop2
-    hive.metastore.uri=thrift://10.10.0.31:9083
+    hive.metastore.uri=thrift://10.10.1.62:9083
     hive.allow-drop-table=true
     hive.config.resources=/presto/etc/hivconf/core-site.xml,/presto/etc/hivconf/hdfs-site.xml
 
@@ -35,13 +35,13 @@ catalog:
 
   kudu.properties: |
     connector.name=kudu
-    kudu.client.master-addresses=10.10.0.31:7051
+    kudu.client.master-addresses=10.10.1.62:7051
     kudu.schema-emulation.enabled=true
     kudu.schema-emulation.prefix=v1::
 
   kudu_without_emulation.properties: |
     connector.name=kudu
-    kudu.client.master-addresses=10.10.0.31:7051
+    kudu.client.master-addresses=10.10.1.62:7051
     kudu.schema-emulation.enabled=false
 
 coordinatorConfigs:
@@ -81,8 +81,8 @@ EOF
 
 mkdir hivconf
 
-scp 10.10.0.31:/etc/hadoop/conf/core-site.xml hivconf/
-scp 10.10.0.31:/etc/hadoop/conf/hdfs-site.xml hivconf/
+scp 10.10.1.62:/etc/hadoop/conf/core-site.xml hivconf/
+scp 10.10.1.62:/etc/hadoop/conf/hdfs-site.xml hivconf/
 
 file=templates/configmap-hivconf.sh
 rm -f ${file}
@@ -148,18 +148,18 @@ diff ${MYHOME}.bk/presto/${file} ${file}
 
 cat << \EOF > host_aliases
       hostAliases:
-      - ip: "10.10.0.31"
+      - ip: "10.10.1.62"
         hostnames:
-        - "hk-prod-bigdata-slave-0-31"
-      - ip: "10.10.13.53"
+        - "hk-prod-bigdata-slave-1-62"
+      - ip: "10.10.11.47"
         hostnames:
-        - "hk-prod-bigdata-slave-13-53"
-      - ip: "10.10.3.240"
+        - "hk-prod-bigdata-slave-11-47"
+      - ip: "10.10.13.106"
         hostnames:
-        - "hk-prod-bigdata-slave-3-240"
-      - ip: "10.10.5.105"
+        - "hk-prod-bigdata-slave-13-106"
+      - ip: "10.10.3.169"
         hostnames:
-        - "hk-prod-bigdata-slave-5-105"
+        - "hk-prod-bigdata-slave-3-169"
 EOF
 #cdh的web安装部分，如果hosts用ip加入就不需要域名索引了
 cat host_aliases >> templates/deployment-coordinator.yaml
@@ -239,7 +239,7 @@ chmod a+x ${file}
 ~/scripts/myprestoserver-cp-op.sh stop
 ~/scripts/myprestoserver-cp-op.sh restart
 
-kubectl -n default run test-presto -ti --image=master01:30500/wiwdata/presto:0.1 --rm=true --restart=Never -- presto --server http://10.10.0.31:30080 --catalog kudu_without_emulation
+kubectl -n default run test-presto -ti --image=master01:30500/wiwdata/presto:0.1 --rm=true --restart=Never -- presto --server http://10.10.1.62:30080 --catalog kudu_without_emulation
   #把项目目定制开发的com-schema.sql的数仓版本改为v1
   #执行com-schema.sql，插入需要模拟的schema
 
@@ -251,7 +251,7 @@ kubectl describe pod `kubectl get pod -n dw | grep coordinator | awk '{print $1}
 kubectl exec -n dw -t `kubectl get pod -n dw | grep coordinator | awk '{print $1}'`  -- ls -l /presto/plugin/comprplg
 kubectl logs -n dw mypres-presto-coordinator-5b4d7bf85d-d629x
 
-kubectl -n default run test-presto -ti --image=master01:30500/wiwdata/presto:0.1 --rm=true --restart=Never -- presto --server http://10.10.0.31:30080 --catalog hive --schema default
+kubectl -n default run test-presto -ti --image=master01:30500/wiwdata/presto:0.1 --rm=true --restart=Never -- presto --server http://10.10.1.62:30080 --catalog hive --schema default
   SHOW TABLES;
   SELECT COUNT(1) FROM kylin_sales;
 

@@ -9,7 +9,7 @@ rm -f $file
 cat << \EOF > ${file}
 #!/bin/bash
 
-vhost="hk-prod-bigdata-master-4-158"
+vhost="hk-prod-bigdata-master-8-148"
 usr=root
 
 who=`whoami`

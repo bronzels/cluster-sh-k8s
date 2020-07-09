@@ -15,13 +15,14 @@ sudo ansible slavek8s -m shell -a"ls /dev/mapper|grep ceph"
 EOF
 
 #！！！手工，reset
-ansible allk8s -m shell -a"kubeadm reset -f"
+sudo ansible allk8s -m shell -a"kubeadm reset -f"
 
-ansible allk8s -m shell -a"ipvsadm --clear"
+sudo ansible allk8s -m shell -a"ipvsadm --clear"
 
 ansible allk8s -m shell -a"rm -rf /root/.kube"
-ansible allk8s -m shell -a"rm -rf /etc/kubernetes/*"
-ansible allk8s -m shell -a"rm -rf /home/ubuntu/.kube"
+sudo ansible allk8s -m shell -a"rm -rf /root/.kube"
+sudo ansible allk8s -m shell -a"rm -rf /etc/kubernetes/*"
+sudo ansible allk8s -m shell -a"rm -rf /home/ubuntu/.kube"
 
 #！！！手工，reset之后
 # 重新生成token

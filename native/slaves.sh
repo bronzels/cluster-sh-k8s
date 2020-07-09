@@ -5,7 +5,7 @@ parted /dev/nvme0n1
 :<<EOF
   mklabel gpt
   mkpart p1
-    ext3
+    ext4
     1
     2T
   quit

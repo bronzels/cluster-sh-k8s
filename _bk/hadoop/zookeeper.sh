@@ -3,7 +3,7 @@ helm install myzk -n hadoop \
   incubator/zookeeper
 :<<EOF
 helm uninstall myzk -n hadoop
-kubectl get pvc -n hadoop | awk '{print $1}' | grep data-myzktest- | xargs kubectl delete pvc -n hadoop
+kubectl get pvc -n hadoop | awk '{print $1}' | grep data-myzk- | xargs kubectl delete pvc -n hadoop
 
 kubectl get pod -n hadoop -o wide
 kubectl get pvc -n hadoop -o wide

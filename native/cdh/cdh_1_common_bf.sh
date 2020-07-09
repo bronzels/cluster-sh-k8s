@@ -43,7 +43,7 @@ docker exec -it `docker ps  |grep mysql_cdh | awk '{print $1}'` bash
       ALTER USER 'root'@'%' IDENTIFIED BY 'root';
       GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'root' WITH GRANT OPTION;
       FLUSH PRIVILEGES;
-mysql -h 10.10.0.31 -P3306 -uroot -proot -e "SHOW DATABASES"
+mysql -h 10.10.1.62 -P3306 -uroot -proot -e "SHOW DATABASES"
 
 mkdir ~/cdh
 cd ~/cdh
@@ -80,8 +80,8 @@ GRANT ALL ON navms.* TO 'navms'@'%' IDENTIFIED BY 'navms';
 GRANT ALL ON oozie.* TO 'oozie'@'%' IDENTIFIED BY 'oozie';
 EOF
 
-mysql -h 10.10.0.31 -P3306 -uroot -proot -Dmysql < ./db.sql
-mysql -h 10.10.0.31 -P3306 -uroot -proot -e "SHOW DATABASES"
+mysql -h 10.10.1.62 -P3306 -uroot -proot -Dmysql < ./db.sql
+mysql -h 10.10.1.62 -P3306 -uroot -proot -e "SHOW DATABASES"
 
 cd ~/cdh
 wget -c https://cdn.mysql.com//archives/mysql-connector-java-5.1/mysql-connector-java-5.1.46.tar.gz

@@ -1,5 +1,4 @@
 #！！！手工, 新机器加入集群跳过所有cat EOF文件生成步骤
-sudo su -
 #root
 ansible allk8s -m shell -a"ufw disable"
 ansible allk8s -m shell -a"apt install -y selinux-utils"
@@ -31,7 +30,9 @@ deb https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main
 EOF
 ansible allk8sexpcp -m copy -a"src=/etc/apt/sources.list.d/kubernetes.list dest=/etc/apt/sources.list.d"
 ansible allk8s -m shell -a"apt-get update"
-ansible allk8s -m shell -a"apt-get install -y kubelet kubeadm kubectl"
+rev=1.18.5-00
+ansible allk8s -m shell -a"apt-get install -y kubelet=$rev kubeadm=$rev kubectl=$rev"
+ansible allk8s -m shell -a"apt-get remove -y kubelet kubeadm kubectl"
 
 ansible allk8s -m shell -a"systemctl enable kubelet"
 
@@ -61,7 +62,7 @@ networking:
 EOF
 #kubeadm config migrate --old-config kubeadm-config-old.yaml --new-config kubeadm-config.yaml
 
-#！！！手工, 检查看庄k8s版本，替换kubernetesVersion: v1.18.5
+#！！！手工, 如果要升级k8s版本，替换kubernetesVersion: v1.18.5
 cat << \EOF > kubeadm-config.yaml
 apiVersion: kubeadm.k8s.io/v1beta2
 bootstrapTokens:
@@ -74,11 +75,11 @@ bootstrapTokens:
   - authentication
 kind: InitConfiguration
 localAPIEndpoint:
-  advertiseAddress: 10.10.3.189
+  advertiseAddress: 10.10.9.83
   bindPort: 6443
 nodeRegistration:
   criSocket: /var/run/dockershim.sock
-  name: hk-prod-bigdata-master-3-189
+  name: hk-prod-bigdata-master-9-83
   taints:
   - effect: NoSchedule
     key: node-role.kubernetes.io/master
@@ -108,8 +109,8 @@ scheduler: {}
 EOF
 
 #！！！手工，替换正确的control plan IP地址
-sed -i 's@10.10.3.189@10.10.5.13@g' kubeadm-config.yaml
-sed -i 's@hk-prod-bigdata-master-3-189@hk-prod-bigdata-master-5-13@g' kubeadm-config.yaml
+sed -i 's@10.10.3.189@10.10.9.83@g' kubeadm-config.yaml
+sed -i 's@hk-prod-bigdata-master-3-189@hk-prod-bigdata-master-9-83@g' kubeadm-config.yaml
 
 ansible masterk8sexpcp -m copy -a"src=~/kubeadm-config.yaml dest=~"
 

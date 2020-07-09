@@ -1,10 +1,11 @@
+sudo su -
 #root
 ansible all -m shell -a"cat /etc/issue"
 ansible all -m shell -a"uname -r"
 ansible all -m shell -a"free -g"
 
-ansible hk-prod-bigdata-master-4-158,hk-prod-bigdata-slave-0-31,hk-prod-bigdata-slave-13-53,hk-prod-bigdata-slave-3-240,hk-prod-bigdata-slave-5-105 -m shell -a"cp /etc/hosts /etc/hosts.bk"
-ansible hk-prod-bigdata-master-4-158,hk-prod-bigdata-slave-0-31,hk-prod-bigdata-slave-13-53,hk-prod-bigdata-slave-3-240,hk-prod-bigdata-slave-5-105 -m copy -a"src=/etc/hosts dest=/etc"
+ansible hk-prod-bigdata-master-8-148,hk-prod-bigdata-slave-1-62,hk-prod-bigdata-slave-11-47,hk-prod-bigdata-slave-13-106,hk-prod-bigdata-slave-3-169 -m shell -a"cp /etc/hosts /etc/hosts.bk"
+ansible hk-prod-bigdata-master-8-148,hk-prod-bigdata-slave-1-62,hk-prod-bigdata-slave-11-47,hk-prod-bigdata-slave-13-106,hk-prod-bigdata-slave-3-169 -m copy -a"src=/etc/hosts dest=/etc"
 
 ansible all -m shell -a"cat /etc/hosts"
 ansible all -m shell -a"ip addr|grep 10.10."
@@ -12,6 +13,7 @@ ansible all -m shell -a"ip addr|grep 10.10."
 #used for nfs mount in deployment yaml
 ansible all -m shell -a"apt install -y nfs-common"
 
+exit
 #ubuntu
 #scripts for airflow to ssh and execute, or for manual op
 mkdir ~/scripts/
@@ -48,13 +50,13 @@ mkdir ${HOME}/nfsmnt
 :<<EOF
 docker run -d -p 2049:2049 --name mynfs --privileged -v ${HOME}/nfsmnt:/nfsshare -e SHARED_DIRECTORY=/nfsshare itsthenetwork/nfs-server-alpine:latest
 mkdir ${HOME}/nfsmnted
-sudo mount -v -o vers=4,loud 10.10.5.13:/ ~/nfsmnted
+sudo mount -v -o vers=4,loud 10.10.9.83:/ ~/nfsmnted
 touch ~/nfsmnt/x
 ls ~/nfsmnted
 sudo umount ~/nfsmnted
 EOF
 
-#for airflow
+#for airflow image building
 mkdir ~/.pip
 cat << \EOF > ~/.pip/pip.conf
 [global]

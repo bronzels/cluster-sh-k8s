@@ -23,7 +23,7 @@ kylin.storage.hbase.coprocessor-timeout-seconds=270
 
 kylin.engine.spark-conf.spark.master=yarn
 kylin.engine.spark-conf.spark.submit.deployMode=cluster
-kylin.engine.spark-conf.spark.yarn.queue=default
+kylin.engine.spark-conf.spark.yarn.queue=root.default
 kylin.engine.spark-conf.spark.driver.memory=2G
 kylin.engine.spark-conf.spark.executor.memory=5G
 kylin.engine.spark-conf.spark.executor.instances=40

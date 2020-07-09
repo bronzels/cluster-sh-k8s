@@ -10,8 +10,8 @@ docker rm `docker ps -a | grep mynfs-af | awk '{print $1}'`
 docker run -d -p 2149:2049 --name mynfs-af --privileged -v ${HOME}/nfsmnt:/nfsshare -e SHARED_DIRECTORY=/nfsshare itsthenetwork/nfs-server-alpine:latest
 sudo netstat -nlap|grep 2149
 mkdir testafmnt
-sudo mount -v -o vers=4,loud,port=2149 10.10.5.13:/ testafmnt
-#sudo mount -v -o vers=4,loud 10.10.5.13:/ testafmnt
+sudo mount -v -o vers=4,loud,port=2149 10.10.9.83:/ testafmnt
+#sudo mount -v -o vers=4,loud 10.10.9.83:/ testafmnt
 ls testafmnt
 sudo umount testafmnt
 
@@ -58,7 +58,7 @@ spec:
     - port=2149
   nfs:
     path: /
-    server: 10.10.5.13
+    server: 10.10.9.83
 EOF
 kubectl apply -f myaf-nfs-pv.yaml
 kubectl get pv|grep myaf-nfs-pv

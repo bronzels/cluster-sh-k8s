@@ -58,7 +58,7 @@ spec:
     - port=2149
   nfs:
     path: /
-    server: 10.10.5.13
+    server: 10.10.9.83
 EOF
 kubectl apply -f mdpostgre-nfs-pv.yaml
 kubectl get pv|grep mdpostgre-nfs-pv
@@ -97,7 +97,7 @@ kubectl run mdpostgre-postgresql-client --rm --tty -i --restart='Never' --namesp
   -c "SELECT version()"
 
 kubectl run mdpostgre-postgresql-client --rm --tty -i --restart='Never' --namespace md --image docker.io/bitnami/postgresql:11.7.0-debian-10-r9 --env="PGPASSWORD=postgres" --command -- \
-  psql --host 10.10.0.31 -U postgres -d postgres -p 31432 \
+  psql --host 10.10.1.62 -U postgres -d postgres -p 31432 \
   -c "SELECT version()"
 
 kubectl get pod -n md
