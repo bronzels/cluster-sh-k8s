@@ -181,7 +181,6 @@ ssh-keyscan hk-prod-bigdata-master-9-83 hk-prod-bigdata-master-8-148 hk-prod-big
 ansible-playbook -i /etc/ansible/hosts ~/ssh-addkey.yml
 
 #ubuntu
-exit
 ssh-keygen -t rsa -b 2048 -P '' -f ~/.ssh/id_rsa
 
 #ubuntu
