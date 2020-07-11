@@ -11,8 +11,8 @@ parted /dev/nvme0n1
   quit
 EOF
 mkfs.ext4 /dev/nvme0n1p1
-mkdir /app1
-mount /dev/nvme0n1p1 /app1
+mkdir /app
+mount /dev/nvme0n1p1 /app
 df|grep "/app"
 
 fdisk -l|grep "2 TiB"
@@ -29,6 +29,9 @@ mkfs.ext4 /dev/nvme1n1p1
 mkdir /app2
 mount /dev/nvme1n1p1 /app2
 df|grep "/app"
+#fstab
+
+
 
 #创建hadoop用户，home目录，设置pwd
 useradd -d /app/hadoop -m hadoop
@@ -111,7 +114,34 @@ ssh-keyscan pro-hbase01 pro-hbase02 pro-hbase03 pro-hbase04
 ansible-playbook ~/ssh-addkey.yml
 
 
+ansible all -m shell -a"cat /etc/fstab"
 ansible slave -m copy -a"src=/etc/hosts dest=/etc"
+ansible all -m shell -a"cp /etc/fstab /etc/fstab.bk"
+#root
+cat << \EOF > /root/add-newdev-fstab.sh
+#!/bin/bash
+
+#examples:
+#  add-newdev-fstab.sh nvme0n1p1 /app ext4
+#  add-newdev-fstab.sh nvme1n1p1 /app2 ext4
+#
+
+devname=$1
+echo "devname:${devname}"
+mntpath=$2
+echo "mntpath:${mntpath}"
+fs=$3
+echo "fs:${fs}"
+
+devid=`blkid /dev/${devname} | sed -e 's/.*UUID="\(.*\)" TYPE=.*/\1/'`
+echo "UUID=${devid} ${mntpath}   ${fs} errors=remount-ro 0       0" >> /etc/fstab
+
+EOF
+ansible slave -m copy -a"src=/root/add-newdev-fstab.sh dest=/root/"
+ansible all -m shell -a"chmod a+x /root/add-newdev-fstab.sh"
+ansible all -m shell -a"blkid /dev/nvme0n1p1;/root/add-newdev-fstab.sh nvme0n1p1 /app ext4;cat /etc/fstab"
+ansible all -m shell -a"blkid /dev/nvme1n1p1;/root/add-newdev-fstab.sh nvme1n1p1 /app2 ext4;cat /etc/fstab"
+
 
 ansible all -m shell -a"chown -R hadoop:hadoop /app"
 ansible all -m shell -a"chown -R hadoop:hadoop /app2"
@@ -336,7 +366,7 @@ spark-submit --class org.apache.spark.examples.SparkPi \
 
 #全程替换 hive配置
 mkdir -p /app/docker/mysql/hive
-rm -rf /app/docker/mysql/hive/*
+sudo rm -rf /app/docker/mysql/hive/*
 docker run --name=mysql_hive \
 -p 3307:3306 \
 -e MYSQL_ROOT_PASSWORD=root \
@@ -351,7 +381,6 @@ docker exec -it `docker ps  |grep mysql_hive | awk '{print $1}'` bash
       GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'root' WITH GRANT OPTION;
       FLUSH PRIVILEGES;
       CREATE DATABASE hive DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;
-      ALTER USER 'hive'@'%' IDENTIFIED BY 'hive';
       GRANT ALL ON hive.* TO 'hive'@'%' IDENTIFIED BY 'hive';
       FLUSH PRIVILEGES;
 mysql -h pro-hbase01 -P3307 -uroot -proot -e "SHOW DATABASES"
@@ -477,36 +506,36 @@ kudu/usr/local/bin/kudu table list pro-hbase01:7052
 
 
 #全程替换 kafka配置
-ansible all -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs grep beta-hbase0"
-ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs sed -i 's@beta-hbase0@pro-hbase0@g'"
-ansible all -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs grep beta-hbase0"
-ansible all -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs grep pro-hbase0"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep beta-hbase0"
+ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop/confluent/config;find * | xargs sed -i 's@beta-hbase0@pro-hbase0@g'"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep beta-hbase0"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep pro-hbase0"
 
-ansible all -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs grep 10.1.0.11"
-ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs sed -i 's@10.1.0.11@10.10.1.62@g'"
-ansible all -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs grep 10.1.0.11"
-ansible all -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs grep 10.10.1.62"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 10.1.0.11"
+ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop/confluent/config;find * | xargs sed -i 's@10.1.0.11@10.10.1.62@g'"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 10.1.0.11"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 10.10.1.62"
 
 
-ansible all -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs grep 10.1.0.12"
-ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs sed -i 's@10.1.0.12@10.10.11.47@g'"
-ansible all -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs grep 10.1.0.12"
-ansible all -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs grep 10.10.11.47"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 10.1.0.12"
+ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop/confluent/config;find * | xargs sed -i 's@10.1.0.12@10.10.11.47@g'"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 10.1.0.12"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 10.10.11.47"
 
-ansible all -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs grep 10.1.0.13"
-ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs sed -i 's@10.1.0.13@10.10.13.106@g'"
-ansible all -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs grep 10.1.0.13"
-ansible all -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs grep 10.10.13.106"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 10.1.0.13"
+ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop/confluent/config;find * | xargs sed -i 's@10.1.0.13@10.10.13.106@g'"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 10.1.0.13"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 10.10.13.106"
 
-ansible all -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs grep 10.1.0.14"
-ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs sed -i 's@10.1.0.14@10.10.3.169@g'"
-ansible all -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs grep 10.1.0.14"
-ansible all -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs grep 10.10.3.169"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 10.1.0.14"
+ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop/confluent/config;find * | xargs sed -i 's@10.1.0.14@10.10.3.169@g'"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 10.1.0.14"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 10.10.3.169"
 
-ansible all -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs grep beta_test"
-ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs sed -i 's@beta_test@pro_test@g'"
-ansible all -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs grep beta_test"
-ansible all -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs grep pro_test"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep beta_test"
+ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop/confluent/config;find * | xargs sed -i 's@beta_test@pro_test@g'"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep beta_test"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep pro_test"
 
 mykafka1_server.sh start
 mykafka1_server.sh status
@@ -521,18 +550,18 @@ mykafka2_consume.sh test from-beginning
 
 
 #全程替换 presto配置
-ansible all -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs grep beta-hbase0"
-ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop/presto-server/etc;find * -type f | xargs sed -i 's@beta-hbase0@pro-hbase0@g'"
-ansible all -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs grep beta-hbase0"
-ansible all -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs grep pro-hbase0"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep beta-hbase0"
+ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop/confluent/config;find * -type f | xargs sed -i 's@beta-hbase0@pro-hbase0@g'"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep beta-hbase0"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep pro-hbase0"
 
-ansible all -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs grep pro-hbase05"
-ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop/presto-server/etc;find * -type f | xargs sed -i 's@pro-hbase05@pro-hbase01@g'"
-ansible all -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs grep pro-hbase05"
-ansible all -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs grep pro-hbase06"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep pro-hbase05"
+ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop/confluent/config;find * -type f | xargs sed -i 's@pro-hbase05@pro-hbase01@g'"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep pro-hbase05"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep pro-hbase06"
 
 
-ansible all -m shell -a"cd /app/hadoop/presto-server/etc;find * | xargs grep 10.1.0.11"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 10.1.0.11"
 myprestoserver.sh start
 
 
@@ -565,8 +594,8 @@ find * | xargs grep 10.1.0.12
 
 cd ~
 tar czvf pika.tgz pika
-ansible slave -m copy -a"src=/app/hadoop/pika.tgz dest=/app/hadoop"
-ansible slave -m shell -a"cd /app/hadoop;tar xzvf pika.tgz;rm -f pika.tgz"
+ansible slave -i /etc/ansible/hosts-hadoop -m copy -a"src=/app/hadoop/pika.tgz dest=/app/hadoop"
+ansible slave -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop;tar xzvf pika.tgz;rm -f pika.tgz"
 
 mypikacluster.sh start
 mypikacluster_yat.sh start
@@ -608,9 +637,9 @@ ansible-playbook -i ~/gopath/src/github.com/CodisLabs/codis/ansible/hosts-hadoop
 codis-admin --dashboard=pro-hbase01:18080 --create-group --gid=1         #新建group 1  相当于fe页面“NEW GROUP”按钮
 codis-admin --dashboard=pro-hbase01:18080 --group-add     --gid=1   --addr=pro-hbase02:9221   #把server ip:port 加入集群，
 codis-admin --dashboard=pro-hbase01:18080 --create-group --gid=2         #新建group 2  相当于fe页面“NEW GROUP”按钮
-codis-admin --dashboard=pro-hbase01:18080 --group-add     --gid=2   --addr=pro-hbase03:9221   #把server ip:port 加入集群， 
+codis-admin --dashboard=pro-hbase01:18080 --group-add     --gid=2   --addr=pro-hbase03:9221   #把server ip:port 加入集群，
 codis-admin --dashboard=pro-hbase01:18080 --create-group --gid=3         #新建group 3  相当于fe页面“NEW GROUP”按钮
-codis-admin --dashboard=pro-hbase01:18080 --group-add     --gid=3   --addr=pro-hbase04:9221   #把server ip:port 加入集群， 
+codis-admin --dashboard=pro-hbase01:18080 --group-add     --gid=3   --addr=pro-hbase04:9221   #把server ip:port 加入集群，
 codis-admin  --dashboard=pro-hbase01:18080 --sync-action --create --addr=pro-hbase02:9221  #相当于fe页面的”SYNC"按钮
 codis-admin  --dashboard=pro-hbase01:18080 --sync-action --create --addr=pro-hbase03:9221  #相当于fe页面的”SYNC"按钮
 codis-admin  --dashboard=pro-hbase01:18080 --sync-action --create --addr=pro-hbase04:9221  #相当于fe页面的”SYNC"按钮
@@ -665,10 +694,110 @@ curl  -X POST -H "Accept:application/json" -H  "Content-Type:application/json" h
 
 
 
+#全程替换 confluent配置
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * -type f | xargs grep beta-hbase0"
+ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop/confluent/config;find * -type f | xargs sed -i 's@beta-hbase0@pro-hbase0@g'"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * -type f | xargs grep beta-hbase0"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * -type f | xargs grep pro-hbase0"
+
+ansible all -m shell -a"cd /app/hadoop/confluent/etc/schema-registry;find * -type f | xargs grep beta-hbase0"
+ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop/confluent/etc/schema-registry;find * -type f | xargs sed -i 's@beta-hbase0@pro-hbase0@g'"
+ansible all -m shell -a"cd /app/hadoop/confluent/etc/schema-registry;find * -type f | xargs grep beta-hbase0"
+ansible all -m shell -a"cd /app/hadoop/confluent/etc/schema-registry;find * -type f | xargs grep pro-hbase0"
+
+#启动schema-registry
+netstat -nlap|grep 8981
+#去各台机器启动confluent实例
+
+
+
+
+#重新部署flink，复制配置
+wget -c https://downloads.apache.org/flink/flink-1.11.0/flink-1.11.0-bin-scala_2.11.tgz
+tar xzvf flink-1.11.0-bin-scala_2.11.tgz
+ln -s flink-1.11.0 flink
+scp flink/conf/flink-conf.yaml hadoop@10.10.1.62:/app/hadoop/
+diff flink-conf.yaml flink/conf/flink-conf.yaml
+rm -f flink-conf.yaml
+sed -i 's@jobmanager.rpc.address: localhost@jobmanager.rpc.address: pro-hbase01@g' flink/conf/flink-conf.yaml
+sed -i 's@jobmanager.memory.process.size: 1600m@jobmanager.memory.process.size: 24576m@g' flink/conf/flink-conf.yaml
+sed -i 's@taskmanager.memory.process.size: 1728m@taskmanager.memory.process.size: 40960m@g' flink/conf/flink-conf.yaml
+sed -i 's@taskmanager.numberOfTaskSlots: 1@taskmanager.numberOfTaskSlots: 8@g' flink/conf/flink-conf.yaml
+sed -i 's@#rest.port: 8081@rest.port: 8089@g' flink/conf/flink-conf.yaml
+cat << \EOF > /app/hadoop/flink/conf/workers
+pro-hbase02
+pro-hbase03
+pro-hbase04
+EOF
+cd
+tar czvf flink.tgz flink flink-1.11.0
+ansible slave -m shell -a"cd /app/hadoop;rm -rf flink flink-1.11.0"
+ansible slave -m copy -a"src=/app/hadoop/flink.tgz dest=/app/hadoop"
+ansible slave -m shell -a"cd /app/hadoop;tar xzvf flink.tgz;rm -f flink.tgz"
+
+~/flink/bin/start-cluster.sh
+
+
+
+
+#部署mongo slave
+#参考项目定制工程的《doc/数据库slave实例/建立mongodb slave.md》
+
+
+
+
+#部署airflow
+sudo apt-get install python3-dev libmysqld-dev
+sudo apt install python-pip
+sudo pip install virtualenv
+mkdir venvs
+cd venvs
+sudo apt-get install -y python3-venv
+virtualenv -p /usr/bin/python3 airflow
+python3 -m venv airflow
+#把项目工程shell目录的requirements.txt copy过来
+source airflow/bin/activate
+pip install -r requirements.txt
+#从beta01 copy airflow配置的定制脚本
+scp venvs/airflow/airflow.cfg hadoop@10.10.1.62:/app/hadoop/venvs/airflow/
+scp venvs/airflow/myscheduler.sh hadoop@10.10.1.62:/app/hadoop/venvs/airflow/
+scp venvs/airflow/mywebserver.sh hadoop@10.10.1.62:/app/hadoop/venvs/airflow/
+cd /app/hadoop/venvs/airflow
+find *  -maxdepth 1 -type f | xargs grep beta-hbase0
+find *  -maxdepth 1 -type f | xargs sed -i 's@beta-hbase0@pro-hbase0@g'
+find *  -maxdepth 1 -type f | xargs grep beta-hbase0
+find *  -maxdepth 1 -type f | xargs grep pro-hbase0
+sed -i 's@pro-hbase01:3307@pro-hbase01:3308@g' airflow.cfg
+mkdir -p /app/docker/mysql/airflow
+sudo rm -rf /app/docker/mysql/airflow/*
+docker run --name=mysql_airflow \
+-p 3308:3306 \
+-e MYSQL_ROOT_PASSWORD=root \
+-v /app/docker/mysql/airflow:/var/lib/mysql \
+-d mysql:5.7
+#！！！手工，登录修改mysql root密码
+docker exec -it `docker ps  |grep mysql_airflow | awk '{print $1}'` bash
+  mysql -P3306 -uroot -proot
+      FLUSH PRIVILEGES;
+      USE mysql;
+      ALTER USER 'root'@'%' IDENTIFIED BY 'root';
+      GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'root' WITH GRANT OPTION;
+      FLUSH PRIVILEGES;
+      CREATE DATABASE airflow DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;
+      GRANT ALL ON airflow.* TO 'airflow'@'%' IDENTIFIED BY 'airflow';
+      FLUSH PRIVILEGES;
+mysql -h pro-hbase01 -P3308 -uroot -proot -e "SHOW DATABASES"
+mysql -h pro-hbase01 -P3308 -uairflow -pairflow -D airflow -e "SHOW TABLES"
+
+
+
+
 #建立master上和部署有关目录
 mkdir -p fm/sql
 mkdir -p fm/jar
 mkdir -p fm/to_release
 mkdir fm_sensorsdata
 mkdir deploy
+
+
 
