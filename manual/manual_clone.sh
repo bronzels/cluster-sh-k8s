@@ -792,6 +792,15 @@ mysql -h pro-hbase01 -P3308 -uairflow -pairflow -D airflow -e "SHOW TABLES"
 
 
 
+#部署redis
+docker run --name myredis -p 6379:6379 -d redis:latest redis-server
+sudo apt-get install -y redis-tools
+myredis_get_fel.sh
+myredis_set_fe.sh
+myredis_get_fel.sh
+
+
+
 #建立master上和部署有关目录
 mkdir -p fm/sql
 mkdir -p fm/jar
