@@ -735,9 +735,13 @@ tar czvf flink.tgz flink flink-1.11.0
 ansible slave -m shell -a"cd /app/hadoop;rm -rf flink flink-1.11.0"
 ansible slave -m copy -a"src=/app/hadoop/flink.tgz dest=/app/hadoop"
 ansible slave -m shell -a"cd /app/hadoop;tar xzvf flink.tgz;rm -f flink.tgz"
-
+#复制和部署流处理copy dependency里删掉flink系统jar的部分
+ansible slave -m copy -a"src=/tmp/lib.zip dest=/tmp"
+ansible all -m shell -a"cd /app/hadoop/flink/lib;unzip -o /tmp/lib.zip"
 ~/flink/bin/start-cluster.sh
-
+#~/flink/bin/stop-cluster.sh
+#ansible all -m copy -a"src=/app/hadoop/tmp/flink-1.11.0/lib dest=/app/hadoop/flink"
+#ansible all -m shell -a"rm -rf /app/hadoop/flink/lib"
 
 
 
@@ -820,13 +824,17 @@ mypostgres.sh
 
 #其他master上部署相关目录脚本
 sed -i 's@10.1.0.11:3333@10.10.5.250:3306@g' ~/scripts/sqoop_import_all_mysql_dump_tradebatch.sh
-#从pro-hbase05上copysam的脚本
+#从pro-hbase05上copy sam的脚本
 scp ~/scripts/sqoop_import_all_mysql_dump_tradebatch_sam.sh hadoop@10.10.1.62:/app/hadoop/scripts/
 sed -i 's@10.0.0.244:3307@10.10.5.250:3309@g' ~/scripts/sqoop_import_all_mysql_dump_tradebatch_sam.sh
 mkdir -p fm/jar
 mkdir -p fm/to_release
 mkdir fm_sensorsdata
 mkdir deploy
+#从beta-hbase01上copy deploy脚本
+scp deploy/deploy_spark_jars.sh hadoop@10.10.1.62:/app/hadoop/deploy
+scp deploy/deploy_jar_jars.sh hadoop@10.10.1.62:/app/hadoop/deploy
+chmod a+x ~/deploy/*.sh
 
 
 
