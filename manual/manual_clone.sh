@@ -803,8 +803,26 @@ myredis_get_fel.sh
 
 
 
-#建立master上和部署有关目录
-mkdir -p fm/sql
+#部署postgresql
+#root
+echo "deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main" >> /etc/apt/sources.list.d/pgdg.list
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+apt-get update
+apt-get install postgresql-client-11 -y
+#hadoop
+mkdir -p /app2/docker/postgre/mypostgres
+sudo rm -rf /app2/docker/postgre/mypostgres/*
+docker run --name mypostgres -p 5432:5432 -v /app2/docker/postgre/mypostgres:/var/lib/postgresql/data -e POSTGRES_PASSWORD=postgres -d debezium/postgres
+mypostgres.sh
+
+
+
+
+#其他master上部署相关目录脚本
+sed -i 's@10.1.0.11:3333@10.10.5.250:3306@g' ~/scripts/sqoop_import_all_mysql_dump_tradebatch.sh
+#从pro-hbase05上copysam的脚本
+scp ~/scripts/sqoop_import_all_mysql_dump_tradebatch_sam.sh hadoop@10.10.1.62:/app/hadoop/scripts/
+sed -i 's@10.0.0.244:3307@10.10.5.250:3309@g' ~/scripts/sqoop_import_all_mysql_dump_tradebatch_sam.sh
 mkdir -p fm/jar
 mkdir -p fm/to_release
 mkdir fm_sensorsdata
