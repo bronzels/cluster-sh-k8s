@@ -327,6 +327,7 @@ hdfs zkfc -formatZK
 hdfs namenode -format
 hdfs --daemon start namenode
 #hdfs --daemon stop namenode
+mapred --daemon start historyserver
 jps
 
 scp -r /app/data/hadoop/hdfs/name/current/ pro-hbase02:/app/data/hadoop/hdfs/name/
@@ -798,6 +799,7 @@ sudo apt-get install -y redis-tools
 myredis_get_fel.sh
 myredis_set_fe.sh
 myredis_get_fel.sh
+
 
 
 
