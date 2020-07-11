@@ -51,11 +51,7 @@ esac
 # HBase scripts also use a variable named `HBASE_HOME', and having this
 # variable in the environment with a value somewhat different from what
 # they expect can confuse them in some cases.  So rename the variable.
-:<<EOF
-hbh=$HBASE_HOME
-unset HBASE_HOME
-exec "$hbh/bin/hbase" shell <<EOF
-EOF
+if [ $op == "drop" -o $op == "recreate" ]; then
 exec hbase shell <<EOF
 disable '$UID_TABLE'
 drop '$UID_TABLE'
@@ -71,9 +67,33 @@ drop '$META_TABLE'
 EOF
 
 if [ $op == "drop" ]; then
-  exit 0
+exit 0
+fi
 fi
 
+if [ $op == "snap" ]; then
+exec hbase shell <<EOF
+snapshot '$UID_TABLE','snp_$UID_TABLE'
+snapshot '$TSDB_TABLE','snp_$TSDB_TABLE'
+snapshot '$TREE_TABLE','snp_$TREE_TABLE'
+snapshot '$META_TABLE','snp_$META_TABLE'
+EOF
+
+exit 0
+fi
+
+if [ $op == "restore" ]; then
+exec hbase shell <<EOF
+restore_snapshot 'snp_$UID_TABLE'
+restore_snapshot 'snp_$TSDB_TABLE'
+restore_snapshot 'snp_$TREE_TABLE'
+restore_snapshot 'snp_$META_TABLE'
+EOF
+
+exit 0
+fi
+
+if [ $op == "create" -o $op == "recreate" ]; then
 exec hbase shell <<EOF
 create '$UID_TABLE',
 {NAME => 'id', COMPRESSION => '$COMPRESSION', BLOOMFILTER => '$BLOOMFILTER', DATA_BLOCK_ENCODING => '$DATA_BLOCK_ENCODING'},
@@ -88,4 +108,4 @@ create '$TREE_TABLE',
 create '$META_TABLE',
 {NAME => 'name', COMPRESSION => '$COMPRESSION', BLOOMFILTER => '$BLOOMFILTER', DATA_BLOCK_ENCODING => '$DATA_BLOCK_ENCODING'}
 EOF
-
+fi

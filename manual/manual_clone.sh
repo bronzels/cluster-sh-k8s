@@ -430,6 +430,8 @@ ansible all -m shell -a"grep hbase0 /app/hadoop/hbase/conf/hbase-site.xml"
 ansible all -m shell -a"grep prohn /app/hadoop/hbase/conf/hbase-site.xml"
 start-hbase.sh
 #stop-hbase.sh
+hbase-daemon.sh start thrift -p 9050
+netstat -nlap|grep 9050
 ansible all -i /etc/ansible/hosts-hadoop -m shell -a"jps"
 
 
@@ -444,6 +446,11 @@ cat << \EOF >> kylin/conf/kylin.properties
 kylin.web.query-timeout=3000000
 kylin.source.hive.keep-flat-table=true
 kylin.source.hive.quote-enabled=false
+
+kylin.storage.hbase.coprocessor-mem-gb=30
+kylin.storage.partition.max-scan-bytes=0
+kylin.storage.hbase.coprocessor-timeout-seconds=270
+
 EOF
 sed -i 's@kylin.engine.spark-conf.spark.yarn.executor.memoryOverhead=1024@kylin.engine.spark-conf.spark.yarn.executor.memoryOverhead=2048@g' ~/kylin/conf/kylin.properties
 kylin.sh start
@@ -752,18 +759,12 @@ ansible all -m shell -a"cd /app/hadoop/flink/lib;unzip -o /tmp/lib.zip"
 
 
 #部署airflow
-sudo apt-get install python3-dev libmysqld-dev
-sudo apt install python-pip
-sudo pip install virtualenv
-mkdir venvs
+sudo apt-get install -y libsqlite3-dev
+#从beta01 copy airflow的整个虚拟环境，解压
+tar czvf airflow.tgz airflow --exclude=airflow/logs --exclude=airflow/webserver.out
+scp airflow.tgz hadoop@10.10.1.62:/app/hadoop/venvs/
 cd venvs
-sudo apt-get install -y python3-venv
-virtualenv -p /usr/bin/python3 airflow
-python3 -m venv airflow
-#把项目工程shell目录的requirements.txt copy过来
-source airflow/bin/activate
-pip install -r requirements.txt
-#从beta01 copy airflow配置的定制脚本
+tar xzvf airflow.tgz
 scp venvs/airflow/airflow.cfg hadoop@10.10.1.62:/app/hadoop/venvs/airflow/
 scp venvs/airflow/myscheduler.sh hadoop@10.10.1.62:/app/hadoop/venvs/airflow/
 scp venvs/airflow/mywebserver.sh hadoop@10.10.1.62:/app/hadoop/venvs/airflow/
@@ -773,12 +774,21 @@ find *  -maxdepth 1 -type f | xargs sed -i 's@beta-hbase0@pro-hbase0@g'
 find *  -maxdepth 1 -type f | xargs grep beta-hbase0
 find *  -maxdepth 1 -type f | xargs grep pro-hbase0
 sed -i 's@pro-hbase01:3307@pro-hbase01:3308@g' airflow.cfg
-mkdir -p /app/docker/mysql/airflow
-sudo rm -rf /app/docker/mysql/airflow/*
+sed -i 's@airflow_beta@airflow@g' airflow.cfg
+mkdir -p /app/docker/mysql/airflow/data
+mkdir -p /app/docker/mysql/airflow/config
+cat << \EOF > /app/docker/mysql/airflow/config/my.cnf
+[mysql]
+[mysqld]
+explicit_defaults_for_timestamp = 1
+EOF
+sudo rm -rf /app/docker/mysql/airflow/data/*
+sudo rm -rf /app/docker/mysql/airflow/config/*
 docker run --name=mysql_airflow \
 -p 3308:3306 \
 -e MYSQL_ROOT_PASSWORD=root \
--v /app/docker/mysql/airflow:/var/lib/mysql \
+-v /app/docker/mysql/airflow/config:/etc/mysql \
+-v /app/docker/mysql/airflow/data:/var/lib/mysql \
 -d mysql:5.7
 #！！！手工，登录修改mysql root密码
 docker exec -it `docker ps  |grep mysql_airflow | awk '{print $1}'` bash
@@ -822,19 +832,81 @@ mypostgres.sh
 
 
 
+#部署exporter/prometheus/grafana
+docker run -itd -p 9309:9308 --name kafka1-exporter danielqsj/kafka-exporter --kafka.server=10.10.11.47:9392 --kafka.server=10.10.13.106:9392 --kafka.server=10.10.3.169:9392
+docker run -itd -p 9308:9308 --name kafka2-exporter danielqsj/kafka-exporter --kafka.server=10.10.11.47:9492 --kafka.server=10.10.13.106:9492 --kafka.server=10.10.3.169:9492
+docker pull prom/prometheus
+mkdir prometheus
+file=prometheus/prometheus.yml
+cat >> $file << EOF
+global:
+  scrape_interval:     10s
+  evaluation_interval: 10s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          instance: prometheus
+
+  - job_name: kafka
+    static_configs:
+      - targets: ['10.10.1.62:9308']
+        labels:
+          instance: localhost
+
+  - job_name: kafka1
+    static_configs:
+      - targets: ['10.10.1.62:9309']
+        labels:
+          instance: streaming
+
+  - job_name: flink
+    static_configs:
+      - targets: ['10.10.1.62:19999', '10.10.11.47:19999', '10.10.13.106:19999', '10.10.3.169:19999']
+EOF
+docker run -itd -p 9390:9090 --name prometheus -v /app/hadoop/prometheus:/data prom/prometheus --config.file=/data/prometheus.yml
+netstat -nlap|grep 9390
+docker pull grafana/grafana
+mkdir grafana
+docker run -itd -p 3000:3000 --name=grafana -v /app/hadoop/grafana:/var/lib/grafana grafana/grafana
+sudo chmod -R 777 /app/hadoop/grafana
+netstat -nlap|grep 3000
+docker exec -it grafana bash
+  #cd /usr/share/grafana/bin
+  #./grafana-cli admin reset-admin-password bd123456
+
+
+
+#mongodb客户端安装
+#root
+wget https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1804-4.0.14.tgz
+tar -zxvf mongodb-linux-x86_64-ubuntu1804-4.0.14.tgz
+cp -r mongodb-linux-x86_64-ubuntu1804-4.0.14 /usr/local/mongodb
+echo "export PATH=$PATH:/usr/local/mongodb/bin" >> other-env.sh
+source ~/.bashrc
+
+
+
+
 #其他master上部署相关目录脚本
 sed -i 's@10.1.0.11:3333@10.10.5.250:3306@g' ~/scripts/sqoop_import_all_mysql_dump_tradebatch.sh
 #从pro-hbase05上copy sam的脚本
 scp ~/scripts/sqoop_import_all_mysql_dump_tradebatch_sam.sh hadoop@10.10.1.62:/app/hadoop/scripts/
 sed -i 's@10.0.0.244:3307@10.10.5.250:3309@g' ~/scripts/sqoop_import_all_mysql_dump_tradebatch_sam.sh
+#从pro-hbase01上copy 流处理启动脚本
+scp ~/fm/str/startfmstrall.sh hadoop@10.10.1.62:/app/hadoop/fm/str/
 mkdir -p fm/jar
-mkdir -p fm/to_release
+mkdir -p fm/str
+mkdir -p fm/to_release/jar
 mkdir fm_sensorsdata
 mkdir deploy
 #从beta-hbase01上copy deploy脚本
 scp deploy/deploy_spark_jars.sh hadoop@10.10.1.62:/app/hadoop/deploy
 scp deploy/deploy_jar_jars.sh hadoop@10.10.1.62:/app/hadoop/deploy
 chmod a+x ~/deploy/*.sh
+echo "export PATH=${PATH}:/app/hadoop/venvs/airflow/bin" >> ~/other-env.sh
 
 
 
