@@ -1,0 +1,1 @@
+docker ps |  grep $1 | awk '{print $1}' | xargs -I CNAME  sh -c "docker stop CNAME;docker rm CNAME"

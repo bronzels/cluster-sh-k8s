@@ -281,8 +281,13 @@ EOF
 #全程替换 scripts配置
 ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd ~/scripts;ls|xargs grep beta-hbase0"
 ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd ~/scripts;ls|xargs sed -i 's@beta-hbase0@pro-hbase0@g'"
+ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd ~/scripts;ls|xargs grep beta-hbase0"
 ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd ~/scripts;ls|xargs grep pro-hbase0"
 
+ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd ~/scripts;ls|xargs grep 10.1.0.11"
+ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd ~/scripts;ls|xargs sed -i 's@10.1.0.11@10.10.1.62@g'"
+ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd ~/scripts;ls|xargs grep 10.1.0.11"
+ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd ~/scripts;ls|xargs grep 10.10.1.62"
 
 
 #全程替换 zookeeper配置
@@ -749,6 +754,22 @@ ansible all -m shell -a"cd /app/hadoop/flink/lib;unzip -o /tmp/lib.zip"
 #~/flink/bin/stop-cluster.sh
 #ansible all -m copy -a"src=/app/hadoop/tmp/flink-1.11.0/lib dest=/app/hadoop/flink"
 #ansible all -m shell -a"rm -rf /app/hadoop/flink/lib"
+wget -c -P flink/lib https://repo1.maven.org/maven2/org/apache/flink/flink-metrics-prometheus_2.12/1.11.0/flink-metrics-prometheus_2.12-1.11.0.jar
+cat << \EOF >> /app/hadoop/flink/conf/flink-conf.yaml
+metrics.reporters: prom
+metrics.reporter.prom.class: org.apache.flink.metrics.prometheus.PrometheusReporter
+metrics.reporter.prom.port: 19999
+EOF
+:<<EOF
+metrics.reporter.promgateway.class: org.apache.flink.metrics.prometheus.PrometheusPushGatewayReporter
+metrics.reporter.promgateway.host: 10.10.1.62
+metrics.reporter.promgateway.port: 9091
+metrics.reporter.promgateway.jobName: myJob
+metrics.reporter.promgateway.randomJobNameSuffix: true
+metrics.reporter.promgateway.deleteOnShutdown: false
+EOF
+
+cd
 
 
 
@@ -833,12 +854,12 @@ mypostgres.sh
 
 
 #部署exporter/prometheus/grafana
-docker run -itd -p 9309:9308 --name kafka1-exporter danielqsj/kafka-exporter --kafka.server=10.10.11.47:9392 --kafka.server=10.10.13.106:9392 --kafka.server=10.10.3.169:9392
-docker run -itd -p 9308:9308 --name kafka2-exporter danielqsj/kafka-exporter --kafka.server=10.10.11.47:9492 --kafka.server=10.10.13.106:9492 --kafka.server=10.10.3.169:9492
+docker run -itd -p 9308:9308 --name kafka1-exporter danielqsj/kafka-exporter --kafka.server=10.10.11.47:9392 --kafka.server=10.10.13.106:9392 --kafka.server=10.10.3.169:9392
+docker run -itd -p 9309:9308 --name kafka2-exporter danielqsj/kafka-exporter --kafka.server=10.10.11.47:9492 --kafka.server=10.10.13.106:9492 --kafka.server=10.10.3.169:9492
 docker pull prom/prometheus
 mkdir prometheus
 file=prometheus/prometheus.yml
-cat >> $file << EOF
+cat << \EOF > ${file}
 global:
   scrape_interval:     10s
   evaluation_interval: 10s
@@ -856,11 +877,11 @@ scrape_configs:
         labels:
           instance: localhost
 
-  - job_name: kafka1
+  - job_name: kafka2
     static_configs:
       - targets: ['10.10.1.62:9309']
         labels:
-          instance: streaming
+          instance: datawarehouse
 
   - job_name: flink
     static_configs:
@@ -870,6 +891,7 @@ docker run -itd -p 9390:9090 --name prometheus -v /app/hadoop/prometheus:/data p
 netstat -nlap|grep 9390
 docker pull grafana/grafana
 mkdir grafana
+sudo rm -rf /app/hadoop/grafana/*
 docker run -itd -p 3000:3000 --name=grafana -v /app/hadoop/grafana:/var/lib/grafana grafana/grafana
 sudo chmod -R 777 /app/hadoop/grafana
 netstat -nlap|grep 3000
