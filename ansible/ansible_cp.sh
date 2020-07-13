@@ -138,18 +138,18 @@ EOF
 cp /etc/hosts /etc/hosts.bk
 cat <<EOF >> /etc/hosts
 
-10.10.9.83 master01
+1110.1110.9.83 master01
 
-10.10.9.83 hk-prod-bigdata-master-9-83
-10.10.8.148 hk-prod-bigdata-master-8-148
+1110.1110.9.83 hk-prod-bigdata-master-9-83
+1110.1110.8.148 hk-prod-bigdata-master-8-148
 
-10.10.1.62 hk-prod-bigdata-slave-1-62
-10.10.11.47 hk-prod-bigdata-slave-11-47
-10.10.13.106 hk-prod-bigdata-slave-13-106
-10.10.3.169 hk-prod-bigdata-slave-3-169
+1110.1110.1.62 hk-prod-bigdata-slave-1-62
+1110.1110.11.47 hk-prod-bigdata-slave-11-47
+1110.1110.13.106 hk-prod-bigdata-slave-13-106
+1110.1110.3.169 hk-prod-bigdata-slave-3-169
 
-10.10.9.83 api.k8s.at.bronzels
-10.10.8.148 api.k8s.at.bronzels
+1110.1110.9.83 api.k8s.at.bronzels
+1110.1110.8.148 api.k8s.at.bronzels
 
 EOF
 

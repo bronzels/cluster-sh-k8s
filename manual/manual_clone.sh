@@ -81,16 +81,16 @@ pro-hbase04
 
 EOF
 
-10.10.1.62 pro-hbase01
-10.10.11.47 pro-hbase02
-10.10.13.106 pro-hbase03
-10.10.3.169 pro-hbase04
+1110.1110.1.62 pro-hbase01
+1110.1110.11.47 pro-hbase02
+1110.1110.13.106 pro-hbase03
+1110.1110.3.169 pro-hbase04
 cat <<EOF >> /etc/hosts
 
-10.10.1.62 hk-prod-bigdata-slave-1-62
-10.10.11.47 hk-prod-bigdata-slave-11-47
-10.10.13.106 hk-prod-bigdata-slave-13-106
-10.10.3.169 hk-prod-bigdata-slave-3-169
+1110.1110.1.62 hk-prod-bigdata-slave-1-62
+1110.1110.11.47 hk-prod-bigdata-slave-11-47
+1110.1110.13.106 hk-prod-bigdata-slave-13-106
+1110.1110.3.169 hk-prod-bigdata-slave-3-169
 
 EOF
 
@@ -272,10 +272,10 @@ ansible -i /etc/ansible/hosts-hadoop all -m shell -a"mkdir -p /app/hadoop/kudu/l
 ansible -i /etc/ansible/hosts-hadoop all -m shell -a"mkdir -p /app/hadoop/presto-server/presto-data"
 
 :<<EOF
-10.10.1.62 hk-prod-bigdata-slave-1-62
-10.10.11.47 hk-prod-bigdata-slave-11-47
-10.10.13.106 hk-prod-bigdata-slave-13-106
-10.10.3.169 hk-prod-bigdata-slave-3-169
+1110.1110.1.62 hk-prod-bigdata-slave-1-62
+1110.1110.11.47 hk-prod-bigdata-slave-11-47
+1110.1110.13.106 hk-prod-bigdata-slave-13-106
+1110.1110.3.169 hk-prod-bigdata-slave-3-169
 EOF
 
 #全程替换 scripts配置
@@ -284,10 +284,10 @@ ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd ~/scripts;ls|xargs sed -
 ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd ~/scripts;ls|xargs grep beta-hbase0"
 ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd ~/scripts;ls|xargs grep pro-hbase0"
 
-ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd ~/scripts;ls|xargs grep 10.1.0.11"
-ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd ~/scripts;ls|xargs sed -i 's@10.1.0.11@10.10.1.62@g'"
-ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd ~/scripts;ls|xargs grep 10.1.0.11"
-ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd ~/scripts;ls|xargs grep 10.10.1.62"
+ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd ~/scripts;ls|xargs grep 1110.111.0.11"
+ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd ~/scripts;ls|xargs sed -i 's@1110.111.0.11@1110.1110.1.62@g'"
+ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd ~/scripts;ls|xargs grep 1110.111.0.11"
+ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd ~/scripts;ls|xargs grep 1110.1110.1.62"
 
 
 #全程替换 zookeeper配置
@@ -323,7 +323,7 @@ ansible all -i /etc/ansible/hosts-hadoop -m shell -a"sed -i 's@    <value>16384<
 ansible all -i /etc/ansible/hosts-hadoop -m shell -a"sed -i 's@export JAVA_HOME=\/usr\/lib\/jvm\/java-8-oracle@export JAVA_HOME=\/app\/hadoop\/jdk@g' hadoop/etc/hadoop/hadoop-env.sh"
 ansible all -i /etc/ansible/hosts-hadoop -m shell -a"grep JAVA_HOME hadoop/etc/hadoop/hadoop-env.sh"
 #on aliyun/pro-hbase05
-scp /app/home/hadoop/hadoop/etc/hadoop/fair-scheduler.xml hadoop@10.10.1.62:/app/hadoop/hadoop/etc/hadoop/fair-scheduler.xml
+scp /app/home/hadoop/hadoop/etc/hadoop/fair-scheduler.xml hadoop@1110.1110.1.62:/app/hadoop/hadoop/etc/hadoop/fair-scheduler.xml
 ansible all -i /etc/ansible/hosts-hadoop -m shell -a"rm -rf /app/data/hadoop/hdfs/journaldata/*"
 hdfs --workers --daemon start journalnode
 #hdfs --workers --daemon stop journalnode
@@ -407,7 +407,7 @@ hadoop fs -chmod g+w /user/hive/warehouse
 #全程替换 hbase配置
 #从beta-hbase01 打包copy hbase和软连接
 tar czvf hbase.tgz hbase hbase-2.2.2 --exclude=hbase-2.2.2/logs
-scp hbase.tgz hadoop@10.10.1.62:/app/hadoop/
+scp hbase.tgz hadoop@1110.1110.1.62:/app/hadoop/
 tar xzvf hbase.tgz
 sed -i 's@export JAVA_HOME=\/usr\/lib\/jvm\/java-8-oracle@export JAVA_HOME=\/app\/hadoop\/jdk@g' ~/hbase/conf/hbase-env.sh
 grep JAVA_HOME ~/hbase/conf/hbase-env.sh
@@ -445,7 +445,7 @@ ansible all -i /etc/ansible/hosts-hadoop -m shell -a"jps"
 #从beta-hbase01 打包copy kylin和软连接
 ansible all -m shell -a"cd /app/hadoop;rm -rf apache-kylin-3.0.1-bin-hadoop3 kylin;ls -l"
 tar czvf kylin.tgz apache-kylin-3.0.1-bin-hadoop3 kylin --exclude=apache-kylin-3.0.1-bin-hadoop3/logs
-scp kylin.tgz hadoop@10.10.1.62:/app/hadoop/
+scp kylin.tgz hadoop@1110.1110.1.62:/app/hadoop/
 tar xzvf kylin.tgz
 cat << \EOF >> kylin/conf/kylin.properties
 kylin.web.query-timeout=3000000
@@ -495,14 +495,14 @@ chmod a+x
 cd ~/kudu
 mkdir config
 #从beta 01 拷贝配置文件
-scp -r  /app/hadoop/kudu/config/master.gflagfile hadoop@10.10.1.62:/app/hadoop/kudu/config/master.gflagfile
-scp -r  /app/hadoop/kudu/config/tserver.gflagfile hadoop@10.10.1.62:/app/hadoop/kudu/config/tserver.gflagfile
+scp -r  /app/hadoop/kudu/config/master.gflagfile hadoop@1110.1110.1.62:/app/hadoop/kudu/config/master.gflagfile
+scp -r  /app/hadoop/kudu/config/tserver.gflagfile hadoop@1110.1110.1.62:/app/hadoop/kudu/config/tserver.gflagfile
 cd /app/hadoop/kudu/config;
 find * | xargs grep beta-hbase0
 find * | xargs sed -i 's@beta-hbase0@pro-hbase0@g'
 find * | xargs grep beta-hbase0
 find * | xargs grep pro-hbase0
-find * | xargs grep 10.1.0.11
+find * | xargs grep 1110.111.0.11
 cd ~
 tar czvf kudu.tgz kudu/logs kudu/usr kudu/config
 ansible slave-i /etc/ansible/hosts-hadoop -m copy -a"src=/app/hadoop/kudu.tgz dest=/app/hadoop"
@@ -524,26 +524,26 @@ ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop/confluent/co
 ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep beta-hbase0"
 ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep pro-hbase0"
 
-ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 10.1.0.11"
-ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop/confluent/config;find * | xargs sed -i 's@10.1.0.11@10.10.1.62@g'"
-ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 10.1.0.11"
-ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 10.10.1.62"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 1110.111.0.11"
+ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop/confluent/config;find * | xargs sed -i 's@1110.111.0.11@1110.1110.1.62@g'"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 1110.111.0.11"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 1110.1110.1.62"
 
 
-ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 10.1.0.12"
-ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop/confluent/config;find * | xargs sed -i 's@10.1.0.12@10.10.11.47@g'"
-ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 10.1.0.12"
-ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 10.10.11.47"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 1110.111.0.12"
+ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop/confluent/config;find * | xargs sed -i 's@1110.111.0.12@1110.1110.11.47@g'"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 1110.111.0.12"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 1110.1110.11.47"
 
-ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 10.1.0.13"
-ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop/confluent/config;find * | xargs sed -i 's@10.1.0.13@10.10.13.106@g'"
-ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 10.1.0.13"
-ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 10.10.13.106"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 1110.111.0.13"
+ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop/confluent/config;find * | xargs sed -i 's@1110.111.0.13@1110.1110.13.106@g'"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 1110.111.0.13"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 1110.1110.13.106"
 
-ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 10.1.0.14"
-ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop/confluent/config;find * | xargs sed -i 's@10.1.0.14@10.10.3.169@g'"
-ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 10.1.0.14"
-ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 10.10.3.169"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 1110.111.0.14"
+ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop/confluent/config;find * | xargs sed -i 's@1110.111.0.14@1110.1110.3.169@g'"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 1110.111.0.14"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 1110.1110.3.169"
 
 ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep beta_test"
 ansible all -i /etc/ansible/hosts-hadoop -m shell -a"cd /app/hadoop/confluent/config;find * | xargs sed -i 's@beta_test@pro_test@g'"
@@ -574,7 +574,7 @@ ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep pro-
 ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep pro-hbase06"
 
 
-ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 10.1.0.11"
+ansible all -m shell -a"cd /app/hadoop/confluent/config;find * | xargs grep 1110.111.0.11"
 myprestoserver.sh start
 
 
@@ -598,12 +598,12 @@ pikahome=$PWD
 make
 
 #从beta-hbase01 copy pika配置文件
-scp pika/conf/pika.conf hadoop@10.10.1.62:/app/hadoop/pika/conf
-scp pika/conf/pika_yat.conf hadoop@10.10.1.62:/app/hadoop/pika/conf
+scp pika/conf/pika.conf hadoop@1110.1110.1.62:/app/hadoop/pika/conf
+scp pika/conf/pika_yat.conf hadoop@1110.1110.1.62:/app/hadoop/pika/conf
 
 find * | xargs grep beta-hbase0
-find * | xargs grep 10.1.0.11
-find * | xargs grep 10.1.0.12
+find * | xargs grep 1110.111.0.11
+find * | xargs grep 1110.111.0.12
 
 cd ~
 tar czvf pika.tgz pika
@@ -633,8 +633,8 @@ cd codis
 make
 
 #从beta-hbase01 copy codis配置文件
-scp -r /app/hadoop/gopath/src/github.com/CodisLabs/codis/ansible hadoop@10.10.1.62:/app/hadoop/gopath/src/github.com/CodisLabs/codis/
-scp -r /app/hadoop/gopath/src/github.com/CodisLabs/codis/ansible_yat hadoop@10.10.1.62:/app/hadoop/gopath/src/github.com/CodisLabs/codis/
+scp -r /app/hadoop/gopath/src/github.com/CodisLabs/codis/ansible hadoop@1110.1110.1.62:/app/hadoop/gopath/src/github.com/CodisLabs/codis/
+scp -r /app/hadoop/gopath/src/github.com/CodisLabs/codis/ansible_yat hadoop@1110.1110.1.62:/app/hadoop/gopath/src/github.com/CodisLabs/codis/
 find . -name "hosts*" | xargs grep 'ansible_ssh_user=hadoop'
 find . -name "hosts*" | xargs sed -i 's@ansible_ssh_user=hadoop ansible_ssh_private_key_file=/app/hadoop/fm_beta_bigdata.pem@ansible_ssh_user=hadoop ansible_ssh_pass=hadoop@g'
 find . -name "hosts*" | xargs grep 'ansible_ssh_user=hadoop'
@@ -674,11 +674,11 @@ codis-admin  --dashboard=pro-hbase01:18180 --rebalance --confirm  #相当于fe�
 
 #全程替换 opentsdb配置
 tar czvf opentsdb.tgz opentsdb --exclude=opentsdb/log
-scp opentsdb.tgz hadoop@10.10.1.62:/app/hadoop/
+scp opentsdb.tgz hadoop@1110.1110.1.62:/app/hadoop/
 tar xzvf opentsdb.tgz
 
 grep "2181" ~/opentsdb/src/opentsdb_tmp.conf
-sed -i 's@tsd.storage.hbase.zk_quorum = beta-hbase02:2281,beta-hbase03:2281,beta-hbase04:2281@tsd.storage.hbase.zk_quorum = 10.10.20.191:2181@g' ~/opentsdb/src/opentsdb_tmp.conf
+sed -i 's@tsd.storage.hbase.zk_quorum = beta-hbase02:2281,beta-hbase03:2281,beta-hbase04:2281@tsd.storage.hbase.zk_quorum = 1110.1110.20.191:2181@g' ~/opentsdb/src/opentsdb_tmp.conf
 grep "2181" ~/opentsdb/src/opentsdb_tmp.conf
 grep "/hbase" ~/opentsdb/src/opentsdb_tmp.conf
 sed -i 's@tsd.storage.hbase.zk_basedir = /hbase1@tsd.storage.hbase.zk_basedir = /hbase@g' ~/opentsdb/src/opentsdb_tmp.conf
@@ -687,8 +687,8 @@ mkdir opentsdb/log
 tar czvf opentsdb.tgz opentsdb
 ansible slave -m copy -a"src=/app/hadoop/opentsdb.tgz dest=/app/hadoop"
 ansible slave -m shell -a"cd /app/hadoop;tar xzvf opentsdb.tgz;rm -f opentsdb.tgz"
-curl -ki -X POST -d '{"metric":"testdata", "timestamp":1524900185000, "value":9999.99, "tags":{"key":"value"}}' http://10.10.11.47:4344/api/put?sync
-curl  -X POST -H "Accept:application/json" -H  "Content-Type:application/json" http://10.10.11.47:4344/api/query  -d '
+curl -ki -X POST -d '{"metric":"testdata", "timestamp":1524900185000, "value":9999.99, "tags":{"key":"value"}}' http://1110.1110.11.47:4344/api/put?sync
+curl  -X POST -H "Accept:application/json" -H  "Content-Type:application/json" http://1110.1110.11.47:4344/api/query  -d '
     {
         "start": "1970/03/01 00:00:00",
         "end": "2029/12/16 00:00:00",
@@ -729,7 +729,7 @@ netstat -nlap|grep 8981
 wget -c https://downloads.apache.org/flink/flink-1.11.0/flink-1.11.0-bin-scala_2.11.tgz
 tar xzvf flink-1.11.0-bin-scala_2.11.tgz
 ln -s flink-1.11.0 flink
-scp flink/conf/flink-conf.yaml hadoop@10.10.1.62:/app/hadoop/
+scp flink/conf/flink-conf.yaml hadoop@1110.1110.1.62:/app/hadoop/
 diff flink-conf.yaml flink/conf/flink-conf.yaml
 rm -f flink-conf.yaml
 sed -i 's@jobmanager.rpc.address: localhost@jobmanager.rpc.address: pro-hbase01@g' flink/conf/flink-conf.yaml
@@ -754,7 +754,6 @@ ansible all -m shell -a"cd /app/hadoop/flink/lib;unzip -o /tmp/lib.zip"
 #~/flink/bin/stop-cluster.sh
 #ansible all -m copy -a"src=/app/hadoop/tmp/flink-1.11.0/lib dest=/app/hadoop/flink"
 #ansible all -m shell -a"rm -rf /app/hadoop/flink/lib"
-wget -c -P flink/lib https://repo1.maven.org/maven2/org/apache/flink/flink-metrics-prometheus_2.12/1.11.0/flink-metrics-prometheus_2.12-1.11.0.jar
 cat << \EOF >> /app/hadoop/flink/conf/flink-conf.yaml
 metrics.reporters: prom
 metrics.reporter.prom.class: org.apache.flink.metrics.prometheus.PrometheusReporter
@@ -762,7 +761,7 @@ metrics.reporter.prom.port: 19999
 EOF
 :<<EOF
 metrics.reporter.promgateway.class: org.apache.flink.metrics.prometheus.PrometheusPushGatewayReporter
-metrics.reporter.promgateway.host: 10.10.1.62
+metrics.reporter.promgateway.host: 1110.1110.1.62
 metrics.reporter.promgateway.port: 9091
 metrics.reporter.promgateway.jobName: myJob
 metrics.reporter.promgateway.randomJobNameSuffix: true
@@ -783,12 +782,12 @@ cd
 sudo apt-get install -y libsqlite3-dev
 #从beta01 copy airflow的整个虚拟环境，解压
 tar czvf airflow.tgz airflow --exclude=airflow/logs --exclude=airflow/webserver.out
-scp airflow.tgz hadoop@10.10.1.62:/app/hadoop/venvs/
+scp airflow.tgz hadoop@1110.1110.1.62:/app/hadoop/venvs/
 cd venvs
 tar xzvf airflow.tgz
-scp venvs/airflow/airflow.cfg hadoop@10.10.1.62:/app/hadoop/venvs/airflow/
-scp venvs/airflow/myscheduler.sh hadoop@10.10.1.62:/app/hadoop/venvs/airflow/
-scp venvs/airflow/mywebserver.sh hadoop@10.10.1.62:/app/hadoop/venvs/airflow/
+scp venvs/airflow/airflow.cfg hadoop@1110.1110.1.62:/app/hadoop/venvs/airflow/
+scp venvs/airflow/myscheduler.sh hadoop@1110.1110.1.62:/app/hadoop/venvs/airflow/
+scp venvs/airflow/mywebserver.sh hadoop@1110.1110.1.62:/app/hadoop/venvs/airflow/
 cd /app/hadoop/venvs/airflow
 find *  -maxdepth 1 -type f | xargs grep beta-hbase0
 find *  -maxdepth 1 -type f | xargs sed -i 's@beta-hbase0@pro-hbase0@g'
@@ -854,8 +853,8 @@ mypostgres.sh
 
 
 #部署exporter/prometheus/grafana
-docker run -itd -p 9308:9308 --name kafka1-exporter danielqsj/kafka-exporter --kafka.server=10.10.11.47:9392 --kafka.server=10.10.13.106:9392 --kafka.server=10.10.3.169:9392
-docker run -itd -p 9309:9308 --name kafka2-exporter danielqsj/kafka-exporter --kafka.server=10.10.11.47:9492 --kafka.server=10.10.13.106:9492 --kafka.server=10.10.3.169:9492
+docker run -itd -p 9308:9308 --name kafka1-exporter danielqsj/kafka-exporter --kafka.server=1110.1110.11.47:9392 --kafka.server=1110.1110.13.106:9392 --kafka.server=1110.1110.3.169:9392
+docker run -itd -p 9309:9308 --name kafka2-exporter danielqsj/kafka-exporter --kafka.server=1110.1110.11.47:9492 --kafka.server=1110.1110.13.106:9492 --kafka.server=1110.1110.3.169:9492
 docker pull prom/prometheus
 mkdir prometheus
 file=prometheus/prometheus.yml
@@ -873,19 +872,19 @@ scrape_configs:
 
   - job_name: kafka
     static_configs:
-      - targets: ['10.10.1.62:9308']
+      - targets: ['1110.1110.1.62:9308']
         labels:
           instance: localhost
 
   - job_name: kafka2
     static_configs:
-      - targets: ['10.10.1.62:9309']
+      - targets: ['1110.1110.1.62:9309']
         labels:
           instance: datawarehouse
 
   - job_name: flink
     static_configs:
-      - targets: ['10.10.1.62:19999', '10.10.11.47:19999', '10.10.13.106:19999', '10.10.3.169:19999']
+      - targets: ['1110.1110.1.62:19999', '1110.1110.11.47:19999', '1110.1110.13.106:19999', '1110.1110.3.169:19999']
 EOF
 docker run -itd -p 9390:9090 --name prometheus -v /app/hadoop/prometheus:/data prom/prometheus --config.file=/data/prometheus.yml
 netstat -nlap|grep 9390
@@ -913,20 +912,20 @@ source ~/.bashrc
 
 
 #其他master上部署相关目录脚本
-sed -i 's@10.1.0.11:3333@10.10.5.250:3306@g' ~/scripts/sqoop_import_all_mysql_dump_tradebatch.sh
+sed -i 's@1110.111.0.11:3333@1110.1110.5.250:3306@g' ~/scripts/sqoop_import_all_mysql_dump_tradebatch.sh
 #从pro-hbase05上copy sam的脚本
-scp ~/scripts/sqoop_import_all_mysql_dump_tradebatch_sam.sh hadoop@10.10.1.62:/app/hadoop/scripts/
-sed -i 's@10.0.0.244:3307@10.10.5.250:3309@g' ~/scripts/sqoop_import_all_mysql_dump_tradebatch_sam.sh
+scp ~/scripts/sqoop_import_all_mysql_dump_tradebatch_sam.sh hadoop@1110.1110.1.62:/app/hadoop/scripts/
+sed -i 's@1110.110.0.244:3307@1110.1110.5.250:3309@g' ~/scripts/sqoop_import_all_mysql_dump_tradebatch_sam.sh
 #从pro-hbase01上copy 流处理启动脚本
-scp ~/fm/str/startfmstrall.sh hadoop@10.10.1.62:/app/hadoop/fm/str/
+scp ~/fm/str/startfmstrall.sh hadoop@1110.1110.1.62:/app/hadoop/fm/str/
 mkdir -p fm/jar
 mkdir -p fm/str
 mkdir -p fm/to_release/jar
 mkdir fm_sensorsdata
 mkdir deploy
 #从beta-hbase01上copy deploy脚本
-scp deploy/deploy_spark_jars.sh hadoop@10.10.1.62:/app/hadoop/deploy
-scp deploy/deploy_jar_jars.sh hadoop@10.10.1.62:/app/hadoop/deploy
+scp deploy/deploy_spark_jars.sh hadoop@1110.1110.1.62:/app/hadoop/deploy
+scp deploy/deploy_jar_jars.sh hadoop@1110.1110.1.62:/app/hadoop/deploy
 chmod a+x ~/deploy/*.sh
 echo "export PATH=${PATH}:/app/hadoop/venvs/airflow/bin" >> ~/other-env.sh
 

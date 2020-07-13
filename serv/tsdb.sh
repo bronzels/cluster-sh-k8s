@@ -132,8 +132,8 @@ kubectl exec -n serv myopts-opentsdb-7f848db5b4-xbwqm -- date
 
 kubectl -n serv exec -ti myopts-opentsdb-7f848db5b4-rssn8 -- tsdb version
 
-curl -ki -X POST -d '{"metric":"testdata", "timestamp":1524900185000, "value":9999.99, "tags":{"key":"value"}}' http://10.10.1.62:31042/api/put?sync
-curl  -X POST -H "Accept:application/json" -H  "Content-Type:application/json" http://10.10.1.62:31042/api/query  -d '
+curl -ki -X POST -d '{"metric":"testdata", "timestamp":1524900185000, "value":9999.99, "tags":{"key":"value"}}' http://1110.1110.1.62:31042/api/put?sync
+curl  -X POST -H "Accept:application/json" -H  "Content-Type:application/json" http://1110.1110.1.62:31042/api/query  -d '
     {
         "start": "1970/03/01 00:00:00",
         "end": "2029/12/16 00:00:00",

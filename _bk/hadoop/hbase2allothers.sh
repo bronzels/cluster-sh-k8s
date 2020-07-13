@@ -395,7 +395,7 @@ spec:
     - port=2149
   nfs:
     path: /
-    server: 10.10.9.83
+    server: 1110.1110.9.83
 EOF
 kubectl apply -f myhb-nfs-pv.yaml
 kubectl get pv|grep myhb-nfs-pv

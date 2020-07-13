@@ -17,5 +17,5 @@ spec:
     - port=2149
   nfs:
     path: /str_jar
-    server: 10.10.9.83
+    server: 1110.1110.9.83
   EOF

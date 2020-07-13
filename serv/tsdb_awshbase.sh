@@ -36,12 +36,12 @@ cat << \EOF >> hbase-site.xml
 
   <property>
     <name>hbase.zookeeper.quorum</name>
-    <value>10.10.20.191</value>
+    <value>1110.1110.20.191</value>
   </property>
 
   <property>
     <name>hbase.rootdir</name>
-    <value>hdfs://10.10.20.191:8020/user/hbase</value>
+    <value>hdfs://1110.1110.20.191:8020/user/hbase</value>
   </property>
 
   <property>
@@ -63,10 +63,10 @@ cat << \EOF >> hbase-site.xml
 
 </configuration>
 EOF
-#thrift on 10.10.20.191:9090
+#thrift on 1110.1110.20.191:9090
 
 cat << \EOF > zookeeper_quorum
-10.10.20.191:2181
+1110.1110.20.191:2181
 EOF
 
 cd ~

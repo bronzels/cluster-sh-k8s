@@ -16,7 +16,7 @@ ansible allcdh -m shell -a"apt-get install -yq cloudera-manager-daemons cloudera
 
 file=/etc/cloudera-scm-agent/config.ini
 cp ${file} ${file}.bk
-sed -i 's@server_host=localhost@server_host=10.10.1.62@g' ${file}
+sed -i 's@server_host=localhost@server_host=1110.1110.1.62@g' ${file}
 ansible slavecdh -m copy -a"src=/etc/cloudera-scm-agent/config.ini dest=/etc/cloudera-scm-agent"
 
 systemctl start cloudera-scm-server

@@ -36,7 +36,7 @@ ansible allk8s -m shell -a"apt-get remove -y kubelet kubeadm kubectl"
 
 ansible allk8s -m shell -a"systemctl enable kubelet"
 
-#kubeadm init --kubernetes-version=v1.18.3 --apiserver-advertise-address=10.10.2.81 --pod-network-cidr=10.244.0.0/16
+#kubeadm init --kubernetes-version=v1.18.3 --apiserver-advertise-address=1110.1110.2.81 --pod-network-cidr=10.244.0.0/16
 
 cat << \EOF > kubeadm-config-old.yaml
 apiVersion: kubeadm.k8s.io/v1beta1
@@ -75,7 +75,7 @@ bootstrapTokens:
   - authentication
 kind: InitConfiguration
 localAPIEndpoint:
-  advertiseAddress: 10.10.9.83
+  advertiseAddress: 1110.1110.9.83
   bindPort: 6443
 nodeRegistration:
   criSocket: /var/run/dockershim.sock
@@ -109,7 +109,7 @@ scheduler: {}
 EOF
 
 #！！！手工，替换正确的control plan IP地址
-sed -i 's@10.10.3.189@10.10.9.83@g' kubeadm-config.yaml
+sed -i 's@1110.1110.3.189@1110.1110.9.83@g' kubeadm-config.yaml
 sed -i 's@hk-prod-bigdata-master-3-189@hk-prod-bigdata-master-9-83@g' kubeadm-config.yaml
 
 ansible masterk8sexpcp -m copy -a"src=~/kubeadm-config.yaml dest=~"

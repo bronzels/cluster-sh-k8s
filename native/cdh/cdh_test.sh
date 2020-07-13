@@ -16,6 +16,6 @@ yarn application -list
 #Pi is roughly 3.141067141067141
 
 #kudu测试
-kudu master list 10.10.1.62:7051
-kudu tserver list 10.10.1.62:7051
-kudu table list 10.10.1.62:7051
+kudu master list 1110.1110.1.62:7051
+kudu tserver list 1110.1110.1.62:7051
+kudu table list 1110.1110.1.62:7051
