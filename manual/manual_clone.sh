@@ -36,6 +36,7 @@ df|grep "/app"
 #创建hadoop用户，home目录，设置pwd
 useradd -d /app/hadoop -m hadoop
 usermod --password $(echo hadoop | openssl passwd -1 -stdin) hadoop
+chown hadoop:hadoop /app/hadoop
 
 #hadoop加入docker组
 sudo gpasswd -a $USER docker
@@ -96,7 +97,6 @@ EOF
 
 #root
 ssh-keygen -t rsa -b 2048 -P '' -f ~/.ssh/id_rsa
-
 cat <<EOF > ssh-addkey.yml
 # ssh-addkey.yml
 ---
@@ -113,6 +113,23 @@ EOF
 ssh-keyscan pro-hbase01 pro-hbase02 pro-hbase03 pro-hbase04
 ansible-playbook ~/ssh-addkey.yml
 
+#hadoop
+ssh-keygen -t rsa -b 2048 -P '' -f ~/.ssh/id_rsa
+cat <<EOF > ssh-addkey.yml
+# ssh-addkey.yml
+---
+- hosts: all
+  gather_facts: no
+
+  tasks:
+
+  - name: install ssh key
+    authorized_key: user=root
+                    key="{{ lookup('file', '/app/hadoop/.ssh/id_rsa.pub') }}"
+                    state=present
+EOF
+ssh-keyscan pro-hbase01 pro-hbase02 pro-hbase03 pro-hbase04
+ansible-playbook ~/ssh-addkey.yml
 
 ansible all -m shell -a"cat /etc/fstab"
 ansible slave -m copy -a"src=/etc/hosts dest=/etc"
@@ -143,6 +160,16 @@ ansible all -m shell -a"blkid /dev/nvme0n1p1;/root/add-newdev-fstab.sh nvme0n1p1
 ansible all -m shell -a"blkid /dev/nvme1n1p1;/root/add-newdev-fstab.sh nvme1n1p1 /app2 ext4;cat /etc/fstab"
 
 
+
+
+#配置操作系统和网络的限制
+ansible all -m shell -a"echo 'net.ipv4.tcp_tw_reuse = 1' >> /etc/sysctl.conf"
+ansible all -m shell -a"tail -20 /etc/sysctl.conf"
+ansible all -m shell -a"sysctl -p"
+
+
+
+
 ansible all -m shell -a"chown -R hadoop:hadoop /app"
 ansible all -m shell -a"chown -R hadoop:hadoop /app2"
 
@@ -151,7 +178,8 @@ ansible slave -m shell -a"cp /etc/sudoers /etc/sudoers.bk"
 ansible slave -m copy -a"src=/etc/sudoers dest=/etc"
 
 #给hadoop设置bash
-ansible slave -m shell -a"cp /etc/passwd /etc/passwd.bk"
+ansible all -m shell -a"cp /etc/passwd /etc/passwd.bk"
+sed -i 's@hadoop:x:1001:1001::\/app\/hadoop:\/bin\/sh@hadoop:x:1001:1001::\/app\/hadoop:\/bin\/bash@g' /etc/passwd
 ansible slave -m copy -a"src=/etc/passwd dest=/etc"
 
 ansible all -m shell -a"cp /app/hadoop/.bashrc /app/hadoop/.bashrc.bk"
@@ -892,6 +920,16 @@ docker pull grafana/grafana
 mkdir grafana
 sudo rm -rf /app/hadoop/grafana/*
 docker run -itd -p 3000:3000 --name=grafana -v /app/hadoop/grafana:/var/lib/grafana grafana/grafana
+docker cp grafana:/etc/grafana/grafana.ini ./
+sed -i '/;startTLS_policy = NoStartTLS/a\
+enabled = true \
+host = smtp.163.com:465 \
+user = bronzels@163.com \
+password = XXXXXX \
+skip_verify = true \
+from_address = bronzels@163.com \
+from_name = Grafana' grafana.ini
+docker cp ./grafana.ini grafana:/etc/grafana/grafana.ini
 sudo chmod -R 777 /app/hadoop/grafana
 netstat -nlap|grep 3000
 docker exec -it grafana bash

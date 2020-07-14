@@ -73,10 +73,21 @@ fi
 
 if [ $op == "snap" ]; then
 exec hbase shell <<EOF
-snapshot '$UID_TABLE','snp_$UID_TABLE'
-snapshot '$TSDB_TABLE','snp_$TSDB_TABLE'
-snapshot '$TREE_TABLE','snp_$TREE_TABLE'
-snapshot '$META_TABLE','snp_$META_TABLE'
+disable '$UID_TABLE'
+restore_snapshot 'snp_$UID_TABLE'
+enable '$UID_TABLE'
+
+disable '$TSDB_TABLE'
+restore_snapshot 'snp_$TSDB_TABLE'
+enable '$TSDB_TABLE'
+
+disable '$TREE_TABLE'
+restore_snapshot 'snp_$TREE_TABLE'
+enable '$TREE_TABLE'
+
+disable '$META_TABLE'
+restore_snapshot 'snp_$META_TABLE'
+enable '$META_TABLE'
 EOF
 
 exit 0
