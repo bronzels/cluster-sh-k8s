@@ -125,7 +125,7 @@ EOF
 
 file=Dockerfile
 cat << \EOF > ${file}
-FROM apache/airflow:1.10.10-python3.6
+FROM apache/airflow:1.1110.1110-python3.6
 MAINTAINER bronzels@hotmail.com
 
 USER root:root
@@ -150,8 +150,8 @@ docker images|grep airflow|awk '{print $3}'|xargs docker rmi -f
 sudo ansible slavek8s -m shell -a"docker images|grep airflow|awk '{print \$3}'|xargs docker rmi -f"
 docker images|grep airflow
 
-docker build -t master01:30500/bronzels/airflow:1.10.10-python3.6 ./
-docker push master01:30500/bronzels/airflow:1.10.10-python3.6
+docker build -t master01:30500/bronzels/airflow:1.1110.1110-python3.6 ./
+docker push master01:30500/bronzels/airflow:1.1110.1110-python3.6
 
 file=~/scripts/myairflow-cp-op.sh
 rm -f ${file}
@@ -189,7 +189,7 @@ if [ $1 == "start" -o $1 == "restart" -o $1 == "restartnew" ]; then
     --set dags.persistence.existingClaim="myaf-nfs-pvc" \
     --set dags.persistence.subPath="dags" \
     --set airflow.image.repository="master01:30500/bronzels/airflow" \
-    --set airflow.image.tag="1.10.10-python3.6" \
+    --set airflow.image.tag="1.1110.1110-python3.6" \
     stable/airflow
   kubectl apply -f ./myaf-web-ext.yaml -n fl
   wait_pod_running "fl" "myaf-" 11 600

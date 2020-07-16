@@ -35,7 +35,7 @@ cp ${MYHOME}.bk/${file} ${file}
 sed -i '/# echo commands to the terminal output/a\echo \"1110.1110.9.83 master01\" >> /etc/hosts' ${file}
 sed -i '/# echo commands to the terminal output/a\echo \"1110.1110.9.83 hk-prod-bigdata-master-7-44\" >> /etc/hosts' ${file}
 sed -i '/# echo commands to the terminal output/a\echo \"1110.1110.1.62 hk-prod-bigdata-slave-0-234\" >> /etc/hosts' ${file}
-sed -i '/# echo commands to the terminal output/a\echo \"1110.1110.10.34 hk-prod-bigdata-slave-10-34\" >> /etc/hosts' ${file}
+sed -i '/# echo commands to the terminal output/a\echo \"1110.111110.1110.34 hk-prod-bigdata-slave-10-34\" >> /etc/hosts' ${file}
 sed -i '/# echo commands to the terminal output/a\echo \"1110.1110.3.233 hk-prod-bigdata-slave-3-233\" >> /etc/hosts' ${file}
 sed -i '/# echo commands to the terminal output/a\echo \"1110.1110.5.226 hk-prod-bigdata-slave-5-226\" >> /etc/hosts' ${file}
 

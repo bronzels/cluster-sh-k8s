@@ -174,6 +174,7 @@ ansible all -m shell -a"chown -R hadoop:hadoop /app"
 ansible all -m shell -a"chown -R hadoop:hadoop /app2"
 
 #给hadoop设置sudo
+sed -i '/root    ALL=(ALL:ALL) ALL/a\hadoop  ALL=(ALL) NOPASSWD: ALL' /etc/sudoers
 ansible slave -m shell -a"cp /etc/sudoers /etc/sudoers.bk"
 ansible slave -m copy -a"src=/etc/sudoers dest=/etc"
 
@@ -883,6 +884,113 @@ mypostgres.sh
 #部署exporter/prometheus/grafana
 docker run -itd -p 9308:9308 --name kafka1-exporter danielqsj/kafka-exporter --kafka.server=1110.1110.11.47:9392 --kafka.server=1110.1110.13.106:9392 --kafka.server=1110.1110.3.169:9392
 docker run -itd -p 9309:9308 --name kafka2-exporter danielqsj/kafka-exporter --kafka.server=1110.1110.11.47:9492 --kafka.server=1110.1110.13.106:9492 --kafka.server=1110.1110.3.169:9492
+
+docker pull prom/mysqld-exporter
+:<<EOF
+aws_copytrading_slave  1110.1110.5.250:3306
+aws_push_slave  1110.1110.5.250:3307
+aws_wallet_slave  1110.1110.5.250:3308
+aws_sam_slave  1110.1110.5.250:3309
+EOF
+docker run -d --restart=always \
+  --name mysqld-exporter-copytrading_slave \
+  -p 9104:9104 \
+  -e DATA_SOURCE_NAME="liuxiangbin:m1njooUE04vc@(1110.1110.5.250:3306)/" \
+  prom/mysqld-exporter
+docker run -d --restart=always \
+  --name mysqld-exporter-aws_push_slave \
+  -p 9105:9104 \
+  -e DATA_SOURCE_NAME="liuxiangbin:m1njooUE04vc@(1110.1110.5.250:3307)/" \
+  prom/mysqld-exporter
+docker run -d --restart=always \
+  --name mysqld-exporter-aws_wallet_slave \
+  -p 9106:9104 \
+  -e DATA_SOURCE_NAME="liuxiangbin:m1njooUE04vc@(1110.1110.5.250:3308)/" \
+  prom/mysqld-exporter
+docker run -d --restart=always \
+  --name mysqld-exporter-aws_sam_slave \
+  -p 9107:9104 \
+  -e DATA_SOURCE_NAME="liuxiangbin:m1njooUE04vc@(1110.1110.5.250:3309)/" \
+  prom/mysqld-exporter
+
+mkdir jmx
+cd jmx
+wget https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.12.0/jmx_prometheus_javaagent-0.12.0.jar
+mv jmx_prometheus_javaagent-0.12.0.jar jmx-exporter.jar
+file=~/jmx/config.yml
+cat << \EOF > ${file}
+startDelaySeconds: 0
+ssl: false
+lowercaseOutputName: false
+lowercaseOutputLabelNames: false
+rules:
+pattern : "kafka.connect<type=connect-worker-metrics>([^:]+):"
+name: "kafka_connect_connect_worker_metrics_$1"
+pattern : "kafka.connect<type=connect-metrics, client-id=([^:]+)><>([^:]+)"
+name: "kafka_connect_connect_metrics_$2"
+labels:
+client: "$1"
+pattern: "debezium.([^:]+)<type=connector-metrics, context=([^,]+), server=([^,]+), key=([^>]+)><>RowsScanned"
+name: "debezium_metrics_RowsScanned"
+labels:
+plugin: "$1"
+name: "$3"
+context: "$2"
+table: "$4"
+pattern: "debezium.([^:]+)<type=connector-metrics, context=([^,]+), server=([^>]+)>([^:]+)"
+name: "debezium_metrics_$4"
+labels:
+plugin: "$1"
+name: "$3"
+context: "$2"
+EOF
+cd ~
+file=~/confluent/bin/connect-distributed
+cp ${file} ${file}-debsrc-str-mysql
+sed -i 's@exec $(dirname $0)/kafka-run-class $EXTRA_ARGS org.apache.kafka.connect.cli.ConnectDistributed@exec $(dirname $0)/kafka-run-class $EXTRA_ARGS -javaagent:/app/hadoop/jmx/jmx-exporter.jar=7071:/app/hadoop/jmx/config.yml org.apache.kafka.connect.cli.ConnectDistributed@g' ${file}-debsrc-str-mysql
+cp ${file} ${file}-debsrc-str-postgre
+sed -i 's@exec $(dirname $0)/kafka-run-class $EXTRA_ARGS org.apache.kafka.connect.cli.ConnectDistributed@exec $(dirname $0)/kafka-run-class $EXTRA_ARGS -javaagent:/app/hadoop/jmx/jmx-exporter.jar=7072:/app/hadoop/jmx/config.yml org.apache.kafka.connect.cli.ConnectDistributed@g' ${file}-debsrc-str-postgre
+cp ${file} ${file}-debsrc-dw-mysql
+sed -i 's@exec $(dirname $0)/kafka-run-class $EXTRA_ARGS org.apache.kafka.connect.cli.ConnectDistributed@exec $(dirname $0)/kafka-run-class $EXTRA_ARGS -javaagent:/app/hadoop/jmx/jmx-exporter.jar=7073:/app/hadoop/jmx/config.yml org.apache.kafka.connect.cli.ConnectDistributed@g' ${file}-debsrc-dw-mysql
+cp ${file} ${file}-debsrc-dw-mg-src-src
+sed -i 's@exec $(dirname $0)/kafka-run-class $EXTRA_ARGS org.apache.kafka.connect.cli.ConnectDistributed@exec $(dirname $0)/kafka-run-class $EXTRA_ARGS -javaagent:/app/hadoop/jmx/jmx-exporter.jar=7074:/app/hadoop/jmx/config.yml org.apache.kafka.connect.cli.ConnectDistributed@g' ${file}-debsrc-dw-mg-src-src
+scp ${file}-debsrc-dw-mg-src-src pro-hbase03:~/confluent/bin/
+cp ${file} ${file}-debsrc-dw-mg-dst-src
+sed -i 's@exec $(dirname $0)/kafka-run-class $EXTRA_ARGS org.apache.kafka.connect.cli.ConnectDistributed@exec $(dirname $0)/kafka-run-class $EXTRA_ARGS -javaagent:/app/hadoop/jmx/jmx-exporter.jar=7075:/app/hadoop/jmx/config.yml org.apache.kafka.connect.cli.ConnectDistributed@g' ${file}-debsrc-dw-mg-dst-src
+scp ${file}-debsrc-dw-mg-dst-src pro-hbase04:~/confluent/bin/
+#重新启动所有debezium source connector
+
+go get github.com/wakeful/kafka_connect_exporter
+~/gopath/src/github.com/wakeful/kafka_connect_exporter
+./build.sh
+cd ~
+ansible all -m copy -a"src=~/gopath/src/github.com/wakeful/kafka_connect_exporter/release/kafka_connect_exporter-linux-amd64 dest=~/scripts"
+ansible all -m shell -a"chmod a+x ~/scripts/kafka_connect_exporter-linux-amd64"
+#有多少个confluent sink进程，启动多少个
+nohup kafka_connect_exporter-linux-amd64 -listen-address :9001 -scrape-uri http://pro-hbase01:8083 1>kafka_connect_exporter.log.9001 2>&1 &
+nohup kafka_connect_exporter-linux-amd64 -listen-address :9002 -scrape-uri http://pro-hbase01:8093 1>kafka_connect_exporter.log.9002 2>&1 &
+nohup kafka_connect_exporter-linux-amd64 -listen-address :9003 -scrape-uri http://pro-hbase01:8184 1>kafka_connect_exporter.log.9003 2>&1 &
+
+#pro-hbase02
+nohup kafka_connect_exporter-linux-amd64 -listen-address :9001 -scrape-uri http://pro-hbase02:18181 1>kafka_connect_exporter.log.9001 2>&1 &
+nohup kafka_connect_exporter-linux-amd64 -listen-address :9002 -scrape-uri http://pro-hbase02:18182 1>kafka_connect_exporter.log.9002 2>&1 &
+nohup kafka_connect_exporter-linux-amd64 -listen-address :9004 -scrape-uri http://pro-hbase02:18184 1>kafka_connect_exporter.log.9004 2>&1 &
+
+#pro-hbase03
+nohup kafka_connect_exporter-linux-amd64 -listen-address :9001 -scrape-uri http://pro-hbase03:18181 1>kafka_connect_exporter.log.9001 2>&1 &
+nohup kafka_connect_exporter-linux-amd64 -listen-address :9002 -scrape-uri http://pro-hbase03:18182 1>kafka_connect_exporter.log.9002 2>&1 &
+nohup kafka_connect_exporter-linux-amd64 -listen-address :9003 -scrape-uri http://pro-hbase03:18183 1>kafka_connect_exporter.log.9003 2>&1 &
+nohup kafka_connect_exporter-linux-amd64 -listen-address :9004 -scrape-uri http://pro-hbase03:18184 1>kafka_connect_exporter.log.9004 2>&1 &
+
+nohup kafka_connect_exporter-linux-amd64 -listen-address :9002 -scrape-uri http://pro-hbase04:18182 1>kafka_connect_exporter.log.9002 2>&1 &
+nohup kafka_connect_exporter-linux-amd64 -listen-address :9003 -scrape-uri http://pro-hbase04:18183 1>kafka_connect_exporter.log.9003 2>&1 &
+nohup kafka_connect_exporter-linux-amd64 -listen-address :9004 -scrape-uri http://pro-hbase04:18184 1>kafka_connect_exporter.log.9003 2>&1 &
+
+ansible all -m shell -a"netstat -nlap|grep :::9001"
+ansible all -m shell -a"netstat -nlap|grep :::9002"
+ansible all -m shell -a"netstat -nlap|grep :::9003"
+ansible all -m shell -a"netstat -nlap|grep :::9004"
+
 docker pull prom/prometheus
 mkdir prometheus
 file=prometheus/prometheus.yml
@@ -913,9 +1021,86 @@ scrape_configs:
   - job_name: flink
     static_configs:
       - targets: ['1110.1110.1.62:19999', '1110.1110.11.47:19999', '1110.1110.13.106:19999', '1110.1110.3.169:19999']
+
+  - job_name: mysql-slave
+    static_configs:
+      - targets: ['1110.1110.1.62:9104']
+        labels:
+          instance: copytrading_slave
+      - targets: ['1110.1110.1.62:9105']
+        labels:
+          instance: push_slave
+      - targets: ['1110.1110.1.62:9106']
+        labels:
+          instance: wallet_slave
+      - targets: ['1110.1110.1.62:9107']
+        labels:
+          instance: sam_slave
+
+  - job_name: debezium
+    static_configs:
+      - targets: ['1110.1110.1.62:7071']
+        labels:
+          instance: str-mysql
+      - targets: ['1110.1110.1.62:7072']
+        labels:
+          instance: str-postgre
+      - targets: ['1110.1110.1.62:7073']
+        labels:
+          instance: dw-mysql
+      - targets: ['1110.1110.13.106:7074']
+        labels:
+          instance: dw-mg-src-src
+      - targets: ['1110.1110.3.169:7075']
+        labels:
+          instance: dw-mg-dst-src
+
+  - job_name: connector
+    static_configs:
+      - targets: ['1110.1110.1.62:9001']
+        labels:
+          instance: str-mysql
+      - targets: ['1110.1110.1.62:9002']
+        labels:
+          instance: str-postgre
+      - targets: ['1110.1110.1.62:9003']
+        labels:
+          instance: dw-mysql
+      - targets: ['1110.1110.11.47:9001']
+        labels:
+          instance: dw-02-18181
+      - targets: ['1110.1110.11.47:9002']
+        labels:
+          instance: dw-02-18182
+      - targets: ['1110.1110.11.47:9004']
+        labels:
+          instance: dw-02-18184
+      - targets: ['1110.1110.13.106:9001']
+        labels:
+          instance: dw-03-18181
+      - targets: ['1110.1110.13.106:9002']
+        labels:
+          instance: dw-03-18182
+      - targets: ['1110.1110.13.106:9003']
+        labels:
+          instance: dw-03-18183
+      - targets: ['1110.1110.13.106:9004']
+        labels:
+          instance: dw-03-18184
+      - targets: ['1110.1110.3.169:9002']
+        labels:
+          instance: dw-04-18182
+      - targets: ['1110.1110.3.169:9003']
+        labels:
+          instance: dw-04-18183
+      - targets: ['1110.1110.3.169:9004']
+        labels:
+          instance: dw-04-18184
 EOF
+
 docker run -itd -p 9390:9090 --name prometheus -v /app/hadoop/prometheus:/data prom/prometheus --config.file=/data/prometheus.yml
 netstat -nlap|grep 9390
+
 docker pull grafana/grafana
 mkdir grafana
 sudo rm -rf /app/hadoop/grafana/*

@@ -35,8 +35,8 @@ if [ "$rb" == "yes" ]; then
   sudo ansible slavek8s -m shell -a"docker images|grep airflow|awk '{print \$3}'|xargs docker rmi -f"
   docker images|grep airflow
 
-  docker build -t master01:30500/bronzels/airflow:1.10.10-python3.6 ./
-  docker push master01:30500/bronzels/airflow:1.10.10-python3.6
+  docker build -t master01:30500/bronzels/airflow:1.1110.1110-python3.6 ./
+  docker push master01:30500/bronzels/airflow:1.1110.1110-python3.6
 fi
 
 ~/scripts/myairflow-cp-op.sh restart
