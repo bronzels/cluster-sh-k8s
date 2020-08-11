@@ -377,6 +377,11 @@ sudo groupadd supergroup
 sudo usermod -a -G supergroup hadoop
 hdfs dfsadmin -refreshUserToGroupsMappings
 
+#神策存量数据同步缓存目录
+hadoop fs -mkdir /sensorsdata
+#如果运行神策local模式，并且不在cp上运行，需要在那台机器上建立神策流处理同步程序存放目录
+mkdir -p ~/fm/str
+
 hadoop fs -ls
 yarn applciation -list
 yarn node -list
