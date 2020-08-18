@@ -164,10 +164,28 @@ ansible all -m shell -a"blkid /dev/nvme1n1p1;/root/add-newdev-fstab.sh nvme1n1p1
 
 #配置操作系统和网络的限制
 ansible all -m shell -a"echo 'net.ipv4.tcp_tw_reuse = 1' >> /etc/sysctl.conf"
+ansible all -m shell -a"echo 'kernel.pid_max = 8388606' >> /etc/sysctl.conf"
 ansible all -m shell -a"tail -20 /etc/sysctl.conf"
 ansible all -m shell -a"sysctl -p"
 
+ansible all -m shell -a"echo '* soft nofile 655350' >> /etc/security/limits.conf"
+ansible all -m shell -a"echo '* hard nofile 655350' >> /etc/security/limits.conf"
+ansible all -m shell -a"echo '* soft noproc unlimited' >> /etc/security/limits.conf"
+ansible all -m shell -a"echo '* hard noproc unlimited' >> /etc/security/limits.conf"
+ansible all -m shell -a"echo '* soft nofile 655350' >> /etc/security/limits.d/20-nproc.conf"
+ansible all -m shell -a"echo '* hard nofile 655350' >> /etc/security/limits.d/20-nproc.conf"
+ansible all -m shell -a"echo '* soft noproc unlimited' >> /etc/security/limits.d/20-nproc.conf"
+ansible all -m shell -a"echo '* hard noproc unlimited' >> /etc/security/limits.d/20-nproc.conf"
+ansible all -m shell -a"echo '* soft nofile 655350' >> /etc/security/limits.d/90-nproc.conf"
+ansible all -m shell -a"echo '* hard nofile 655350' >> /etc/security/limits.d/90-nproc.conf"
+ansible all -m shell -a"echo '* soft noproc unlimited' >> /etc/security/limits.d/90-nproc.conf"
+ansible all -m shell -a"echo '* hard noproc unlimited' >> /etc/security/limits.d/90-nproc.conf"
+ansible all -m shell -a"echo 'session required pam_limits.so' >> /etc/pam.d/common-session"
+ansible all -m shell -a"echo 'session required pam_limits.so' >> /etc/pam.d/common-session-noninteractive"
+ansible all -m shell -a"reboot"
 
+#UseLogin no
+UseLogin yes
 
 
 ansible all -m shell -a"chown -R hadoop:hadoop /app"
