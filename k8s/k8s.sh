@@ -1,14 +1,23 @@
 #！！！手工, 新机器加入集群跳过所有cat EOF文件生成步骤
 #root
+#ubuntu
 ansible allk8s -m shell -a"ufw disable"
-ansible allk8s -m shell -a"apt install -y selinux-utils"
-ansible allk8s -m shell -a"swapoff -a"
-ansible allk8s -m shell -a"setenforce 0"
+#centos
+ansible allk8s -m shell -a"systemctl disable firewalld"
+ansible allk8s -m shell -a"systemctl stop firewalld"
 
-mkdir /etc/sysconfig;echo SELINUX=disabled > /etc/sysconfig/selinux
+#ubuntu
+ansible allk8s -m shell -a"apt install -y selinux-utils"
+ansible allk8s -m shell -a"setenforce 0"
+#centos
+sed -i 's/^SELINUX=enforcing$/SELINUX=disabled/' /etc/selinux/config
+
+ansible allk8s -m shell -a"swapoff -a"
+#vi /etc/fstab   #永久关闭，删除或者注释掉swap配置哪一行
+
+#ubuntu
 ansible allk8sexpcp -m shell -a"mkdir /etc/sysconfig"
 ansible allk8sexpcp -m copy -a"src=/etc/sysconfig/selinux dest=/etc/sysconfig"
-
 ansible allk8s -m shell -a"ls /etc/sysconfig/modules/"
 ansible allk8s -m shell -a"rm -rf /etc/sysconfig/modules/;mkdir -p /etc/sysconfig/modules/"
 
@@ -24,17 +33,37 @@ EOF
 ansible allk8sexpcp -m copy -a"src=/etc/sysctl.d/k8s-sysctl.conf dest=/etc/sysctl.d"
 ansible allk8s -m shell -a"sysctl -p /etc/sysctl.d/k8s-sysctl.conf"
 
+#ubuntu
 ansible allk8s -m shell -a"curl -s https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | apt-key add -"
 cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
 deb https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main
 EOF
 ansible allk8sexpcp -m copy -a"src=/etc/apt/sources.list.d/kubernetes.list dest=/etc/apt/sources.list.d"
 ansible allk8s -m shell -a"apt-get update"
-rev=1.18.5-00
+rev=1.22.4-00
 ansible allk8s -m shell -a"apt-get install -y kubelet=$rev kubeadm=$rev kubectl=$rev"
-ansible allk8s -m shell -a"apt-get remove -y kubelet kubeadm kubectl"
+#centos
+cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+        https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg
+EOF
+rev=1.22.4
+yum install -y kubelet-$rev kubeadm-$rev kubectl-$rev
+docker ps -a | grep k8s
+docker ps -a|grep Exited
 
+ansible allk8s -m shell -a"systemctl start kubelet"
 ansible allk8s -m shell -a"systemctl enable kubelet"
+systemctl start kubelet
+systemctl enable kubelet
+docker ps -a | grep k8s
+docker ps -a|grep Exited
 
 #kubeadm init --kubernetes-version=v1.18.3 --apiserver-advertise-address=1110.1110.2.81 --pod-network-cidr=10.244.0.0/16
 
@@ -105,8 +134,9 @@ networking:
   dnsDomain: cluster.local
   podSubnet: 192.168.0.0/16
   serviceSubnet: 10.96.0.0/12
-scheduler: {}
 EOF
+
+kubeadm init \ --apiserver-advertise-address=172.16.10.11 \ --image-repository registry.aliyuncs.com/google_containers \ --kubernetes-version v1.22.4 \ --service-cidr=10.96.0.0/12 \ --pod-network-cidr=10.244.0.0/16 \ --ignore-preflight-errors=all --apiserver-advertise-address
 
 #！！！手工，替换正确的control plan IP地址
 sed -i 's@1110.1110.3.189@1110.1110.9.83@g' kubeadm-config.yaml
@@ -116,6 +146,8 @@ ansible masterk8sexpcp -m copy -a"src=~/kubeadm-config.yaml dest=~"
 
 kubeadm init --config kubeadm-config.yaml
 #kubeadm token create --print-join-command|sed 's/${LOCAL_IP}/${VIP}/g'
+docker ps -a | grep k8s
+docker ps -a|grep Exited
 
 :<<EOF
 error execution phase preflight: [preflight] Some fatal errors occurred:
@@ -131,17 +163,57 @@ mkdir -p $HOME/.kube
 \cp -f /etc/kubernetes/admin.conf $HOME/.kube/config
 chown $(id -u):$(id -g) $HOME/.kube/config
 
+#如果需要主节点参与调度
+kubectl taint nodes dtpct node-role.kubernetes.io/master:NoSchedule-
+kubectl describe node dtpct | grep Taint
+
+kubectl get node
+kubectl get pod -n kube-system
+
 #ubuntu
 mkdir -p $HOME/.kube
 sudo \cp -f /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
+#1.22版本的k8s，和calico以下方式获得的calico兼容总有问题，或者calico-node报BGP错误，或者从节点加入以后controller报无法获取集群信息的错误。
+#只有工程自带这个calico.yaml没问题
 sudo su -
 #root
 #kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 wget -c https://docs.projectcalico.org/v3.9/manifests/calico.yaml
+#wget https://docs.projectcalico.org/manifests/calico.yaml
+cp calico.yaml calico.yaml.bk
+cat calico.yaml  |grep image
+sed -i 's#docker.io/##g' calico.yaml
+cat calico.yaml  |grep image
+#calico问题一般是iptable导致，清空就好了，还有问题可以尝试
+:<<\EOF
+调整calicao 网络插件的网卡发现机制，修改IP_AUTODETECTION_METHOD对应的value值。官方提供的yaml文件中，ip识别策略（IPDETECTMETHOD）没有配置，即默认为first-found，这会导致一个网络异常的ip作为nodeIP被注册，从而影响node-to-node mesh。我们可以修改成can-reach或者interface的策略，尝试连接某一个Ready的node的IP，以此选择出正确的IP。
+// calico.yaml 文件添加以下二行
+            - name: IP_AUTODETECTION_METHOD
+              value: "interface=enp.*"  # ens 根据实际网卡开头配置
+// 配置如下
+            - name: CLUSTER_TYPE
+              value: "k8s,bgp"
+            - name: IP_AUTODETECTION_METHOD
+              value: "interface=eth.*"
+              #或者 value: "interface=eth0" # 我选用的这个
+            # Auto-detect the BGP IP address.
+            - name: IP
+              value: "autodetect"
+            # Enable IPIP
+            - name: CALICO_IPV4POOL_IPIP
+              value: "Always"
+// 如果kubeadm初始化定义的pod网段不同需要修改
+            # - name: CALICO_IPV4POOL_CIDR
+            #   value: "192.168.0.0/16"
+EOF
 kubectl apply -f calico.yaml
 #kubectl delete -f calico.yaml
+docker ps -a | grep k8s
+docker ps -a|grep Exited
+
+kubectl get pod -n kube-system
 
 #ubuntu
 file=~/scripts/k8s_funcs.sh

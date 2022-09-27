@@ -16,13 +16,27 @@ EOF
 
 #！！！手工，reset
 sudo ansible allk8s -m shell -a"kubeadm reset -f"
+kubeadm reset -f
 
-sudo ansible allk8s -m shell -a"ipvsadm --clear"
+#ubuntu
+ansible allk8s -m shell -a"apt-get remove -y kubelet kubeadm kubectl"
+#centos
+yum remove -y kubelet kubeadm kubectl
 
-ansible allk8s -m shell -a"rm -rf /root/.kube"
+#其他操作完成reset还有问题时，反复卸载安装可能存在iptable垃圾
+#先卸载重装docker
+#sudo ansible allk8s -m shell -a"ipvsadm --clear"
+
+#ubuntu
 sudo ansible allk8s -m shell -a"rm -rf /root/.kube"
 sudo ansible allk8s -m shell -a"rm -rf /etc/kubernetes/*"
 sudo ansible allk8s -m shell -a"rm -rf /home/ubuntu/.kube"
+#centos
+rm -rf /root/.kube
+rm -rf /app/hadoop/.kube
+rm -rf /etc/kubernetes/*
+rm -rf /etc/cni
+rm -rf /var/lib/etcd
 
 #！！！手工，reset之后
 # 重新生成token
