@@ -40,7 +40,7 @@ EOF
 cat << EOF > /etc/docker/daemon.json
 {
   "registry-mirrors": [
-  "https://fxy8rj00.mirror.aliyuncs.com",
+  "https://yourself.mirror.aliyuncs.com",
   "https://registry.docker-cn.com",
   "http://hub-mirror.c.163.com",
   "https://docker.mirrors.ustc.edu.cn"
@@ -60,6 +60,7 @@ ansible allk8s -m shell -a"cat /etc/docker/daemon.json"
 ll /var/run/docker.sock
 chgrp docker /var/run/docker.sock
 ll /var/run/docker.sock
+#chown root:docker /var/run/docker.sock
 
 ansible allk8s -m shell -a"systemctl daemon-reload"
 ansible allk8s -m shell -a"systemctl restart docker"

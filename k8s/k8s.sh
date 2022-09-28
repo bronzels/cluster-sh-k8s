@@ -41,6 +41,7 @@ EOF
 ansible allk8sexpcp -m copy -a"src=/etc/apt/sources.list.d/kubernetes.list dest=/etc/apt/sources.list.d"
 ansible allk8s -m shell -a"apt-get update"
 rev=1.22.4-00
+apt-get install -y kubelet=$rev kubeadm=$rev kubectl=$rev
 ansible allk8s -m shell -a"apt-get install -y kubelet=$rev kubeadm=$rev kubectl=$rev"
 #centos
 cat <<EOF > /etc/yum.repos.d/kubernetes.repo

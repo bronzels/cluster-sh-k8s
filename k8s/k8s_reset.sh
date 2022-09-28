@@ -27,6 +27,8 @@ yum remove -y kubelet kubeadm kubectl
 #先卸载重装docker
 #sudo ansible allk8s -m shell -a"ipvsadm --clear"
 
+#ip link查询反复卸载calico垃圾网桥，tunl0@NONE之后的都ip link delete可以删除，名字只取@之前部分
+
 #ubuntu
 sudo ansible allk8s -m shell -a"rm -rf /root/.kube"
 sudo ansible allk8s -m shell -a"rm -rf /etc/kubernetes/*"

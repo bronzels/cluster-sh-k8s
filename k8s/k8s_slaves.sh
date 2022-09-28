@@ -8,12 +8,12 @@ file=/root/kubejoin.sh
 rm -f $file
 cat >> $file << EOF
 kubeadm join api.k8s.at.bronzels:6443 --token 42ypg3.xns4cl9xka8nd2r7 \
-	--discovery-token-ca-cert-hash sha256:87d5e6116f71c12290a0fc62b464684279969e1223c1d628e169452fa302f91b
+	--discovery-token-ca-cert-hash sha256:83edebebdda897241bd07783f863d91f253e310eb8927d83f2979e29e90bb587
 EOF
+chmod a+x $file
+/root/kubejoin.sh
 ansible slavek8s -m copy -a"src=$file dest=/root"
 ansible slavek8s -m shell -a"chmod a+x $file"
 ansible slavek8s -m shell -a"/root/kubejoin.sh"
-chmod a+x $file
-/root/kubejoin.sh
 
 kubectl get node -n kube-system
