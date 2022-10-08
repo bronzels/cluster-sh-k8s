@@ -54,3 +54,8 @@ rm -rf $HOME/.local/share/helm
  cd ~/charts/stable/docker-registry
 helm install -f values.yaml dkreg .
 #！！！手工，重新安装所有k8s安装软件，可以跳过目录生成，文件生成/修改的步骤，直接执行相应helm install/kubectl apply -f步骤
+
+#！！！非常重要
+#清空k8s使用的docker的volume，以免daemonset类型的作业还复用有问题的数据
+rm -rf /data0/docker/volumes/*
+rm -rf /data0/docker/containers/*

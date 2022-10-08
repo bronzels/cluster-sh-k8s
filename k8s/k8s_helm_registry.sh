@@ -1,6 +1,6 @@
 #ubuntu
 
-rev_helm=v3.2.1
+rev_helm=v3.9.0
 wget -c https://get.helm.sh/helm-${rev_helm}-linux-amd64.tar.gz
 tar xzvf helm-${rev_helm}-linux-amd64.tar.gz
 mv linux-amd64 helm-${rev_helm}-linux-amd64

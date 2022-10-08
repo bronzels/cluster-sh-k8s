@@ -14,8 +14,19 @@ sed -i 's/^SELINUX=enforcing$/SELINUX=disabled/' /etc/selinux/config
 
 ansible allk8s -m shell -a"swapoff -a"
 #vi /etc/fstab   #永久关闭，删除或者注释掉swap配置哪一行
+#把数据盘加入
+#/dev/disk/by-uuid/4d3c832b-e040-4243-8a47-c96d38cb2027 /data0 xfs defaults 0 1
 
 #ubuntu
+#禁止ipv6
+file=/etc/sysctl.conf
+cp $file $file.bk
+cat >> $file << EOF
+net.ipv6.conf.all.disable_ipv6=1
+net.ipv6.conf.default.disable_ipv6=1
+net.ipv6.conf.lo.disable_ipv6=1
+EOF
+sudo sysctl -p
 ansible allk8sexpcp -m shell -a"mkdir /etc/sysconfig"
 ansible allk8sexpcp -m copy -a"src=/etc/sysconfig/selinux dest=/etc/sysconfig"
 ansible allk8s -m shell -a"ls /etc/sysconfig/modules/"
@@ -35,12 +46,13 @@ ansible allk8s -m shell -a"sysctl -p /etc/sysctl.d/k8s-sysctl.conf"
 
 #ubuntu
 ansible allk8s -m shell -a"curl -s https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | apt-key add -"
+#ubuntu 16/18
 cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
 deb https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main
 EOF
 ansible allk8sexpcp -m copy -a"src=/etc/apt/sources.list.d/kubernetes.list dest=/etc/apt/sources.list.d"
 ansible allk8s -m shell -a"apt-get update"
-rev=1.22.4-00
+rev=1.21.8-00
 apt-get install -y kubelet=$rev kubeadm=$rev kubectl=$rev
 ansible allk8s -m shell -a"apt-get install -y kubelet=$rev kubeadm=$rev kubectl=$rev"
 #centos
@@ -54,7 +66,7 @@ repo_gpgcheck=1
 gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
         https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg
 EOF
-rev=1.22.4
+rev=1.21.8
 yum install -y kubelet-$rev kubeadm-$rev kubectl-$rev
 docker ps -a | grep k8s
 docker ps -a|grep Exited
@@ -130,7 +142,7 @@ etcd:
     dataDir: /var/lib/etcd
 imageRepository: k8s.gcr.io
 kind: ClusterConfiguration
-kubernetesVersion: v1.18.5
+kubernetesVersion: v1.21.8
 networking:
   dnsDomain: cluster.local
   podSubnet: 192.168.0.0/16
@@ -161,7 +173,7 @@ ansible all -m shell -a"echo 1 > /proc/sys/net/bridge/bridge-nf-call-iptables"
 
 #root
 mkdir -p $HOME/.kube
-\cp -f /etc/kubernetes/admin.conf $HOME/.kube/config
+cp -f /etc/kubernetes/admin.conf $HOME/.kube/config
 chown $(id -u):$(id -g) $HOME/.kube/config
 
 #如果需要主节点参与调度
@@ -202,9 +214,10 @@ cat calico.yaml  |grep image
             # Auto-detect the BGP IP address.
             - name: IP
               value: "autodetect"
-            # Enable IPIP
+            # 关闭IPIP模式
             - name: CALICO_IPV4POOL_IPIP
-              value: "Always"
+              #value: "Always"
+              value: "off"
 // 如果kubeadm初始化定义的pod网段不同需要修改
             # - name: CALICO_IPV4POOL_CIDR
             #   value: "192.168.0.0/16"

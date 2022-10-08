@@ -13,15 +13,19 @@ ansible allk8s -m shell -a'add-apt-repository "deb [arch=amd64] http://mirrors.a
 # Step 4: 更新并安装 Docker-CE
 ansible allk8s -m shell -a"apt-get -y update"
 ansible allk8s -m shell -a"curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun"
+#ubuntu 16
 apt-get install docker-ce=5:20.10.7~3-0~ubuntu-xenial
-#apt-get autoremove docker docker-ce docker-engine docker.io containerd runc
+#ubuntu 18
+#apt-get install -y docker-ce=5:20.10.7~3-0~ubuntu-bionic
+apt-get install -y docker-ce=5:20.10.18~3-0~ubuntu-bionic docker-ce-cli=5:20.10.18~3-0~ubuntu-bionic containerd.io docker-compose-plugin
+#apt-get autoremove docker docker-ce docker-ce-cli docker-engine docker.io containerd runc
 #19.03.8
 
 #centos
 yum-config-manager \
 --add-repo \
 http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
-yum install -y docker-ce-20.10.7
+yum install -y docker-ce-20.10.18
 #yum remove containerd.io.x86_64 docker-ce.x86_64 docker-ce-cli.x86_64 docker-ce-rootless-extras.x86_64 docker-scan-plugin.x86_64
 
 
@@ -40,34 +44,37 @@ EOF
 cat << EOF > /etc/docker/daemon.json
 {
   "registry-mirrors": [
-  "https://yourself.mirror.aliyuncs.com",
+  "https://fxy8rj00.mirror.aliyuncs.com",
   "https://registry.docker-cn.com",
   "http://hub-mirror.c.163.com",
   "https://docker.mirrors.ustc.edu.cn"
   ],
   "exec-opts": ["native.cgroupdriver=systemd"],
-  "insecure-registries":["harbor.my.org:1080"]
+  "insecure-registries":["harbor.my.org:1080"],
+  "data-root": "/data0/docker"
 }
 EOF
 ansible allk8sexpcp -m copy -a"src=/etc/docker/daemon.json dest=/etc/docker"
 ansible allk8s -m shell -a"cat /etc/docker/daemon.json"
 
-#设置sudo
-
-#ubuntu
-#ansible allk8s -i /etc/ansible/hosts-ubuntu -m shell -a"sudo gpasswd -a $USER docker"
-#ansible allk8s -i /etc/ansible/hosts-ubuntu -m shell -a"newgrp docker"
-ll /var/run/docker.sock
-chgrp docker /var/run/docker.sock
-ll /var/run/docker.sock
-#chown root:docker /var/run/docker.sock
-
 ansible allk8s -m shell -a"systemctl daemon-reload"
 ansible allk8s -m shell -a"systemctl restart docker"
 ansible allk8s -m shell -a"systemctl enable docker"
 systemctl daemon-reload
-systemctl restart docker
 systemctl enable docker
+systemctl restart docker
 
+#设置sudo
+#ubuntu
+#ansible allk8s -i /etc/ansible/hosts-ubuntu -m shell -a"sudo gpasswd -a $USER docker"
+#ansible allk8s -i /etc/ansible/hosts-ubuntu -m shell -a"newgrp docker"
+sudo gpasswd -a $USER docker
+newgrp docker
+ll /var/run/docker.sock
+sudo chgrp docker /var/run/docker.sock
+ll /var/run/docker.sock
+#chown root:docker /var/run/docker.sock
 
-
+rm -rf /data0/docker/*
+rm -rf /var/lib/containerd
+rm -rf /var/lib/docker
