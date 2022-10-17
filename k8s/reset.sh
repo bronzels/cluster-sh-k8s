@@ -43,8 +43,8 @@ rm -rf /var/lib/etcd
 #！！！手工，reset之后
 # 重新生成token
 kubeadm token create --print-join-command|sed 's/${LOCAL_IP}/${VIP}/g'
-#！！！手工，token copy到脚本，masters重新加入集群，执行k8s/k8s_masters.sh
-#！！！手工，token copy到脚本，slaves重新加入集群，执行k8s/k8s_slaves.sh
+#！！！手工，token copy到脚本，masters重新加入集群，执行k8s/masters.sh
+#！！！手工，token copy到脚本，slaves重新加入集群，执行k8s/slaves.sh
 #！！！手工，重建helm repo
 rm -rf $HOME/.cache/helm
 rm -rf $HOME/.config/helm

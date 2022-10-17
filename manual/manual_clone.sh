@@ -46,39 +46,33 @@ newgrp docker
 #root
 
 cat <<EOF > /etc/ansible/hosts
-pro-hbase01 ansible_ssh_user=root ansible_ssh_pass=root
-pro-hbase02 ansible_ssh_user=root ansible_ssh_pass=root
-pro-hbase03 ansible_ssh_user=root ansible_ssh_pass=root
-pro-hbase04 ansible_ssh_user=root ansible_ssh_pass=root
+dtpct ansible_ssh_user=root ansible_ssh_pass=asdf
+mdubu ansible_ssh_user=root ansible_ssh_pass=asdf
+mdlapubu ansible_ssh_user=root ansible_ssh_pass=asdf
 
 [all]
-pro-hbase01
-pro-hbase02
-pro-hbase03
-pro-hbase04
+dtpct
+mdubu
+mdlapubu
 
 [slave]
-pro-hbase02
-pro-hbase03
-pro-hbase04
+mdubu
+mdlapubu
 
 EOF
 cat <<EOF > /etc/ansible/hosts-hadoop
-pro-hbase01 ansible_ssh_user=hadoop ansible_ssh_pass=hadoop
-pro-hbase02 ansible_ssh_user=hadoop ansible_ssh_pass=hadoop
-pro-hbase03 ansible_ssh_user=hadoop ansible_ssh_pass=hadoop
-pro-hbase04 ansible_ssh_user=hadoop ansible_ssh_pass=hadoop
+dtpct ansible_ssh_user=hadoop ansible_ssh_pass=hadoop
+mdubu ansible_ssh_user=hadoop ansible_ssh_pass=hadoop
+mdlapubu ansible_ssh_user=hadoop ansible_ssh_pass=hadoop
 
 [all]
-pro-hbase01
-pro-hbase02
-pro-hbase03
-pro-hbase04
+dtpct
+mdubu
+mdlapubu
 
 [slave]
-pro-hbase02
-pro-hbase03
-pro-hbase04
+mdubu
+mdlapubu
 
 EOF
 
@@ -87,6 +81,12 @@ EOF
 1110.1110.13.106 pro-hbase03
 1110.1110.3.169 pro-hbase04
 cat <<EOF >> /etc/hosts
+
+ansible all --become -m raw -a "apt install -y python3"
+ansible all --become -m raw -a "apt install -y python2"
+ansible all --become -m raw -a "ln -s /usr/bin/python2 /usr/bin/python"
+
+ansible all --become -m raw -a "cd /data0;tar -czvpf backup-`date +%Y-%m-%d`.tar.gz --one-file-system /"
 
 1110.1110.1.62 hk-prod-bigdata-slave-1-62
 1110.1110.11.47 hk-prod-bigdata-slave-11-47
