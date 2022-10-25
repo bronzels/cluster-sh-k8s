@@ -7,7 +7,7 @@ git version
 #安装brew，选北师大镜像，确保中间安装过程没有报错
 /bin/zsh -c "$(curl -fsSL https://gitee.com/cunkai/HomebrewCN/raw/master/Homebrew.sh)"
 
-brew install wget
+brew install wget gnu-tar
 
 #避免idea死住问题
 scutil --set HostName "localhost"
@@ -40,6 +40,9 @@ echo $BASH_VERSION
 brew install bash
 #需要参考以上文章路径从/bin/bash改到/usr/local/bin/bash
 echo $BASH_VERSION
+echo "export CLICOLOR=1" >> ~/.bash_profile
+echo "export LSCOLORS=GxFxCxDxBxegedabagaced" >> ~/.bash_profile
 
 #增加用户path
-echo 'export PATH=$PATH:/Users/apple/workspace/bin' >> ~/.bashrc
+echo 'export PATH=$PATH:.:/Users/apple/bin' >> /etc/.bashrc
+
