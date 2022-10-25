@@ -3,13 +3,8 @@
 rev_helm=v3.9.0
 wget -c https://get.helm.sh/helm-${rev_helm}-linux-amd64.tar.gz
 tar xzvf helm-${rev_helm}-linux-amd64.tar.gz
-mv linux-amd64 helm-${rev_helm}-linux-amd64
-ln -s helm-${rev_helm}-linux-amd64 helm
-chmod a+x $HOME/helm/helm
-echo "export KUBECONFIG=$HOME/.kube/config" >> ~/other-env.sh
-#echo "export PATH=$PATH:$HOME/helm" >> ~/other-env.sh
-sudo ln -s $HOME/helm/helm /usr/bin/helm
-source ~/.bashrc
+mv linux-amd64/helm /usr/local/bin/helm
+rm -rf linux-amd64
 #helm repo add stable https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
 #helm repo add incubator https://aliacs-app-catalog.oss-cn-hangzhou.aliyuncs.com/charts-incubator/
 helm repo add stable https://kubernetes-charts.storage.googleapis.com
