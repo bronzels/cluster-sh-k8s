@@ -49,8 +49,8 @@ cat << EOF > /etc/docker/daemon.json
   "http://hub-mirror.c.163.com",
   "https://docker.mirrors.ustc.edu.cn"
   ],
-  "exec-opts": ["native.cgroupdriver=systemd"],
   "insecure-registries":["harbor.my.org:1080"],
+  "exec-opts": ["native.cgroupdriver=systemd"],
   "data-root": "/data0/docker"
 }
 EOF

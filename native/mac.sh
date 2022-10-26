@@ -7,7 +7,8 @@ git version
 #安装brew，选北师大镜像，确保中间安装过程没有报错
 /bin/zsh -c "$(curl -fsSL https://gitee.com/cunkai/HomebrewCN/raw/master/Homebrew.sh)"
 
-brew install wget gnu-tar
+brew install wget coreutils
+echo 'alias date=gdate' >>~/.bash_profile
 
 #避免idea死住问题
 scutil --set HostName "localhost"
