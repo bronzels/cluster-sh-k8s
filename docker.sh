@@ -45,9 +45,7 @@ cat << EOF > /etc/docker/daemon.json
 {
   "registry-mirrors": [
   "https://fxy8rj00.mirror.aliyuncs.com",
-  "https://registry.docker-cn.com",
-  "http://hub-mirror.c.163.com",
-  "https://docker.mirrors.ustc.edu.cn"
+  "http://hub-mirror.c.163.com"
   ],
   "insecure-registries":["harbor.my.org:1080"],
   "exec-opts": ["native.cgroupdriver=systemd"],

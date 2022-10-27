@@ -47,13 +47,13 @@ kubectl get svc -o wide
 kubectl get pod -o wide
 
 kubectl run curl-json -it --image=radial/busyboxplus:curl --restart=Never --rm -- /bin/sh
-kubectl run curl-pycentos7 -it --image=harbor.my.org:1080/py/python:3.8-centos7-netutil --restart=Never --rm -- /bin/bash
+kubectl run curl-pycentos7 -it --image=harbor.my.org:1080/base/python:3.8-centos7-netutil --restart=Never --rm -- /bin/bash
 
 kubectl create secret docker-registry harbor-secret --namespace=default --docker-server=harbor.my.org:1080 --docker-username=admin --docker-password=Harbor12345
 kubectl describe secret harbor-secret
 
 kubectl run curl-pyseccentos7 -it \
-  --image=harbor.my.org:1080/pysec/python:3.8-centos7-netutil \
+  --image=harbor.my.org:1080/basesec/python:3.8-centos7-netutil \
   --image-pull-policy="IfNotPresent" \
   --overrides='{ "spec": { "template": { "spec": { "imagePullSecrets": [{"name": "harbor-secret"}] } } } }' \
   --restart=Never --rm -- /bin/bash
