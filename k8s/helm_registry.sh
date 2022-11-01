@@ -1,10 +1,16 @@
 #ubuntu
 
 rev_helm=v3.9.0
-wget -c https://get.helm.sh/helm-${rev_helm}-linux-amd64.tar.gz
-tar xzvf helm-${rev_helm}-linux-amd64.tar.gz
-mv linux-amd64/helm /usr/local/bin/helm
-rm -rf linux-amd64
+#linux
+platform=linux
+path=/usr/local/bin/
+#mac
+platform=darwin
+path=/Users/apple/bin
+wget -c https://get.helm.sh/helm-${rev_helm}-${platform}-amd64.tar.gz
+tar xzvf helm-${rev_helm}-${platform}-amd64.tar.gz
+mv ${platform}-amd64/helm ${path}/helm
+rm -rf ${platform}-amd64
 #helm repo add stable https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
 #helm repo add incubator https://aliacs-app-catalog.oss-cn-hangzhou.aliyuncs.com/charts-incubator/
 helm repo add stable https://kubernetes-charts.storage.googleapis.com

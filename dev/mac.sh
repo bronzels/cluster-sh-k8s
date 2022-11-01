@@ -41,7 +41,7 @@ brew update
 $ brew update
 
 
-brew install wget coreutils
+brew install wget coreutils telnet watch
 echo 'alias date=gdate' >>~/.bash_profile
 
 #避免idea死住问题
@@ -79,5 +79,24 @@ echo "export CLICOLOR=1" >> ~/.bash_profile
 echo "export LSCOLORS=GxFxCxDxBxegedabagaced" >> ~/.bash_profile
 
 #增加用户path
-echo 'export PATH=$PATH:.:/Users/apple/bin' >> /etc/.bashrc
+sudo -s
+sudo echo 'export PATH=$PATH:.:/Users/apple/bin' >> /etc/bashrc
 
+cd /Volumes/data/Applications/
+tar xzvf ~/Downloads/apache-maven-3.8.6-bin.tar.gz
+sudo -s
+sudo echo 'export PATH=$PATH:/Volumes/data/Applications/apache-maven/bin' >> /etc/bashrc
+
+sudo -s
+sudo echo 'export PATH=$PATH:/usr/local/go/bin' >> /etc/bashrc
+cat >> ~/.bash_profile << EOF
+export GOPATH=/Volumes/data/workspace/gopath
+export GOPROXY=https://goproxy.cn
+EOF
+
+sudo -s
+sudo echo 'export PATH=$PATH:/Library/Java/JavaVirtualMachines/jdk1.8.0_351.jdk/Contents/Home/bin' >> /etc/bashrc
+cat >> ~/.bash_profile << EOF
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_351.jdk/Contents/Home/
+export CLASSPATH=\$JAVA_HOME/lib/tools.jar:\$JAVA_HOME/lib/dt.jar:.
+EOF

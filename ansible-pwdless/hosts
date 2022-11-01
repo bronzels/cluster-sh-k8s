@@ -1,0 +1,16 @@
+[local_host]
+dtpct ansible_port=22 ansible_user=root ansible_password=asdf ansible_host=dtpct
+mdubu ansible_port=22 ansible_user=root ansible_password=asdf ansible_host=mdubu
+mdlapubu ansible_port=22 ansible_user=root ansible_password=asdf ansible_host=mdlapubu
+
+
+[local_host:vars]
+ssh_key_filename="ansible_rsa"
+remote_machine_username="root"
+remote_machine_password="1234"
+
+
+[ansible_setup_passwordless_setup_group]
+dtpct ansible_port=22 ansible_user=root ansible_host=dtpct
+mdubu ansible_port=22 ansible_user=root ansible_host=mdubu
+mdlapubu ansible_port=22 ansible_user=root ansible_host=mdlapubu
