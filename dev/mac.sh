@@ -100,3 +100,6 @@ cat >> ~/.bash_profile << EOF
 export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_351.jdk/Contents/Home/
 export CLASSPATH=\$JAVA_HOME/lib/tools.jar:\$JAVA_HOME/lib/dt.jar:.
 EOF
+
+#mpi安装
+brew install mpich

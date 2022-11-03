@@ -63,11 +63,17 @@ EOF
 #apt-get install -y python
 
 #设置ssh服务
-#file=/etc/ssh/sshd_config
+file=/etc/ssh/sshd_config
 cp ${file} ${file}.bk
 sed -i 's@#PermitRootLogin prohibit-password@PermitRootLogin yes@g' ${file}
 sed -i 's@#PubkeyAuthentication yes@PubkeyAuthentication yes@g' ${file}
 sed -i 's@PasswordAuthentication no@PasswordAuthentication yes@g' ${file}
+
+file=/etc/ssh/ssh_config
+cp ${file} ${file}.bk
+sed -i 's@#   StrictHostKeyChecking no@StrictHostKeyChecking no@g' ${file}
+
+ssh-keygen -A
 service sshd restart
 
 #！！！手工，aws新机器有2种机器名，如果统一用跳板机的名字做域名，需要修改每台机器的类似ip-10-10-9-83的hostname，然后reboot
