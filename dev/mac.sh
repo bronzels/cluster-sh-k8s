@@ -103,3 +103,14 @@ EOF
 
 #mpi安装
 brew install mpich
+
+#mac sed是bsd，和gnu行为区别很大，很多shell历史上linux好用的mac下不好用了
+brew install gnu-sed
+sudo -s
+sudo echo 'export PATH=$PATH:/usr/local/opt/gnu-sed/libexec/gnubin' >> /etc/bashrc
+
+brew install gradle
+echo "export GRADLE_OPTS=-Dgradle.user.home=/Volumes/data/gradle_cache" >> ~/.bash_profile
+
+#mac
+brew install minio/stable/mc
