@@ -13,7 +13,7 @@ mv ${platform}-amd64/helm ${path}/helm
 rm -rf ${platform}-amd64
 #helm repo add stable https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
 #helm repo add incubator https://aliacs-app-catalog.oss-cn-hangzhou.aliyuncs.com/charts-incubator/
-helm repo add stable https://kubernetes-charts.storage.googleapis.com
+helm repo add stable https://charts.helm.sh/stable
 helm repo add incubator https://charts.helm.sh/incubator
 helm repo add bitnami https://charts.bitnami.com/bitnami
 

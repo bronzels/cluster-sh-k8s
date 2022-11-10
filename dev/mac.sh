@@ -81,6 +81,7 @@ echo "export LSCOLORS=GxFxCxDxBxegedabagaced" >> ~/.bash_profile
 #增加用户path
 sudo -s
 sudo echo 'export PATH=$PATH:.:/Users/apple/bin' >> /etc/bashrc
+exit
 
 cd /Volumes/data/Applications/
 tar xzvf ~/Downloads/apache-maven-3.8.6-bin.tar.gz
@@ -96,6 +97,7 @@ EOF
 
 sudo -s
 sudo echo 'export PATH=$PATH:/Library/Java/JavaVirtualMachines/jdk1.8.0_351.jdk/Contents/Home/bin' >> /etc/bashrc
+exit
 cat >> ~/.bash_profile << EOF
 export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_351.jdk/Contents/Home/
 export CLASSPATH=\$JAVA_HOME/lib/tools.jar:\$JAVA_HOME/lib/dt.jar:.
@@ -108,9 +110,30 @@ brew install mpich
 brew install gnu-sed
 sudo -s
 sudo echo 'export PATH=$PATH:/usr/local/opt/gnu-sed/libexec/gnubin' >> /etc/bashrc
+exit
 
 brew install gradle
 echo "export GRADLE_OPTS=-Dgradle.user.home=/Volumes/data/gradle_cache" >> ~/.bash_profile
 
-#mac
+#minio cli client
 brew install minio/stable/mc
+
+#nfs server
+sudo -s
+sudo echo "/Volumes/data/nfs -alldirs -maproot=root:wheel -network 192.168.3.0 -mask 255.255.255.0" >> /etc/exports
+exit
+chmod 755 /Volumes/data/nfs
+sudo nfsd enable
+sudo nfsd restart
+sudo nfsd status
+cd /Volumes/data
+mkdir testmnt
+mount -t nfs -o nolock 192.168.3.9:/Volumes/data/nfs /Volumes/data/testmnt
+echo "hello" > nfs/x
+cat testmnt/x
+umount testmnt
+rm -rf testmnt
+
+#redis client
+brew install redis
+
