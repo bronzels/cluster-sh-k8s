@@ -1,0 +1,13 @@
+- hosts: slave
+  tasks:
+    - name: 'add hosts'
+      blockinfile:
+        path: /etc/hosts
+        block: |
+          192.168.3.14 dtpct
+          192.168.3.6 mdlapubu
+          192.168.3.103 mdubu
+          192.168.3.9 harbor.my.org
+          192.168.3.9 pypi.my.org
+          192.168.3.14 api.k8s.at.bronzels
+          192.168.3.9 mmubu

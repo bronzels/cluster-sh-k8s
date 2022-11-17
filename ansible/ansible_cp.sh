@@ -3,8 +3,13 @@
 #  deploy01
 
 #root
-apt-get install -y ansible
+#cp
+#安装 ansible sshpass
+#dp
+#ubuntu
 apt-get install -y sshpass
+#centos
+yum install -y sshpass
 cat <<EOF > /etc/ansible/hosts
 hk-prod-bigdata-master-9-83 ansible_ssh_user=root ansible_ssh_pass=root
 hk-prod-bigdata-master-8-148 ansible_ssh_user=root ansible_ssh_pass=root
@@ -219,3 +224,7 @@ ansible all -m shell -a"ls ~"
 exit
 #ubuntu
 ansible all -i /etc/ansible/hosts-ubuntu -m shell -a"ls ~"
+
+ansible-playbook add_hosts.yml
+ansible all -m shell -a"cat /etc/hosts"
+

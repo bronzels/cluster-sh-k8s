@@ -1,0 +1,41 @@
+##
+# Host Database
+#
+# localhost is used to configure the loopback interface
+# when the system is booting.  Do not change this entry.
+##
+127.0.0.1	localhost
+255.255.255.255	broadcasthost
+::1             localhost
+
+192.168.3.14 dtpct
+192.168.3.6 mdlapubu
+192.168.3.103 mdubu
+192.168.3.9 harbor.my.org
+192.168.3.9 pypi.my.org
+192.168.3.14 api.k8s.at.bronzels
+192.168.3.9 mmubu
+
+140.82.121.3 github.com
+#140.82.121.4 github.com
+#140.82.113.4 github.com
+#140.82.112.3 github.com
+#140.82.114.4 github.com
+#140.82.113.3 github.com
+#140.82.112.4 github.com
+
+185.199.108.133 raw.githubusercontent.com
+#185.199.109.133 raw.githubusercontent.com
+#185.199.110.133 raw.githubusercontent.com
+#185.199.111.133 raw.githubusercontent.com
+
+52.167.253.237 activity.windows.com
+52.167.253.237 edge-enterprise.activity.windows.com
+52.167.253.237 edge.activity.windows.com
+192.168.3.103 apiserver.cluster.local
+# Added by Docker Desktop
+# To allow the same kube context to work on the host and the container:
+127.0.0.1 kubernetes.docker.internal
+# End of section
+
+138.201.131.134 archive.apache.org

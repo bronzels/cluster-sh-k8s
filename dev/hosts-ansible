@@ -1,0 +1,19 @@
+dtpct ansible_ssh_user=root ansible_ssh_pass=asdf
+mdubu ansible_ssh_user=root ansible_ssh_pass=asdf
+mdlapubu ansible_ssh_user=root ansible_ssh_pass=asdf
+
+[all]
+dtpct
+mdubu
+mdlapubu
+
+[master]
+dtpct
+
+[slave]
+mdubu
+mdlapubu
+
+[nvidia]
+dtpct
+mdubu

@@ -137,3 +137,14 @@ rm -rf testmnt
 #redis client
 brew install redis
 
+#cubefs等网络文件系统挂载
+brew install osxfuse
+
+#exfat挂载
+mount -t exfat /dev/disk3s3 /Volumes/data/mdexfat
+umount /Volumes/data/mdexfat
+
+#工具卸载pkg
+#https://www.corecode.io/uninstallpkg/
+#解压到/Applications/目录
+xattr -d com.apple.quarantine /Applications/UninstallPKG.app

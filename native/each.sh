@@ -40,16 +40,35 @@ DNS=8.8.8.8 114.114.114.114 192.168.3.1
 EOF
 systemctl restart systemd-resolved.service
 cat /etc/resolv.conf
+#centos
+file=/etc/resolv.conf
+cp ${file} ${file}.bk
+cat << \EOF >> ${file}
+nameserver 8.8.8.8
+nameserver 114.114.114.114
+EOF
 
 #设置时区
 cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
-#ubuntu设置时间自动同步
+#设置时间自动同步
+#ubuntu
 #/etc/systemd/timesyncd.conf
 :<<EOF
 #NTP=
 NTP=ntp.aliyun.com
 EOF
 systemctl restart systemd-timesyncd.service
+#centos
+timedatectl set-timezone Asia/Shanghai
+yum install -y chrony
+systemctl start chronyd.service
+systemctl enable chronyd.service
+systemctl status chronyd.service
+file=/etc/chrony.conf
+cp ${file} ${file}.bk
+sed -i 's/server /#server /g' ${file}
+sed -i '/#server 0/i\server ntp.aliyun.com iburst' ${file}
+systemctl restart chronyd.service
 date
 
 #禁止ipv6
@@ -58,6 +77,7 @@ date
 #GRUB_CMDLINE_LINUX=""
 GRUB_CMDLINE_LINUX="ipv6.disable=1"
 EOF
+grub2-mkconfig -o /boot/grub2/grub.cfg
 
 #each
 #apt-get install -y python
@@ -65,16 +85,26 @@ EOF
 #设置ssh服务
 file=/etc/ssh/sshd_config
 cp ${file} ${file}.bk
+#ubuntu20
 sed -i 's@#PermitRootLogin prohibit-password@PermitRootLogin yes@g' ${file}
 sed -i 's@#PubkeyAuthentication yes@PubkeyAuthentication yes@g' ${file}
 sed -i 's@PasswordAuthentication no@PasswordAuthentication yes@g' ${file}
+#centos7
+sed -i 's@#PermitRootLogin yes@PermitRootLogin yes@g' ${file}
+sed -i 's@#PubkeyAuthentication yes@PubkeyAuthentication yes@g' ${file}
+sed -i 's@#PasswordAuthentication yes@PasswordAuthentication yes@g' ${file}
 
 file=/etc/ssh/ssh_config
 cp ${file} ${file}.bk
+#ubuntu20
 sed -i 's@#   StrictHostKeyChecking no@StrictHostKeyChecking no@g' ${file}
+#centos7
+sed -i 's@#   StrictHostKeyChecking ask@StrictHostKeyChecking no@g' ${file}
 
 ssh-keygen -A
 service sshd restart
+
+
 
 #！！！手工，aws新机器有2种机器名，如果统一用跳板机的名字做域名，需要修改每台机器的类似ip-10-10-9-83的hostname，然后reboot
 #   hk-prod-bigdata-master-8-148
@@ -82,10 +112,17 @@ service sshd restart
 
 #备份根分区
 tar -czvpf backup-`date +%Y-%m-%d`.tar.gz --one-file-system /
-mount|grep /dev
+mount|grep "/ "
 #dtpct
-dd if=/dev/sdc3 | gzip -9 > back-`date +%Y-%m-%d`.img.gz
+dd if=/dev/nvme0n1p1 | gzip -9 > /data0/back-`date +%Y-%m-%d`.img.gz
 #mdubu
-dd if=/dev/sdb3 | gzip -9 > back-`date +%Y-%m-%d`.img.gz
+dd if=/dev/sdc2 | gzip -9 > /data0/back-`date +%Y-%m-%d`.img.gz
 #mdlapubu
-dd if=/dev/sda3 | gzip -9 > back-`date +%Y-%m-%d`.img.gz
+dd if=/dev/sda2 | gzip -9 > /data0/back-`date +%Y-%m-%d`.img.gz
+
+#硬盘对拷，可以安装一台以后，其余对拷的方式，修改/etc/fstab里的挂载硬盘/dev后的设备符号即可
+dd if=/dev/sdc of=/dev/sdb bs=6M count=20480 status=progress
+
+120g/6m=20*1024=20480
+
+
