@@ -141,8 +141,8 @@ brew install redis
 brew install osxfuse
 
 #exfat挂载
-mount -t exfat /dev/disk3s3 /Volumes/data/mdexfat
-umount /Volumes/data/mdexfat
+mount -t exfat /dev/disk3s3 /Volumes/data/data0
+umount /Volumes/data/data0
 
 #工具卸载pkg
 #https://www.corecode.io/uninstallpkg/

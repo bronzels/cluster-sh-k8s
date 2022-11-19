@@ -11,3 +11,9 @@ yum install -y epel-release
 rpm -v --import http://li.nux.ro/download/nux/RPM-GPG-KEY-nux.ro
 rpm -Uvh http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-5.el7.nux.noarch.rpm
 yum install -y exfat-utils fuse-exfat
+
+#jdk多版本
+#ubuntu
+sudo apt install openjdk-11-jdk
+sudo apt install openjdk-8-jdk
+sudo update-alternatives --config java
