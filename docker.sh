@@ -44,7 +44,7 @@ EOF
 cat << EOF > /etc/docker/daemon.json
 {
   "registry-mirrors": [
-  "https://xxxxxx.mirror.aliyuncs.com",
+  "https://fxy8rj00.mirror.aliyuncs.com",
   "http://hub-mirror.c.163.com"
   ],
   "insecure-registries":["harbor.my.org:1080"],

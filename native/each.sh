@@ -114,15 +114,20 @@ service sshd restart
 tar -czvpf backup-`date +%Y-%m-%d`.tar.gz --one-file-system /
 mount|grep "/ "
 #dtpct
-dd if=/dev/nvme0n1p1 | gzip -9 > /data0/back-`date +%Y-%m-%d`.img.gz
+dd if=/dev/nvme0n1p1 status=progress | gzip -9 > /data0/back-`date +%Y-%m-%d`.img.gz
 #mdubu
-dd if=/dev/sdc2 | gzip -9 > /data0/back-`date +%Y-%m-%d`.img.gz
+dd if=/dev/sdc2 status=progress | gzip -9 > /data0/back-`date +%Y-%m-%d`.img.gz
 #mdlapubu
-dd if=/dev/sda2 | gzip -9 > /data0/back-`date +%Y-%m-%d`.img.gz
+dd if=/dev/sda2 status=progress | gzip -9 > /data0/back-`date +%Y-%m-%d`.img.gz
 
 #硬盘对拷，可以安装一台以后，其余对拷的方式，修改/etc/fstab里的挂载硬盘/dev后的设备符号即可
 dd if=/dev/sdc of=/dev/sdb bs=6M count=20480 status=progress
 
 120g/6m=20*1024=20480
+
+#fstab加载安装没有包括的分区
+fdisk -
+blkid /dev/sda3
+#UUID=6377-A234 /data0            exfat    defaults,utf8,uid=1000,gid=1000,fmask=0011,dmask=0000              0       0
 
 

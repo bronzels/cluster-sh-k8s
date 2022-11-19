@@ -1,8 +1,8 @@
 tar xzvf go1.19.2.linux-amd64.tar.gz
-mv go /usr/local/
-echo 'PATH=$PATH:/usr/local/go/bin' >> /etc/profile
-cat >> ~/.bash_profile << EOF
-export GOPATH=/root/gopath
+sudo mv go /usr/local/
+echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
+cat >> ~/.bashrc << EOF
+export GOPATH=$HOME/gopath
 export GOPROXY=https://goproxy.cn
 EOF
 
@@ -17,3 +17,15 @@ yum install -y exfat-utils fuse-exfat
 sudo apt install openjdk-11-jdk
 sudo apt install openjdk-8-jdk
 sudo update-alternatives --config java
+#cmake
+#ubuntu
+#安装libssl1.11依赖
+echo "deb http://security.ubuntu.com/ubuntu focal-security main" | sudo tee /etc/apt/sources.list.d/focal-security.list
+apt install libssl1.1
+#添加签名密钥
+wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
+#将存储库添加到您的源列表并进行更新
+sudo apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
+sudo apt-get update
+#然后再使用apt安装就是最新版本的cmake啦
+sudo apt install cmake
