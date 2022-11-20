@@ -34,7 +34,16 @@ sudo apt-get update -y
 sudo apt install -y cmake
 cmake --version
 
+#安装wine和微信
 cd /data0/downloads
 sudo apt-get install -f -y ./ukylin-wine_70.6.3.25_amd64.deb
 sudo apt-get install -f -y ./ukylin-wechat_3.0.0_amd64.deb
 sudo apt-get install -f -y ./ukylin-qq_1.0_amd64.deb
+
+#安装vscode
+sudo apt update -y
+sudo apt install -y software-properties-common apt-transport-https curl
+curl -sSL https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
+sudo apt update -y
+sudo apt install -y code
