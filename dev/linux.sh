@@ -33,3 +33,8 @@ sudo apt-get update -y
 #然后再使用apt安装就是最新版本的cmake啦
 sudo apt install -y cmake
 cmake --version
+
+cd /data0/downloads
+sudo apt-get install -f -y ./ukylin-wine_70.6.3.25_amd64.deb
+sudo apt-get install -f -y ./ukylin-wechat_3.0.0_amd64.deb
+sudo apt-get install -f -y ./ukylin-qq_1.0_amd64.deb
