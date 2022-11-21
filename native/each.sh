@@ -48,10 +48,11 @@ nameserver 8.8.8.8
 nameserver 114.114.114.114
 EOF
 
+timedatectl set-timezone Asia/Shanghai
+#ubuntu
 #设置时区
 cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 #设置时间自动同步
-#ubuntu
 #/etc/systemd/timesyncd.conf
 :<<EOF
 #NTP=
@@ -59,7 +60,6 @@ NTP=ntp.aliyun.com
 EOF
 systemctl restart systemd-timesyncd.service
 #centos
-timedatectl set-timezone Asia/Shanghai
 yum install -y chrony
 systemctl start chronyd.service
 systemctl enable chronyd.service
