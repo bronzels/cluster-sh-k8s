@@ -126,7 +126,7 @@ dd if=/dev/sdc of=/dev/sdb bs=6M count=20480 status=progress
 120g/6m=20*1024=20480
 
 #fstab加载安装没有包括的分区
-fdisk -
+fdisk -l
 blkid /dev/sda3
 #UUID=6377-A234 /data0            exfat    defaults,utf8,uid=1000,gid=1000,fmask=0011,dmask=0000              0       0
 
