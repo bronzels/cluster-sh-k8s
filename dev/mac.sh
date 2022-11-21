@@ -141,10 +141,15 @@ brew install redis
 brew install osxfuse
 
 #exfat挂载
-mount -t exfat /dev/disk3s3 /Volumes/data/data0
-umount /Volumes/data/data0
+brew install diskutil
+diskutil list
+mount -t exfat -o rw,nobrowse /dev/disk3s3 /Volumes/data0
+umount /Volumes/data0
+#数据盘同步备份
+sudo rsync -avP data data0/
 
 #工具卸载pkg
 #https://www.corecode.io/uninstallpkg/
 #解压到/Applications/目录
 xattr -d com.apple.quarantine /Applications/UninstallPKG.app
+
