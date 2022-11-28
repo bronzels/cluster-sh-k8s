@@ -15,6 +15,13 @@ yum install -y bizp2
 #dtpct
 dd if=/dev/nvme0n1 status=progress | bzip2 > /mnt/mdxfs/back-nvme0n1-`date +%Y-%m-%d`.img.bz
 bzip2 -dc /mnt/mdxfs/back-nvme0n1-2022-11-28.img.bz | dd of=/dev/nvme0n1 status=progress
+echo "dd if=/dev/nvme0n1 status=progress | bzip2 > /mnt/mdxfs/back-nvme0n1-`date +%Y-%m-%d`.img.bz" > backup-d.sh
+chmod a+x backup-d.sh
+nohup ./backup-d.sh > backup-d.log 2>&1 &
+tail -f backup-d.log
+echo "dd if=/dev/nvme0n1p3 status=progress | bzip2 > /mnt/mdxfs/back-nvme0n1p3-`date +%Y-%m-%d`.img.bz" > backup-p.sh
+chmod a+x backup-p.sh
+nohup ./backup-p.sh > backup-p.log 2>&1 &
 #mdubu
 dd if=/dev/sdc status=progress | bzip2 > /data0/back-sdc-`date +%Y-%m-%d`.img.bz
 bzip2 -cd /data0/back-sdc-2022-11-28.img.bz | dd of=/dev/sdc status=progress
