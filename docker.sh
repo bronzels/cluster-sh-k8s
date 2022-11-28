@@ -74,5 +74,6 @@ ll /var/run/docker.sock
 #chown root:docker /var/run/docker.sock
 
 rm -rf /data0/docker/*
+rm -f /etc/systemd/system/docker.service
 rm -rf /var/lib/containerd
 rm -rf /var/lib/docker

@@ -4,7 +4,8 @@ runc_rev=1.1.4
 curl -OL https://github.com/opencontainers/runc/releases/download/v${runc_rev}/runc.amd64
 #ansible copy to /root/
 #workers
-mv runc.amd64 /usr/local/bin/runc && chmod +x /usr/local/bin/runc
+#mv runc.amd64 /usr/local/bin/runc && chmod +x /usr/local/bin/runc
+mv runc.amd64 /usr/bin/runc && chmod +x /usr/bin/runc
 
 #cp
 containerd_rev=1.6.10
@@ -12,8 +13,10 @@ containerd_rev=1.6.10
 curl -OL https://github.com/containerd/containerd/releases/download/v${containerd_rev}/containerd-${containerd_rev}-linux-amd64.tar.gz
 #ansible copy to /root/
 #workers
-cp -r /usr/local /usr/local4containerd
-tar -zxvf containerd-${containerd_rev}-linux-amd64.tar.gz -C /usr/local
+#cp -r /usr/local /usr/local4containerd
+#tar -zxvf containerd-${containerd_rev}-linux-amd64.tar.gz -C /usr/local
+cp -r /usr /usr4containerd
+tar -zxvf containerd-${containerd_rev}-linux-amd64.tar.gz -C /usr
 
 #cp
 #curl -o /etc/systemd/system/containerd.service https://raw.githubusercontent.com/containerd/cri/master/contrib/systemd-units/containerd.service
@@ -25,7 +28,7 @@ After=network.target
 
 [Service]
 ExecStartPre=/sbin/modprobe overlay
-ExecStart=/usr/local/bin/containerd
+ExecStart=/usr/bin/containerd
 Restart=always
 RestartSec=5
 Delegate=yes

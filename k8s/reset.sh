@@ -48,6 +48,7 @@ rm -rf /var/lib/cni
 rm -rf /var/lib/calico
 rm -rf /var/lib/etcd
 
+ansible all -m shell -a"rm -rf /root/.kube;rm -rf /etc/kubernetes;rm -rf /etc/docker;rm -rf /etc/cni;rm -rf /etc/containers;rm -rf /opt/cni/bin;rm -rf /var/lib/kubelet;rm -rf /var/lib/containers;rm -rf /var/lib/dockershim;rm -rf /var/lib/cni;rm -rf /var/lib/calico;rm -rf /var/lib/etcd"
 
 #！！！手工，reset之后
 # 重新生成token

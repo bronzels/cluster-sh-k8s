@@ -143,8 +143,8 @@ brew install osxfuse
 #exfat挂载
 brew install diskutil
 diskutil list
-mount -t exfat -o rw,nobrowse /dev/disk3s3 /Volumes/data0
-umount /Volumes/data0
+sudo mount -t exfat -o rw,nobrowse /dev/disk4s4 /Volumes/mdexf
+umount /Volumes/mdexf
 #数据盘同步备份
 sudo rsync -avP data data0/
 

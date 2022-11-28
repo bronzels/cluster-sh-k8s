@@ -1,4 +1,4 @@
-- hosts: slave
+- hosts: mdlapubu
   tasks:
     - name: 'add hosts'
       blockinfile:

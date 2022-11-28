@@ -1,3 +1,7 @@
+#centos
+#安装菜单按tab，输入" vga=711"，在分辨率选择处选择i（最大分辨率）
+#dtpct安装需要连接wifi网关，centos7比较老，新机器的以太网驱动缺失
+
 #设置密码
 #each from ubuntu
 sudo su -
@@ -48,6 +52,14 @@ nameserver 8.8.8.8
 nameserver 114.114.114.114
 EOF
 
+#设置镜像
+#centos
+yum install -y wget
+wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
+yum clean all
+yum makecache
+
+
 timedatectl set-timezone Asia/Shanghai
 #ubuntu
 #设置时区
@@ -77,6 +89,10 @@ date
 #GRUB_CMDLINE_LINUX=""
 GRUB_CMDLINE_LINUX="ipv6.disable=1"
 EOF
+#centos
+file=/etc/default/grub
+cp ${file} ${file}.bk
+sed -i 's/GRUB_CMDLINE_LINUX="crashkernel=auto rhgb quiet"/GRUB_CMDLINE_LINUX="crashkernel=auto rhgb quiet ipv6.disable=1"/g' ${file}
 grub2-mkconfig -o /boot/grub2/grub.cfg
 
 #each
@@ -110,24 +126,5 @@ service sshd restart
 #   hk-prod-bigdata-master-8-148
 #   ip-10-10-9-83
 
-#备份根分区
-tar -czvpf backup-`date +%Y-%m-%d`.tar.gz --one-file-system /
-mount|grep "/ "
-#dtpct
-dd if=/dev/nvme0n1p1 status=progress | gzip -9 > /data0/back-`date +%Y-%m-%d`.img.gz
-#mdubu
-dd if=/dev/sdc2 status=progress | gzip -9 > /data0/back-`date +%Y-%m-%d`.img.gz
-#mdlapubu
-dd if=/dev/sda2 status=progress | gzip -9 > /data0/back-`date +%Y-%m-%d`.img.gz
-
-#硬盘对拷，可以安装一台以后，其余对拷的方式，修改/etc/fstab里的挂载硬盘/dev后的设备符号即可
-dd if=/dev/sdc of=/dev/sdb bs=6M count=20480 status=progress
-
-120g/6m=20*1024=20480
-
-#fstab加载安装没有包括的分区
-fdisk -l
-blkid /dev/sda3
-#UUID=6377-A234 /data0            exfat    defaults,utf8,uid=1000,gid=1000,fmask=0011,dmask=0000              0       0
 
 

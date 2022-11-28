@@ -38,10 +38,16 @@ grub2-mkconfig -o /boot/grub2/grub.cfg
 
 #kernel小版本升级
 yum update -y
-yum remove kernel-3.10.0-1160.el7.x86_64
+rpm -qa|grep kernel
+#重启
+sync;reboot now
+yum remove -y kernel-3.10.0-1160.el7.x86_64
+yum install -y kernel-devel kernel-headers kernel-tools-libs-devel
+rpm -qa|grep kernel
 
 #添加 epel 扩展源
 yum -y install epel-release
+yum install -y wget bzip2
 
 #卸载kernel
 rpm -qa|grep kernel

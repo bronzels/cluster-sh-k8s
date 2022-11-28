@@ -2,9 +2,11 @@ git clone git@github.com:ilias-sp/ansible-setup-passwordless-ssh.git
 
 #清理过去的ssh文件
 #cp
+rm -rf ~/.ssh
 #mac
 sudo rm -rf /var/root/.ssh/
 #linux
+rm -rf /Users/apple/.ssh
 sudo rm -rf /root/.ssh/
 #被控主机
 ansible all -m shell -a"rm -rf /root/.ssh/"
