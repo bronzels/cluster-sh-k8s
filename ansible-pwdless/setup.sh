@@ -8,6 +8,11 @@ sudo rm -rf /var/root/.ssh/
 #linux
 rm -rf /Users/apple/.ssh
 sudo rm -rf /root/.ssh/
+#重新生成密钥
+ssh-keygen
+cat /Users/apple/.ssh/id_rsa.pub
+#密钥copy到github
+
 #被控主机
 ansible all -m shell -a"rm -rf /root/.ssh/"
 
