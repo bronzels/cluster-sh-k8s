@@ -16,7 +16,7 @@ scp .kube.tgz mmubu:/root/
 scp root@dtpct:/root/.kube.tgz ./
 #mmubu
 tar xzvf .kube.tgz
-sudo echo "192.168.3.103 apiserver.cluster.local" >> /etc/hosts
+sudo echo "192.168.3.14 apiserver.cluster.local" >> /etc/hosts
 
 #ubuntu
 apt install -y bash-completion
@@ -51,5 +51,5 @@ kubectl verion
 kubectl cluster-info
 kubectl get nodes
 kubectl get ns
-kubectl get pod -n kube-system
+kubectl get pod -A
 

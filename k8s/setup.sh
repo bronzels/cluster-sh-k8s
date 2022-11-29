@@ -3,8 +3,8 @@
 #ubuntu
 ansible allk8s -m shell -a"ufw disable"
 #centos
-ansible allk8s -m shell -a"systemctl disable firewalld"
 ansible allk8s -m shell -a"systemctl stop firewalld"
+ansible allk8s -m shell -a"systemctl disable firewalld"
 
 #ubuntu
 ansible allk8s -m shell -a"apt install -y selinux-utils"

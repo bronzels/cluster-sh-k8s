@@ -58,7 +58,7 @@ scp root@dtpct:/etc/containerd/config.toml ./
 ansible all -m shell -a"systemctl stop containerd.service"
 ansible all -m shell -a"cd /etc/containerd;mv config.toml config.toml.bk"
 ansible all -m copy -a"src=./config.toml dest=/etc/containerd/config.toml"
-ansible all -m shell -a"cat /etc/containerd/config.toml|grep my.org"
+ansible all -m shell -a"cat /etc/containerd/config.toml----p|grep my.org"
 ansible all -m shell -a"systemctl start containerd.service"
 ansible all -m shell -a"systemctl status containerd.service"
 ansible all -m shell -a"ctr -n k8s.io container list"
