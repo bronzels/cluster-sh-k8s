@@ -1,7 +1,10 @@
 helm repo add stable https://charts.helm.sh/stable
 helm repo update
 kubectl create ns nfs
+#ubuntu
 ansible all -m shell -a"apt install -y nfs-common"
+#centos
+ansible all -m shell -a"yum install -y nfs-utils"
 helm install my stable/nfs-client-provisioner --set nfs.server=192.168.3.9 --set nfs.path=/Volumes/data/nfs -n nfs
 helm uninstall my -n nfs
 kubectl get all -n nfs
