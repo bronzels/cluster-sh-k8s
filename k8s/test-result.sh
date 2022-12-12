@@ -1,5 +1,5 @@
 start=$(date +"%s.%9N")
-for i in `seq 4`; do curl 100.95.202.132:8080; done
+for i in `seq 4`; do curl 100.110.242.69:8080; done
 end=$(date +"%s.%9N")
 echo timediff:`echo "scale=9;$end - $start" | bc`
 :<<EOF
@@ -15,7 +15,7 @@ timediff:.023271437
 EOF
 
 start=$(date +"%s.%9N")
-for i in `seq 4`; do curl 10.96.3.195:8088; done
+for i in `seq 4`; do curl 10.96.1.163:8088; done
 end=$(date +"%s.%9N")
 echo timediff:`echo "scale=9;$end - $start" | bc`
 :<<EOF

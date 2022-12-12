@@ -36,12 +36,12 @@ EOF
 kubectl taint nodes dtpct node-role.kubernetes.io/master:NoSchedule-
 kubectl describe node dtpct | grep Taint
 
+#server sealos runs on
 sealos reset \
      --masters 192.168.3.14 \
      --cluster-root /data0/sealos \
      --nodes 192.168.3.103,192.168.3.6 \
      -p asdf
-#server sealos runs on
 ansible all -m shell -a"rm -rf /var/lib/cni;rm -rf /etc/cni;rm -rf /var/lib/etcd;rm -rf /root/.kube;rm -rf /etc/kubernetes/"
 ansible all -m shell -a"ipvsadm --clear"
 #如果需要删除下载或者恢复的镜像
@@ -53,18 +53,18 @@ sealos save -o calico-3.24.1.tar labring/calico:v3.24.1
 sealos load -i kubernetes-1.21.14.tar
 sealos load -i calico-3.24.1.tar
 
-scp root@dtpct:/etc/containerd/config.toml ./
+scp root@dtpct:/etc/containerd/config.toml ./config.toml.bk
 #修改mirror和harbor部分
 ansible all -m shell -a"systemctl stop containerd.service"
 ansible all -m shell -a"cd /etc/containerd;mv config.toml config.toml.bk"
 ansible all -m copy -a"src=./config.toml dest=/etc/containerd/config.toml"
-ansible all -m shell -a"cat /etc/containerd/config.toml----p|grep my.org"
+ansible all -m shell -a"cat /etc/containerd/config.toml|grep my.org"
 ansible all -m shell -a"systemctl start containerd.service"
 ansible all -m shell -a"systemctl status containerd.service"
 ansible all -m shell -a"ctr -n k8s.io container list"
 ansible all -m shell -a"ctr -n k8s.io c ls"
 ansible all -m shell -a"crictl ps -a"
 
-#集群某一台，如果镜像起作用应该很快能拉下来
+#集群某一台，如果镜像起作用1分钟左右应该能拉下来
 crictl pull python:2.7
 crictl images

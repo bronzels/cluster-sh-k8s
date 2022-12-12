@@ -5,6 +5,7 @@ kubectl create ns nfs
 ansible all -m shell -a"apt install -y nfs-common"
 #centos
 ansible all -m shell -a"yum install -y nfs-utils"
+sudo rm -rf /Volumes/data/nfs/*
 helm install my stable/nfs-client-provisioner --set nfs.server=192.168.3.9 --set nfs.path=/Volumes/data/nfs -n nfs
 helm uninstall my -n nfs
 kubectl get all -n nfs
@@ -16,7 +17,9 @@ kubectl get sc
 在 - --tls-private-key-file=/etc/kubernetes/pki/apiserver.key下面添加如下：
 - --feature-gates=RemoveSelfLink=false
 EOF
+#apiserver连接会断开大概1分钟
 kubectl get pod -n kube-system -o wide
+#如果apiserver pod状态不正常，删除重启
 kubectl delete pod kube-apiserver-dtpct -n kube-system
 kubectl get pod -n kube-system -o wide
 

@@ -153,3 +153,12 @@ sudo rsync -avP data data0/
 #解压到/Applications/目录
 xattr -d com.apple.quarantine /Applications/UninstallPKG.app
 
+#minio安装
+brew install minio/stable/minio
+wget -c https://dl.min.io/client/mc/release/darwin-amd64/mc -P /Users/apple/bin/
+wget -c https://dl.min.io/server/minio/release/darwin-amd64/minio -P /Users/apple/bin/
+chmod +x /Users/apple/bin/mc
+mkdir /Volumes/data/miniodata
+chmod -R 777 /Volumes/data/miniodata
+nohup minio server /Volumes/data/miniodata > mac_minio_server.log 2>&1 &
+

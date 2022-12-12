@@ -46,7 +46,7 @@ kubectl apply -f test-service.yaml
 kubectl get svc -o wide
 kubectl get pod -o wide
 
-kubectl run curl-json -it --image=radial/busyboxplus:curl --restart=Never --rm -- /bin/sh
+kubectl run curl-json -it --imimageage=radial/busyboxplus:curl --restart=Never --rm -- /bin/sh
 kubectl run curl-pycentos7 -it --image=harbor.my.org:1080/base/python:3.8-centos7-netutil --restart=Never --rm -- /bin/bash
 
 kubectl create secret docker-registry harbor-secret --namespace=default --docker-server=harbor.my.org:1080 --docker-username=admin --docker-password=Harbor12345
