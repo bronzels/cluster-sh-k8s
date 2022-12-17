@@ -12,9 +12,9 @@ cd /root
 tar czvf .kube.tgz .kube/
 #linux
 scp .kube.tgz mmubu:/root/
-#mac，从控制点mmubu发起
+#从控制点mmubu发起
+cd
 scp root@dtpct:/root/.kube.tgz ./
-#mmubu
 rm -rf .kube
 tar xzvf .kube.tgz
 sudo echo "192.168.3.14 apiserver.cluster.local" >> /etc/hosts

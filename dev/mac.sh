@@ -158,7 +158,32 @@ brew install minio/stable/minio
 wget -c https://dl.min.io/client/mc/release/darwin-amd64/mc -P /Users/apple/bin/
 wget -c https://dl.min.io/server/minio/release/darwin-amd64/minio -P /Users/apple/bin/
 chmod +x /Users/apple/bin/mc
+:<<EOF
 mkdir /Volumes/data/miniodata
 chmod -R 777 /Volumes/data/miniodata
 nohup minio server /Volumes/data/miniodata > mac_minio_server.log 2>&1 &
+#很难下载
+#报错：dyld[62265]: symbol not found in flat namespace ()
+EOF
+docker pull minio/minio
+lsof -nP -p 9000 | grep LISTEN
+lsof -nP -p 9091 | grep LISTEN
+docker run -d \
+  -p 9000:9000 \
+  -p 9091:9091 \
+  --name=minio \
+  --restart=always \
+  -e "MINIO_ACCESS_KEY=admin" \
+  -e "MINIO_SECRET_KEY=admin123" \
+  -v /Volumes/data/minio/data:/data \
+  -v /Volumes/data/minio/.minio:/root/.minio \
+  minio/minio server /data --console-address ":9091" --address ":9000"
+
+#colima（代替docker desktop）
+brew install docker docker-compose
+brew install colima
+colima start --edit
+#在docker: {}的大括号里，填入daemon.json的内容
+docker info
+#检查最后的Insecure Registries:，Registry Mirrors:，确认镜像和私仓已经正确设置，这时候下载image应该MB/s的速度
 

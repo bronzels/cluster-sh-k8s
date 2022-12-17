@@ -1,0 +1,13 @@
+      [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
+        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+          endpoint = ["https://xxxxxx.mirror.aliyuncs.com", "https://registry-1.docker.io"]
+        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."k8s.gcr.io"]
+          endpoint = ["registry.aliyuncs.com/google_containers"]
+        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."harbor.my.org:1080"]
+          endpoint = ["http://harbor.my.org:1080"]
+      [plugins."io.containerd.grpc.v1.cri".registry.configs]
+        [plugins."io.containerd.grpc.v1.cri".registry.configs."harbor.my.org:1080".tls]
+          insecure_skip_verify = true
+          [plugins."io.containerd.grpc.v1.cri".registry.configs."harbor.my.org:1080".auth]
+            username = "admin"
+            password = "Harbor12345"
