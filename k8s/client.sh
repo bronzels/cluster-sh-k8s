@@ -54,3 +54,5 @@ kubectl get nodes
 kubectl get ns
 kubectl get pod -A
 
+#重启或者某个node断网引起evicted无法恢复
+kubectl get pod -A -o wide|grep Evicted|awk '{print $1}{print $2}'|xargs -n2 sh -c 'kubectl delete pod "$2" -n "$1"' sh
