@@ -187,3 +187,86 @@ colima start --edit
 docker info
 #检查最后的Insecure Registries:，Registry Mirrors:，确认镜像和私仓已经正确设置，这时候下载image应该MB/s的速度
 
+#gpg验证安装包
+brew install gpg
+
+#spark编译需要
+brew install scala@2.12
+cd /usr/local/opt/
+ln -s scala@2.12 scala
+sudo -s
+sudo echo 'export PATH=$PATH:/usr/local/opt/scala/bin' >> /etc/bashrc
+sudo echo 'export SCALA_HOME=/usr/local/opt/scala/bin' >> /etc/bashrc
+exit
+scala -help
+brew install xquartz --cask
+
+#最多进程
+ulimit -a|grep 'max user processes'
+#max user processes                  (-u) 1392
+#每个进程最多打开文件数
+ulimit -a|grep 'open files'
+#open files                          (-n) 256
+sudo -s
+cat >> /Library/LaunchDaemons/limit.maxfiles.plist << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+  <plist version="1.0">
+    <dict>
+      <key>Label</key>
+        <string>limit.maxfiles</string>
+      <key>ProgramArguments</key>
+        <array>
+          <string>launchctl</string>
+          <string>limit</string>
+          <string>maxfiles</string>
+          <string>65536</string>
+          <string>65536</string>
+        </array>
+      <key>RunAtLoad</key>
+        <true/>
+      <key>ServiceIPC</key>
+        <false/>
+    </dict>
+  </plist>
+EOF
+cat >> /Library/LaunchDaemons/limit.maxproc.plist << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple/DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+  <plist version="1.0">
+    <dict>
+      <key>Label</key>
+        <string>limit.maxproc</string>
+      <key>ProgramArguments</key>
+        <array>
+          <string>launchctl</string>
+          <string>limit</string>
+          <string>maxproc</string>
+          <string>2048</string>
+          <string>2048</string>
+        </array>
+      <key>RunAtLoad</key>
+        <true />
+      <key>ServiceIPC</key>
+        <false />
+    </dict>
+  </plist>
+EOF
+exit
+
+#r安装镜像设置
+#下载安装pkg包
+cat >> ~/.Rprofile << EOF
+local({
+    r <- getOption("repos")
+    r["CRAN"] <- "https://mirrors.tuna.tsinghua.edu.cn/CRAN/"
+    r["BioC_mirror"] <- "https://mirrors.ustc.edu.cn/CRAN/"
+    options(repos = r)
+})
+EOF
+#构建spark依赖
+brew install pandoc
+#brew install mactex --cask
+brew install basictex --cask
+#重启shell
+whichis pdflatex
