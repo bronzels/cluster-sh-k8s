@@ -270,3 +270,8 @@ brew install pandoc
 brew install basictex --cask
 #重启shell
 whichis pdflatex
+
+
+#k8s资源命令行管理
+brew tap robscott/tap
+brew install robscott/tap/kube-capacity
