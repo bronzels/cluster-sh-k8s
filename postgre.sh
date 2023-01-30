@@ -1,10 +1,48 @@
+kubectl create ns postgresql
 
-helm install mdpostgre bitnami/postgresql -n md \
+helm install my bitnami/postgresql -n postgresql \
+    --set postgresqlPassword=postgres \
+    --set global.storageClass=juicefs-sc \
+    --set persistence.size=16Gi
+
+:<<EOF
     --set service.type=NodePort \
     --set service.nodePort=31432 \
-    --set postgresqlPassword=postgres \
-    --set global.storageClass=rook-ceph-block \
-    --set persistence.size=128Gi
+NAME: my
+LAST DEPLOYED: Sun Jan 29 19:30:02 2023
+NAMESPACE: postgresql
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+CHART NAME: postgresql
+CHART VERSION: 12.1.11
+APP VERSION: 15.1.0
+
+** Please be patient while the chart is being deployed **
+
+PostgreSQL can be accessed via port 5432 on the following DNS names from within your cluster:
+
+    my-postgresql.postgresql.svc.cluster.local - Read/Write connection
+
+To get the password for "postgres" run:
+
+    export POSTGRES_PASSWORD=$(kubectl get secret --namespace postgresql my-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)
+
+To connect to your database run the following command:
+
+    kubectl run my-postgresql-client --rm --tty -i --restart='Never' --namespace postgresql --image docker.io/bitnami/postgresql:15.1.0-debian-11-r28 --env="PGPASSWORD=$POSTGRES_PASSWORD" \
+      --command -- psql --host my-postgresql -U postgres -d postgres -p 5432
+
+    > NOTE: If you access the container using bash, make sure that you execute "/opt/bitnami/scripts/postgresql/entrypoint.sh /bin/bash" in order to avoid the error "psql: local user with ID 1001} does not exist"
+
+To connect to your database from outside the cluster execute the following commands:
+
+    kubectl port-forward --namespace postgresql svc/my-postgresql 5432:5432 &
+    PGPASSWORD="$POSTGRES_PASSWORD" psql --host 127.0.0.1 -U postgres -d postgres -p 5432
+
+WARNING: The configured password will be ignored on new installation in case when previous Posgresql release was deleted through the helm command. In that case, old PVC will have an old password, and setting it through helm won't take effect. Deleting persistent volumes (PVs) will solve the issue.
+EOF
 
 mkdir ~/mypostgre
 cd ~/mypostgre
