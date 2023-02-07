@@ -275,3 +275,10 @@ whichis pdflatex
 #k8s资源命令行管理
 brew tap robscott/tap
 brew install robscott/tap/kube-capacity
+
+#cmake安装
+sudo "/Applications/CMake.app/Contents/bin/cmake-gui" --install=/Users/apple/bin
+cmake -version
+
+#byacc/automake/pcre/bison安装
+brew install byacc automake pcre bison
