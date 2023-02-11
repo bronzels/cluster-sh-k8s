@@ -276,9 +276,15 @@ whichis pdflatex
 brew tap robscott/tap
 brew install robscott/tap/kube-capacity
 
+
+#doris broker编译依赖
 #cmake安装
 sudo "/Applications/CMake.app/Contents/bin/cmake-gui" --install=/Users/apple/bin
 cmake -version
-
 #byacc/automake/pcre/bison安装
 brew install byacc automake pcre bison
+
+
+#k8s相关shell脚本，解析yaml
+#jq安装
+brew install jq

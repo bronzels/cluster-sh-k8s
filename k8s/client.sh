@@ -1,3 +1,19 @@
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    echo "Mac detected."
+    #mac
+    os=darwin
+    MYHOME=/Volumes/data
+    SED=gsed
+    bin=/Users/apple/bin
+else
+    echo "Assuming linux by default."
+    #linux
+    os=linux
+    MYHOME=~
+    SED=sed
+    bin=/usr/local/bin
+fi
+
 #linux
 curl -LO "https://dl.k8s.io/release/v1.21.14/bin/linux/amd64/kubectl"
 chmod a+x kubectl
@@ -60,3 +76,18 @@ kubectl get pod -A -o wide|grep Evicted|awk '{print $1}{print $2}'|xargs -n2 sh 
 #删除pod
 kubectl delete pod spark-test -n spark-operator --force --grace-period=0
 kubectl patch pod spark-test -n spark-operator -p '{"metadata":{"finalizers":null}}'
+
+
+cat << \EOF > ${bin}/kjobreset.sh
+#!/bin/bash
+
+NAMESPACE=$1
+JOB=$2
+
+kubectl get job $JOB -n $NAMESPACE -o json |
+  jq 'del(.spec.selector)' |
+  jq 'del(.spec.template.metadata.labels)' |
+  kubectl replace --force -f - >/dev/null
+kubectl wait --for=condition=complete job/$JOB -n $NAMESPACE --timeout 120s >/dev/null
+EOF
+chmod a+x ${bin}/kjobreset.sh
