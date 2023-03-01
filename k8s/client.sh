@@ -72,11 +72,11 @@ kubectl get pod -A
 
 #重启或者某个node断网引起evicted无法恢复
 kubectl get pod -A -o wide|grep Evicted|awk '{print $1}{print $2}'|xargs -n2 sh -c 'kubectl delete pod "$2" -n "$1"' sh
+kubectl get pods -A |grep -v 'Running\|ContainerCreating\Pending' |awk '{printf("kubectl delete pods %s -n %s --force --grace-period=0\n", $2,$1)}' | /bin/bash
 
 #删除pod
 kubectl delete pod spark-test -n spark-operator --force --grace-period=0
 kubectl patch pod spark-test -n spark-operator -p '{"metadata":{"finalizers":null}}'
-
 
 cat << \EOF > ${bin}/kjobreset.sh
 #!/bin/bash
@@ -91,3 +91,4 @@ kubectl get job $JOB -n $NAMESPACE -o json |
 kubectl wait --for=condition=complete job/$JOB -n $NAMESPACE --timeout 120s >/dev/null
 EOF
 chmod a+x ${bin}/kjobreset.sh
+

@@ -288,3 +288,13 @@ brew install byacc automake pcre bison
 #k8s相关shell脚本，解析yaml
 #jq安装
 brew install jq
+
+
+#编译doris-spark-connector依赖
+#thrift安装
+brew tap-new $USER/local-tap
+brew extract --version='0.13.0' thrift $USER/local-tap
+brew install thrift@0.13.0
+thrift -version
+brew install gnu-getopt
+gnu-getopt
