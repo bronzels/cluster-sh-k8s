@@ -129,7 +129,7 @@ sudo nfsd status
 cd /Volumes/data
 mkdir testmnt
 mount -t nfs -o nolock 192.168.3.9:/Volumes/data/nfs /Volumes/data/testmnt
-echo "hello" > nfs/x
+echo "hello" > testmnt/x
 cat testmnt/x
 umount testmnt
 rm -rf testmnt
