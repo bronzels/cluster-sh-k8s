@@ -20,7 +20,7 @@ tar -zxvf containerd-${containerd_rev}-linux-amd64.tar.gz -C /usr
 
 #cp
 #curl -o /etc/systemd/system/containerd.service https://raw.githubusercontent.com/containerd/cri/master/contrib/systemd-units/containerd.service
-cat > containerd.service << EOF
+cat > /etc/systemd/system/containerd.service << EOF
 [Unit]
 Description=containerd container runtime
 Documentation=https://containerd.io
@@ -81,6 +81,11 @@ cp /etc/containerd/config.toml /etc/containerd/config.toml.root
 /root/replace-containerd-root.sh
 cat /etc/containerd/config.toml|grep "root = \""
 
+
+cat <<EOF | sudo tee /etc/crictl.yaml
+runtime-endpoint: unix:///run/containerd/containerd.sock
+EOF
+
 #启动containerd
 #worker
 systemctl daemon-reload
@@ -90,8 +95,9 @@ systemctl status containerd
 ls /data0/containderd
 #安装nerdct
 #cp
-nerdctl_rev=1.0.0
+#nerdctl_rev=1.0.0
 #nerdctl_rev=0.22.0
+nerdctl_rev=1.3.0
 wget -c https://github.com/containerd/nerdctl/releases/download/v${nerdctl_rev}/nerdctl-${nerdctl_rev}-linux-amd64.tar.gz
 #ansible copy to /root/
 #worker
