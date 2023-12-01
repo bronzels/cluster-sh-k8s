@@ -138,13 +138,18 @@ rm -rf testmnt
 brew install redis
 
 #cubefs等网络文件系统挂载
-brew install osxfuse
+brew install osxfuse --cask
+
+#ext2-4挂载
+./installext2
+sudo fuse-ext2 /dev/disk4s4 /Volumes/mdext2 -o rw+
 
 #exfat挂载
 brew install diskutil
 diskutil list
 sudo mount -t exfat -o rw,nobrowse /dev/disk4s4 /Volumes/mdexf
 umount /Volumes/mdexf
+
 #数据盘同步备份
 sudo rsync -avP data data0/
 
@@ -298,3 +303,37 @@ brew install thrift@0.13.0
 thrift -version
 brew install gnu-getopt
 gnu-getopt
+
+#miniconda 4.12.0
+#先安装python 3.9.12
+#wget -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-py39_4.12.0-MacOSX-x86_64.sh
+#bash Miniconda3-py39_4.12.0-MacOSX-x86_64.sh -b -p /Volumes/data/workspace/miniconda3
+wget -c https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
+bash Miniconda3-latest-MacOSX-x86_64.sh -b -p /Volumes/data/workspace/miniconda3
+source ~/.bash_profile
+#使用以下命令查看源channel：
+conda config --show-sources
+conda config --show
+conda config --set show_channel_urls yes
+
+conda config --remove-key channels
+
+conda config --add channels http://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/msys2/
+conda config --add channels http://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge/
+conda config --add channels http://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/
+conda config --add channels http://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
+conda config --add channels http://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/bioconda/
+
+conda update --all -y
+
+#rm -f ~/.condarc exit
+
+mkdir /Volumes/data/envs
+cat << \EOF >> ~/.condarc
+envs_dirs:
+  - /Volumes/data/envs
+EOF
+
+conda create -n triton_building_complex_pipelines python=3.8 -y
+#conda remove -n triton_building_complex_pipelines --all -y
+ls /Volumes/data/envs/triton_building_complex_pipelines

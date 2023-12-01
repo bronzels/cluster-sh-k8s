@@ -10,6 +10,8 @@ ansible allk8s -m shell -a"systemctl disable firewalld"
 ansible allk8s -m shell -a"apt install -y selinux-utils"
 ansible allk8s -m shell -a"setenforce 0"
 #centos
+systemctl stop firewalld.service 
+systemctl disable firewalld.service
 sed -i 's/^SELINUX=enforcing$/SELINUX=disabled/' /etc/selinux/config
 
 ansible allk8s -m shell -a"swapoff -a"

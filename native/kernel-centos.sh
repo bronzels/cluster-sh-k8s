@@ -42,8 +42,10 @@ rpm -qa|grep kernel
 #重启
 sync;reboot now
 yum remove -y kernel-3.10.0-1160.el7.x86_64
+#yum remove -y kernel-3.10.0-1160.80.1.el7.x86_64
 yum install -y kernel-devel kernel-headers kernel-tools-libs-devel
 rpm -qa|grep kernel
+#kernel-3.10.0-1160.88.1.el7.x86_64
 
 #添加 epel 扩展源
 yum -y install epel-release

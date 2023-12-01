@@ -1,5 +1,5 @@
 start=$(date +"%s.%9N")
-for i in `seq 4`; do curl 100.110.242.69:8080; done
+for i in `seq 4`; do curl 192.168.131.197:8080; done
 end=$(date +"%s.%9N")
 echo timediff:`echo "scale=9;$end - $start" | bc`
 :<<EOF
@@ -15,12 +15,12 @@ timediff:.023271437
 EOF
 
 start=$(date +"%s.%9N")
-for i in `seq 4`; do curl 10.96.0.222:8088; done
+for i in `seq 4`; do curl 10.108.165.24:8088; done
 end=$(date +"%s.%9N")
 echo timediff:`echo "scale=9;$end - $start" | bc`
 :<<EOF
 (app-root) start=$(date +"%s.%9N")
-(app-root) for i in `seq 4`; do curl 10.96.3.188:8088; done
+(app-root) for i in `seq 4`; do curl 10.110.173.148:8088; done
 <p>Hello from service-test-db6d56f8f-lf5dr</p>
 <p>Hello from service-test-db6d56f8f-gjxpj</p>
 <p>Hello from service-test-db6d56f8f-gkglr</p>

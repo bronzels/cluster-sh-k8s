@@ -24,11 +24,11 @@ kubectl delete pod kube-apiserver-dtpct -n kube-system
 kubectl get pod -n kube-system -o wide
 
 mkdir nfs
-cat << \EOF > nfs/nfs-test-pvc.yaml
+cat << \EOF > test/nfs-test-pvc.yaml
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: test-claim
+  name: nfs-test-claim
   annotations:
     volume.beta.kubernetes.io/storage-class: "nfs-client"
 spec:
@@ -38,11 +38,11 @@ spec:
     requests:
       storage: 1Mi
 EOF
-cat << \EOF > nfs/nfs-test-pod.yaml
+cat << \EOF > test/nfs-test-pod.yaml
 kind: Pod
 apiVersion: v1
 metadata:
-  name: test-pod
+  name: nfs-test
 spec:
   containers:
   - name: test-pod
@@ -51,7 +51,7 @@ spec:
       - "/bin/sh"
     args:
       - "-c"
-      - "echo 'success' > /mnt/SUCCESS && exit 0 || exit 1"
+      - "echo 'success' > /mnt/SUCCESS && cat /mnt/SUCCESS && exit 0 || exit 1"
     volumeMounts:
       - name: nfs-pvc
         mountPath: "/mnt"
@@ -61,8 +61,19 @@ spec:
       persistentVolumeClaim:
         claimName: test-claim
 EOF
-kubectl apply -f nfs/
-kubectl delete -f nfs/
+kubectl apply -f test/nfs-test-pvc.yaml
+kubectl apply -f test/nfs-test-pod.yaml
+
+kubectl logs nfs-test
+success
+kubectl delete pod nfs-test --force --grace-period=0
+kubectl apply -f nfs-test-pod.yaml
+kubectl logs nfs-test
+success
+success
+
+kubectl delete -f test/nfs-test-pvc.yaml
+kubectl delete -f test/nfs-test-pod.yaml
 
 ls /Volumes/data/nfs
 rm -rf /Volumes/data/nfs/archived-default-test-claim-pvc-*

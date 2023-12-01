@@ -30,7 +30,7 @@ tar czvf .kube.tgz .kube/
 scp .kube.tgz mmubu:/root/
 #从控制点mmubu发起
 cd
-scp root@dtpct:/root/.kube.tgz ./
+sudo scp root@dtpct:/root/.kube.tgz ./
 rm -rf .kube
 tar xzvf .kube.tgz
 sudo echo "192.168.3.14 apiserver.cluster.local" >> /etc/hosts
@@ -72,7 +72,7 @@ kubectl get pod -A
 
 #重启或者某个node断网引起evicted无法恢复
 kubectl get pod -A -o wide|grep Evicted|awk '{print $1}{print $2}'|xargs -n2 sh -c 'kubectl delete pod "$2" -n "$1"' sh
-kubectl get pods -A |grep -v 'Running\|ContainerCreating\Pending' |awk '{printf("kubectl delete pods %s -n %s --force --grace-period=0\n", $2,$1)}' | /bin/bash
+kubectl get pods -A |grep -v 'Running\|ContainerCreating\Pending\Init' |awk '{printf("kubectl delete pods %s -n %s --force --grace-period=0\n", $2,$1)}' | /bin/bash
 
 #删除pod
 kubectl delete pod spark-test -n spark-operator --force --grace-period=0

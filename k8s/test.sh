@@ -40,7 +40,11 @@ spec:
 EOF
 cd ..
 
-kubectl apply -f test/
+kubectl apply -f test/test-deployment.yaml
+kubectl apply -f test/test-service.yaml
+
+kubectl delete -f test/test-deployment.yaml
+kubectl delete -f test/test-service.yaml
 
 kubectl get svc -o wide
 kubectl get pod -o wide

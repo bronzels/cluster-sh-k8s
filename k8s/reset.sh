@@ -27,7 +27,16 @@ yum remove -y kubelet kubeadm kubectl
 #先卸载重装docker
 #sudo ansible allk8s -m shell -a"ipvsadm --clear"
 
-#ip link查询反复卸载calico垃圾网桥，tunl0@NONE之后的都ip link delete可以删除，名字只取@之前部分
+#ip link查询反复
+    卸载calico垃圾网桥，tunl0@NONE(modprobe -r ipip)之后的都ip link delete可以删除，名字只取@之前部分
+    卸载dummy，kube-ipvs0,重启后检查kube-ipvs0消失
+ip link delete dummy0
+ip link delete kube-ipvs0
+ip link delete vxlan.calico
+ip tunnel del tunl0
+modprobe -r ipip
+ip link delete tunl0
+ip link
 
 #ubuntu
 sudo ansible allk8s -m shell -a"rm -rf /root/.kube"
@@ -37,7 +46,7 @@ sudo ansible allk8s -m shell -a"rm -rf /home/ubuntu/.kube"
 rm -rf /root/.kube
 rm -rf /app/hadoop/.kube
 rm -rf /etc/kubernetes
-rm -rf /etc/docker
+#rm -rf /etc/docker
 rm -rf /etc/cni
 rm -rf /etc/containers
 rm -rf /opt/cni/bin
@@ -48,7 +57,9 @@ rm -rf /var/lib/cni
 rm -rf /var/lib/calico
 rm -rf /var/lib/etcd
 
-ansible all -m shell -a"rm -rf /root/.kube;rm -rf /etc/kubernetes;rm -rf /etc/docker;rm -rf /etc/cni;rm -rf /etc/containers;rm -rf /opt/cni/bin;rm -rf /var/lib/kubelet;rm -rf /var/lib/containers;rm -rf /var/lib/dockershim;rm -rf /var/lib/cni;rm -rf /var/lib/calico;rm -rf /var/lib/etcd"
+#ansible all -m shell -a"rm -rf /root/.kube;rm -rf /etc/kubernetes;rm -rf /etc/docker;rm -rf /etc/cni;rm -rf /etc/containers;rm -rf /opt/cni/bin;rm -rf /var/lib/kubelet;rm -rf /var/lib/containers;rm -rf /var/lib/dockershim;rm -rf /var/lib/cni;rm -rf /var/lib/calico;rm -rf /var/lib/etcd"
+ansible all -m shell -a"rm -rf /root/.kube;rm -rf /etc/kubernetes;rm -rf /etc/cni;rm -rf /etc/containers;rm -rf /opt/cni/bin;rm -rf /var/lib/kubelet;rm -rf /var/lib/containers;rm -rf /var/lib/dockershim;rm -rf /var/lib/cni;rm -rf /var/lib/calico;rm -rf /var/lib/etcd"
+#！！！注意container安装，cni的安装和配置目录都删除了，需要停止container，重建cni安装目录重新解压，再重新启动container
 
 #！！！手工，reset之后
 # 重新生成token
