@@ -1,3 +1,65 @@
+#设置开机和关机自动执行脚本
+cat << \EOF > ~/launchdeamon
+#!/bin/bash
+function shutdown()
+{
+
+  # 关机用的脚本放这里
+
+  exit 0
+}
+
+function startup()
+{
+
+  # 开机用的脚本放这里
+  #jetbra破解
+  /Volumes/data/downloads/jihuo-tool-2022.2.3/jetbra/scripts/uninstall.sh
+  /Volumes/data/downloads/jihuo-tool-2022.2.3/jetbra/scripts/install.sh
+
+  tail -f /dev/null &
+  wait $!
+}
+
+trap shutdown SIGTERM
+trap shutdown SIGKILL
+
+startup;
+EOF
+
+cat << \EOF > ~/Library/LaunchAgents/boot-shutdown-script.plist
+~                                                                                                                                                          
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+<key>Label</key><string>boot-shutdown</string>
+
+<key>ProgramArguments</key>
+<array>
+  <string>/Users/apple/launchdaemon</string>
+</array>
+
+<key>RunAtLoad</key>
+<true/>
+
+<key>StandardOutPath</key>
+<string>/Users/apple/boot-shutdown.log</string>
+
+<key>StandardErrorPath</key>
+<string>/Users/apple/boot-shutdown.err</string>
+
+</dict>
+</plist>
+EOF
+launchctl load ~/Library/LaunchAgents/boot-shutdown-script.plist
+launchctl list | grep boot
+#438 0   boot-shutdown
+#第一个是pid。第二个为状态码，为0说明正常运行中。
+cat ~/boot-shutdown.log
+cat ~/boot-shutdown.err
+
+
 #安装xcode
 
 #参考此文章安装command line developer tools
@@ -117,6 +179,7 @@ echo "export GRADLE_OPTS=-Dgradle.user.home=/Volumes/data/gradle_cache" >> ~/.ba
 
 #minio cli client
 brew install minio/stable/mc
+#太占资源，卸载
 
 #nfs server
 sudo -s
@@ -187,6 +250,7 @@ docker run -d \
 #colima（代替docker desktop）
 brew install docker docker-compose
 brew install colima
+#无法配置硬盘位置和镜像等，卸载
 colima start --edit
 #在docker: {}的大括号里，填入daemon.json的内容
 docker info
@@ -309,7 +373,7 @@ gnu-getopt
 #wget -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-py39_4.12.0-MacOSX-x86_64.sh
 #bash Miniconda3-py39_4.12.0-MacOSX-x86_64.sh -b -p /Volumes/data/workspace/miniconda3
 wget -c https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
-bash Miniconda3-latest-MacOSX-x86_64.sh -b -p /Volumes/data/workspace/miniconda3
+bash Miniconda3-latest-MacOSX-x86_64.sh -b -p /Volumes/data/miniconda3
 source ~/.bash_profile
 #使用以下命令查看源channel：
 conda config --show-sources
@@ -337,3 +401,5 @@ EOF
 conda create -n triton_building_complex_pipelines python=3.8 -y
 #conda remove -n triton_building_complex_pipelines --all -y
 ls /Volumes/data/envs/triton_building_complex_pipelines
+
+conda create -n openvino python=3.9 -y
