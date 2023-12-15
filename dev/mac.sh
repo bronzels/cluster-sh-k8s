@@ -1,3 +1,8 @@
+#卸载不需要的依赖项
+brew autoremove
+#ansible和ssl配合关系在mac上报错
+export CRYPTOGRAPHY_OPENSSL_NO_LEGACY=yes
+
 #设置开机和关机自动执行脚本
 cat << \EOF > ~/launchdeamon
 #!/bin/bash
