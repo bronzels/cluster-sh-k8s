@@ -86,11 +86,18 @@ cat <<EOF | sudo tee /etc/crictl.yaml
 runtime-endpoint: unix:///run/containerd/containerd.sock
 EOF
 
+export no_proxy="192.168.3.14,192.168.3.103,192.168.3.6,192.168.3.9,192.168.3.1,192.168.1.1,127.0.0.1"
+export NO_PROXY=$no_proxy
+
+kubectl get configmap kubeadm-config -n kube-system -o yaml|grep Subnet
+      podSubnet: 192.168.0.0/16
+      serviceSubnet: 10.96.0.0/12
 mkdir /etc/systemd/system/containerd.service.d
 cat > /etc/systemd/system/containerd.service.d/http_proxy.conf << EOF
 [Service]
 Environment="HTTP_PROXY=http://mmubu:10792/"
 Environment="HTTPS_PROXY=http://mmubu:10792/"
+Environment="NO_PROXY=localhost,192.168.0.0/16,10.96.0.0/12,10.0.0.0/16,192.168.3.0/24,192.168.1.0/24"
 EOF
 
 
