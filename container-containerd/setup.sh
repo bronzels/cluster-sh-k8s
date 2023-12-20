@@ -86,6 +86,14 @@ cat <<EOF | sudo tee /etc/crictl.yaml
 runtime-endpoint: unix:///run/containerd/containerd.sock
 EOF
 
+mkdir /etc/systemd/system/containerd.service.d
+cat > /etc/systemd/system/containerd.service.d/http_proxy.conf << EOF
+[Service]
+Environment="HTTP_PROXY=http://mmubu:10792/"
+Environment="HTTPS_PROXY=http://mmubu:10792/"
+EOF
+
+
 #启动containerd
 #worker
 systemctl daemon-reload
