@@ -1,5 +1,165 @@
+array=("dtpct" "mdubu" "mdlapubu" "mmubu")
+# 使用 for 循环遍历数组
+for item in ${array[@]}; do
+    echo "--------------$item start--------------"
+    nslookup  $item
+    ping -c 4 $item
+    echo "--------------$item end--------------"
+done
+#on pod
+-------------- start--------------
+(app-root) for item in ${array[@]}; do
+>     echo "--------------$item start--------------"
+>     nslookup  $item
+>     ping -c 4 $item
+>     echo "--------------$end start--------------"
+> done
+--------------dtpct start--------------
+Server:         10.96.0.10
+Address:        10.96.0.10#53
+
+Name:   dtpct
+Address: 192.168.3.14
+
+PING dtpct (192.168.3.14) 56(84) bytes of data.
+64 bytes from dtpct (192.168.3.14): icmp_seq=1 ttl=63 time=0.164 ms
+64 bytes from dtpct (192.168.3.14): icmp_seq=2 ttl=63 time=0.126 ms
+64 bytes from dtpct (192.168.3.14): icmp_seq=3 ttl=63 time=0.271 ms
+64 bytes from dtpct (192.168.3.14): icmp_seq=4 ttl=63 time=0.190 ms
+
+--- dtpct ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3000ms
+rtt min/avg/max/mdev = 0.126/0.187/0.271/0.055 ms
+--------------dtpct end--------------
+--------------mdubu start--------------
+Server:         10.96.0.10
+Address:        10.96.0.10#53
+
+Name:   mdubu
+Address: 192.168.3.103
+
+PING mdubu (192.168.3.103) 56(84) bytes of data.
+64 bytes from mdubu (192.168.3.103): icmp_seq=1 ttl=64 time=0.020 ms
+64 bytes from mdubu (192.168.3.103): icmp_seq=2 ttl=64 time=0.024 ms
+64 bytes from mdubu (192.168.3.103): icmp_seq=3 ttl=64 time=0.037 ms
+64 bytes from mdubu (192.168.3.103): icmp_seq=4 ttl=64 time=0.022 ms
+
+--- mdubu ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 2999ms
+rtt min/avg/max/mdev = 0.020/0.025/0.037/0.009 ms
+--------------mdubu end--------------
+--------------mdlapubu start--------------
+Server:         10.96.0.10
+Address:        10.96.0.10#53
+
+Name:   mdlapubu
+Address: 192.168.3.6
+
+PING mdlapubu (192.168.3.6) 56(84) bytes of data.
+64 bytes from mdlapubu (192.168.3.6): icmp_seq=1 ttl=63 time=0.114 ms
+64 bytes from mdlapubu (192.168.3.6): icmp_seq=2 ttl=63 time=0.190 ms
+64 bytes from mdlapubu (192.168.3.6): icmp_seq=3 ttl=63 time=0.103 ms
+64 bytes from mdlapubu (192.168.3.6): icmp_seq=4 ttl=63 time=0.190 ms
+
+--- mdlapubu ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3000ms
+rtt min/avg/max/mdev = 0.103/0.149/0.190/0.041 ms
+--------------mdubu end--------------
+--------------mmubu start--------------
+Server:         10.96.0.10
+Address:        10.96.0.10#53
+
+Name:   mmubu
+Address: 192.168.3.9
+
+PING mmubu (192.168.3.9) 56(84) bytes of data.
+64 bytes from mmubu (192.168.3.9): icmp_seq=1 ttl=63 time=0.210 ms
+64 bytes from mmubu (192.168.3.9): icmp_seq=2 ttl=63 time=0.227 ms
+64 bytes from mmubu (192.168.3.9): icmp_seq=3 ttl=63 time=0.224 ms
+64 bytes from mmubu (192.168.3.9): icmp_seq=4 ttl=63 time=0.399 ms
+
+--- mmubu ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3000ms
+rtt min/avg/max/mdev = 0.210/0.265/0.399/0.077 ms
+--------------mmubu end--------------
+#on mmubu
+--------------dtpct start--------------
+Server:         192.168.3.1
+Address:        192.168.3.1#53
+
+** server can't find dtpct: NXDOMAIN
+
+PING dtpct (192.168.3.14): 56 data bytes
+64 bytes from 192.168.3.14: icmp_seq=0 ttl=64 time=0.350 ms
+64 bytes from 192.168.3.14: icmp_seq=1 ttl=64 time=0.324 ms
+64 bytes from 192.168.3.14: icmp_seq=2 ttl=64 time=0.410 ms
+64 bytes from 192.168.3.14: icmp_seq=3 ttl=64 time=0.359 ms
+
+--- dtpct ping statistics ---
+4 packets transmitted, 4 packets received, 0.0% packet loss
+round-trip min/avg/max/stddev = 0.324/0.361/0.410/0.031 ms
+--------------dtpct end--------------
+--------------mdubu start--------------
+Server:         192.168.3.1
+Address:        192.168.3.1#53
+
+** server can't find mdubu: NXDOMAIN
+
+PING mdubu (192.168.3.103): 56 data bytes
+64 bytes from 192.168.3.103: icmp_seq=0 ttl=64 time=0.317 ms
+64 bytes from 192.168.3.103: icmp_seq=1 ttl=64 time=0.604 ms
+64 bytes from 192.168.3.103: icmp_seq=2 ttl=64 time=0.341 ms
+64 bytes from 192.168.3.103: icmp_seq=3 ttl=64 time=0.319 ms
+
+--- mdubu ping statistics ---
+4 packets transmitted, 4 packets received, 0.0% packet loss
+round-trip min/avg/max/stddev = 0.317/0.395/0.604/0.121 ms
+--------------mdubu end--------------
+--------------mdlapubu start--------------
+Server:         192.168.3.1
+Address:        192.168.3.1#53
+
+** server can't find mdlapubu: NXDOMAIN
+
+PING mdlapubu (192.168.3.6): 56 data bytes
+64 bytes from 192.168.3.6: icmp_seq=0 ttl=64 time=0.280 ms
+64 bytes from 192.168.3.6: icmp_seq=1 ttl=64 time=0.336 ms
+64 bytes from 192.168.3.6: icmp_seq=2 ttl=64 time=0.272 ms
+64 bytes from 192.168.3.6: icmp_seq=3 ttl=64 time=0.254 ms
+
+--- mdlapubu ping statistics ---
+4 packets transmitted, 4 packets received, 0.0% packet loss
+round-trip min/avg/max/stddev = 0.254/0.286/0.336/0.031 ms
+--------------mdlapubu end--------------
+--------------mmubu start--------------
+Server:         192.168.3.1
+Address:        192.168.3.1#53
+
+** server can't find mmubu: NXDOMAIN
+
+PING mmubu (192.168.3.9): 56 data bytes
+64 bytes from 192.168.3.9: icmp_seq=0 ttl=64 time=0.070 ms
+64 bytes from 192.168.3.9: icmp_seq=1 ttl=64 time=0.072 ms
+64 bytes from 192.168.3.9: icmp_seq=2 ttl=64 time=0.082 ms
+64 bytes from 192.168.3.9: icmp_seq=3 ttl=64 time=0.075 ms
+
+--- mmubu ping statistics ---
+4 packets transmitted, 4 packets received, 0.0% packet loss
+round-trip min/avg/max/stddev = 0.070/0.075/0.082/0.005 ms
+--------------mmubu end--------------
+
 start=$(date +"%s.%9N")
-for i in `seq 4`; do curl 192.168.131.197:8080; done
+for i in `seq 4`; do curl harbor.my.org:1080; done
+end=$(date +"%s.%9N")
+echo timediff:`echo "scale=9;$end - $start" | bc`
+#on pod
+(app-root) for i in `seq 4`; do curl harbor.my.org:1080; done
+timediff:.074939784
+#on mmubu
+timediff:.136762000
+
+start=$(date +"%s.%9N")
+for i in `seq 4`; do curl 10.244.131.236:8080; done
 end=$(date +"%s.%9N")
 echo timediff:`echo "scale=9;$end - $start" | bc`
 :<<EOF
@@ -15,7 +175,7 @@ timediff:.023271437
 EOF
 
 start=$(date +"%s.%9N")
-for i in `seq 4`; do curl 10.108.165.24:8088; done
+for i in `seq 4`; do curl 10.97.239.80:8088; done
 end=$(date +"%s.%9N")
 echo timediff:`echo "scale=9;$end - $start" | bc`
 :<<EOF
