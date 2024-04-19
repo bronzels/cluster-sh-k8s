@@ -1,6 +1,7 @@
 #ubuntu
 
-rev_helm=v3.9.0
+#rev_helm=v3.9.0
+rev_helm=v3.14.4
 #linux
 platform=linux
 path=/usr/local/bin/
