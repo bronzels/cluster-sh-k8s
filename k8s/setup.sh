@@ -82,7 +82,7 @@ docker ps -a|grep Exited
 
 #kubeadm init --kubernetes-version=v1.18.3 --apiserver-advertise-address=1110.1110.2.81 --pod-network-cidr=10.244.0.0/16
 
-cat << \EOF > kubeadm-config-old.yaml
+cat << EOF > kubeadm-config-old.yaml
 apiVersion: kubeadm.k8s.io/v1beta1
 kind: ClusterConfiguration
 ###指定k8s的版本###
@@ -107,7 +107,7 @@ EOF
 #kubeadm config migrate --old-config kubeadm-config-old.yaml --new-config kubeadm-config.yaml
 
 #！！！手工, 如果要升级k8s版本，替换kubernetesVersion: v1.18.5
-cat << \EOF > kubeadm-config.yaml
+cat << EOF > kubeadm-config.yaml
 apiVersion: kubeadm.k8s.io/v1beta2
 bootstrapTokens:
 - groups:
@@ -169,11 +169,16 @@ error execution phase preflight: [preflight] Some fatal errors occurred:
 	[ERROR FileContent--proc-sys-net-bridge-bridge-nf-call-iptables]: /proc/sys/net/bridge/bridge-nf-call-iptables does not exist
 	[ERROR FileContent--proc-sys-net-ipv4-ip_forward]: /proc/sys/net/ipv4/ip_forward contents are not set to 1
 EOF
+
+echo "export KUBECONFIG=/etc/kubernetes/admin.conf" >> ~/.bashrc
+. ~/.bashrc
+
 #如果出现以上错误，执行以下步骤
 ansible all -m shell -a"modprobe br_netfilter"
 ansible all -m shell -a"echo 1 > /proc/sys/net/bridge/bridge-nf-call-iptables"
 
 #root
+rm -rf $HOME/.kube
 mkdir -p $HOME/.kube
 cp -f /etc/kubernetes/admin.conf $HOME/.kube/config
 chown $(id -u):$(id -g) $HOME/.kube/config

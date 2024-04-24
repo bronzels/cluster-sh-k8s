@@ -59,8 +59,9 @@ ansible allk8s -m shell -a"systemctl daemon-reload"
 ansible allk8s -m shell -a"systemctl restart docker"
 ansible allk8s -m shell -a"systemctl enable docker"
 systemctl daemon-reload
-systemctl enable docker
 systemctl restart docker
+systemctl status docker
+systemctl enable docker
 
 #设置sudo
 #ubuntu
@@ -73,6 +74,7 @@ sudo chgrp docker /var/run/docker.sock
 ll /var/run/docker.sock
 #chown root:docker /var/run/docker.sock
 
+mv /data0/docker/image /data0/image.bk
 rm -rf /data0/docker/*
 rm -f /etc/systemd/system/docker.service
 rm -rf /var/lib/containerd

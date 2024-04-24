@@ -33,6 +33,7 @@ cd
 sudo scp root@dtpct:/root/.kube.tgz ./
 rm -rf .kube
 tar xzvf .kube.tgz
+cd -
 sudo echo "192.168.3.14 apiserver.cluster.local" >> /etc/hosts
 
 #ubuntu

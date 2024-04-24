@@ -38,6 +38,9 @@ yum makecache
 #rev=1.18.12
 rev=1.21.14
 yum install -y kubelet-$rev kubeadm-$rev kubectl-$rev
+systemctl start kubelet
+systemctl status kubelet
+systemctl enable kubelet
 
 kubeadm config print init-defaults --component-configs KubeletConfiguration > kubeadm.yaml.1.18
 
@@ -49,6 +52,7 @@ advertiseAddress: 192.168.30.88
 criSocket: unix:///var/run/containerd/containerd.sock
 =>
 criSocket: /run/containerd/containerd.sock
+criSocket: /var/run/dockershim.sock
 
 name: node
 =>
@@ -60,20 +64,17 @@ imageRepository: registry.aliyuncs.com/google_containers
 
 kubernetesVersion: 1.26.0
 =>
-kubernetesVersion: 1.26.3
+kubernetesVersion: 1.21.14
 
 networking:
-  podSubnet: 192.168.0.0/16
+  podSubnet: 10.244.0.0/16
 
 
 ---
 apiVersion: kubeproxy.config.k8s.io/v1alpha1
 kind: KubeProxyConfiguration
 mode: ipvs
----
-apiVersion: kubelet.config.k8s.io/v1beta1
-kind: KubeletConfiguration
-cgroupDriver: systemd
+
 EOF
 
 #containerd
@@ -108,13 +109,29 @@ sudo ssh dtpct
 	kubeadm init --config=kubeadm.yaml 
 
 kubeadm join 192.168.3.14:6443 --token abcdef.0123456789abcdef \
-	--discovery-token-ca-cert-hash sha256:5a2ec40be4cdbbdb505f517c8afe406c6c1bc531866a69b9be6b3e77ae6a27a3 
+        --discovery-token-ca-cert-hash sha256:28c32181ac82968e12780452ab88059bd1a4e212ef9fd1ca6c529e87554b2f23
 
 kubectl taint nodes dtpct node-role.kubernetes.io/control-plane:NoSchedule-
 kubectl describe node dtpct | grep Taint
 
 kubectl taint nodes --all node-role.kubernetes.io/control-plane-
 kubectl taint nodes --all node-role.kubernetes.io/master-
+
+kubectl edit configmap -n kube-system coredns
+#在prometheus后面增加
+:<<EOF
+        hosts {
+           192.168.3.14 dtpct
+           192.168.3.6 mdlapubu
+           192.168.3.103 mdubu
+           192.168.3.9 mmubu
+           192.168.3.9 harbor.my.org
+           192.168.3.9 pypi.my.org
+           fallthrough
+        }
+EOF
+kubectl get configmap -n kube-system coredns -o yaml
+kubectl get pod -n kube-system |grep coredns |awk '{print $1}'| xargs kubectl delete pod "$1" -n kube-system --force --grace-period=0
 
 calico_short_rev=3.23
 calico_rev=3.23.5
@@ -152,6 +169,7 @@ wget -c https://projectcalico.docs.tigera.io/archive/v${calico_short_rev}/manife
 wget -c https://projectcalico.docs.tigera.io/archive/v${calico_short_rev}/manifests/custom-resources.yaml -O custom-resources.yaml.${calico_rev}
 #
 cp tigera-operator.yaml.${calico_rev} tigera-operator.yaml
+#根据podSubnet: 10.244.0.0/16，修改cidr
 cp custom-resources.yaml.${calico_rev} custom-resources.yaml
 
 kubectl create -f tigera-operator.yaml

@@ -31,19 +31,21 @@ kubectl logs -n local-path-storage `kubectl get pod -n local-path-storage | grep
 #使用
 cd test
 
-wget -c https://raw.githubusercontent.com/rancher/local-path-provisioner/master/examples/pvc/pvc.yaml -O local-path-pvc.yaml
-wget -c https://raw.githubusercontent.com/rancher/local-path-provisioner/master/examples/pod/pod.yaml -O local-path-pod.yaml
+wget -c https://raw.githubusercontent.com/rancher/local-path-provisioner/master/examples/pvc/pvc.yaml -O test/local-path-pvc.yaml
+wget -c https://raw.githubusercontent.com/rancher/local-path-provisioner/master/examples/pod/pod.yaml -O test/local-path-pod.yaml
 
 kubectl apply -f test/local-path-pvc.yaml
 kubectl apply -f test/local-path-pod.yaml
 
-kubectl logs local-path-test
-success
-kubectl delete pod local-path-test --force --grace-period=0
-kubectl apply -f test/local-path-pod.yaml
-kubectl logs local-path-test
-success
-success
+kubectl logs volume-test
+kubectl exec -it volume-test -- /bin/sh
+  echo success > /data/test
 
+kubectl delete -f test/local-path-pod.yaml
+kubectl apply -f test/local-path-pod.yaml
+kubectl exec -it volume-test -- /bin/sh
+  cat /data/test
+
+#测试
 kubectl delete -f test/local-path-pod.yaml
 kubectl delete -f test/local-path-pvc.yaml

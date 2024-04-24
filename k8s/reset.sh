@@ -44,12 +44,11 @@ sudo ansible allk8s -m shell -a"rm -rf /etc/kubernetes/*"
 sudo ansible allk8s -m shell -a"rm -rf /home/ubuntu/.kube"
 #centos
 rm -rf /root/.kube
-rm -rf /app/hadoop/.kube
 rm -rf /etc/kubernetes
 #rm -rf /etc/docker
 rm -rf /etc/cni
 rm -rf /etc/containers
-rm -rf /opt/cni/bin
+#rm -rf /opt/cni/bin
 rm -rf /var/lib/kubelet
 rm -rf /var/lib/containers
 rm -rf /var/lib/dockershim
@@ -58,7 +57,8 @@ rm -rf /var/lib/calico
 rm -rf /var/lib/etcd
 
 #ansible all -m shell -a"rm -rf /root/.kube;rm -rf /etc/kubernetes;rm -rf /etc/docker;rm -rf /etc/cni;rm -rf /etc/containers;rm -rf /opt/cni/bin;rm -rf /var/lib/kubelet;rm -rf /var/lib/containers;rm -rf /var/lib/dockershim;rm -rf /var/lib/cni;rm -rf /var/lib/calico;rm -rf /var/lib/etcd"
-ansible all -m shell -a"rm -rf /root/.kube;rm -rf /etc/kubernetes;rm -rf /etc/cni;rm -rf /etc/containers;rm -rf /opt/cni/bin;rm -rf /var/lib/kubelet;rm -rf /var/lib/containers;rm -rf /var/lib/dockershim;rm -rf /var/lib/cni;rm -rf /var/lib/calico;rm -rf /var/lib/etcd"
+#ansible all -m shell -a"rm -rf /root/.kube;rm -rf /etc/kubernetes;rm -rf /etc/cni;rm -rf /etc/containers;rm -rf /opt/cni/bin;rm -rf /var/lib/kubelet;rm -rf /var/lib/containers;rm -rf /var/lib/dockershim;rm -rf /var/lib/cni;rm -rf /var/lib/calico;rm -rf /var/lib/etcd"
+ansible all -m shell -a"rm -rf /root/.kube;rm -rf /etc/kubernetes;rm -rf /etc/cni;rm -rf /etc/containers;rm -rf /var/lib/kubelet;rm -rf /var/lib/containers;rm -rf /var/lib/dockershim;rm -rf /var/lib/cni;rm -rf /var/lib/calico;rm -rf /var/lib/etcd"
 #！！！注意container安装，cni的安装和配置目录都删除了，需要停止container，重建cni安装目录重新解压，再重新启动container
 
 #！！！手工，reset之后
@@ -77,6 +77,5 @@ helm install -f values.yaml dkreg .
 #！！！手工，重新安装所有k8s安装软件，可以跳过目录生成，文件生成/修改的步骤，直接执行相应helm install/kubectl apply -f步骤
 
 #！！！非常重要
-#清空k8s使用的docker的volume，以免daemonset类型的作业还复用有问题的数据
-rm -rf /data0/docker/volumes/*
-rm -rf /data0/docker/containers/*
+yum remove -y docker-ce
+rm -rf /data0/docker/*

@@ -10,28 +10,22 @@ EOF
 
 #安装bzip2
 #centos
-yum install -y bizp2
+yum install -y bzip2
 
+cd /data0
 #dtpct
-dd if=/dev/nvme0n1 status=progress | bzip2 > /mnt/mdxfs/back-nvme0n1-`date +%Y-%m-%d`.img.bz
-bzip2 -dc /mnt/mdxfs/back-nvme0n1-2022-11-28.img.bz | dd of=/dev/nvme0n1 status=progress
-echo "dd if=/dev/nvme0n1 status=progress | bzip2 > /mnt/mdxfs/back-nvme0n1-`date +%Y-%m-%d`.img.bz" > backup-d.sh
-chmod a+x back=p-d.sh > backup-d.log 2>&1 &
-tail -f backup-d.logr   ip
-
-dd if=/dev/nvme0n1p3 status=progress | bzip2 > /mnt/mdxfs/back-nvme0n1p3-`date +%Y-%m-%d`.img.bz
-bzip2 -dc /mnt/mdxfs/back-nvme0n1p3-2022-11-29.img.bz | dd of=/dev/
-nvme0n1p3 status=progress
-echo "dd if=/dev/nvme0n1p3 status=progress | bzip2 > /mnt/mdxfs/back-nvme0n1p3-`date +%Y-%m-%d`.img.bz" > backup-p.sh
-chmod a+x2 backup-p.shmnm
-nohup ./backup-p.sh > backup-p.log 2>&1 &
-tail -f backup-p.log
+echo "dd if=/dev/nvme0n1p2 status=progress | bzip2 > /data0/sysbk/back-nvme0n1p2-`date +%Y-%m-%d`.img.bz" > backup.sh
+bzip2 -dc /data0/sysbk/back-nvme0n1p2-2022-11-28.img.bz | dd of=/dev/nvme0n1p2 status=progress
 #mdubu
-dd if=/dev/sdc status=progress | bzip2 > /data0/back-sdc-`date +%Y-%m-%d`.img.bz
-bzip2 -cd /data0/back-sdc-2022-11-28.img.bz | dd of=/dev/sdc status=progress
+echo "dd if=/dev/sdb2 status=progress | bzip2 > /data0/back-sdb2-`date +%Y-%m-%d`.img.bz" > backup.sh
+bzip2 -cd /data0/back-sdb2-2022-11-28.img.bz | dd of=/dev/sdb2 status=progress
 #mdlapubu
-dd if=/dev/sda status=progress | bzip2 > /data0/back-sda-`date +%Y-%m-%d`.img.bz
-bzip2 -cd /data0/back-sda-2022-11-28.img.bz | dd of=/dev/sda status=progress
+echo "dd if=/dev/sda2 status=progress | bzip2 > /data0/back-sda2-`date +%Y-%m-%d`.img.bz" > backup.sh
+bzip2 -cd /data0/back-sda2-2022-11-28.img.bz | dd of=/dev/sda2 status=progress
+
+chmod a+x backup.sh
+./backup.sh > backup.log 2>&1 &
+tail -f backup.log
 
 #1硬盘对拷，可以安装一台以后，其余对拷的方式，修改/etc/fstab里的挂载硬盘/dev后的设备符号即可
 dd if=/dev/sdc of=/dev/sdb bs=6M count=20480 status=progress
