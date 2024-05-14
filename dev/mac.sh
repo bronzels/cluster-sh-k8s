@@ -403,6 +403,8 @@ envs_dirs:
   - /Volumes/data/envs
 EOF
 
+brew install p7zip
+
 conda create -n triton_building_complex_pipelines python=3.8 -y
 #conda remove -n triton_building_complex_pipelines --all -y
 ls /Volumes/data/envs/triton_building_complex_pipelines
