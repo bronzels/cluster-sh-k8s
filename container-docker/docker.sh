@@ -49,7 +49,11 @@ cat << EOF > /etc/docker/daemon.json
   ],
   "insecure-registries":["harbor.my.org:1080"],
   "exec-opts": ["native.cgroupdriver=systemd"],
-  "data-root": "/data0/docker"
+  "data-root": "/data0/docker",
+  "max-concurrent-downloads": 10,
+  "max-concurrent-uploads": 20,
+  "log-driver":"json-file",
+  "log-opts": {"max-size":"500m", "max-file":"3"}
 }
 EOF
 ansible allk8sexpcp -m copy -a"src=/etc/docker/daemon.json dest=/etc/docker"
