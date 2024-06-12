@@ -24,6 +24,9 @@ chmod a+x kubectl
 sudo mv kubectl /Users/apple/bin
 
 #dtpct
+rm -rf $HOME/.kube
+mkdir -p $HOME/.kube
+cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 cd /root
 tar czvf .kube.tgz .kube/
 #linux

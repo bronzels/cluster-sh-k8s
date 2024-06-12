@@ -42,6 +42,11 @@ systemctl start kubelet
 systemctl status kubelet
 systemctl enable kubelet
 
+sed -i 's@--network-plugin=cni @@g' /var/lib/kubelet/kubeadm-flags.env
+systemctl restart kubelet
+#用docker做container时，安装了calico继续dns的pod pending，master提示NotReady，kubelet的状态container runtime network not ready: NetworkReady=false reason:NetworkPluginNotReady message:docker:
+#改成--network-plugin-dir=/opt/cni/bin --network-plugin=cni --cni-conf-dir=/etc/cni/net.d/也不行
+
 kubeadm config print init-defaults --component-configs KubeletConfiguration > kubeadm.yaml.1.18
 
 :<<EOF
@@ -109,7 +114,7 @@ sudo ssh dtpct
 	kubeadm init --config=kubeadm.yaml 
 
 kubeadm join 192.168.3.14:6443 --token abcdef.0123456789abcdef \
-        --discovery-token-ca-cert-hash sha256:28c32181ac82968e12780452ab88059bd1a4e212ef9fd1ca6c529e87554b2f23
+	--discovery-token-ca-cert-hash sha256:5ddc836708955f1643d28a0a0df38196e904f649d6b19a407eec57c74050f444 
 
 kubectl taint nodes dtpct node-role.kubernetes.io/control-plane:NoSchedule-
 kubectl describe node dtpct | grep Taint
@@ -161,6 +166,8 @@ kubectl apply -f calico.yaml
 
 kubectl delete -f calico.yaml
 EOF
+
+cd /data0
 
 #wget -c https://raw.githubusercontent.com/projectcalico/calico/v${calico_rev}/manifests/tigera-operator.yaml
 #wget -c https://raw.githubusercontent.com/projectcalico/calico/v${calico_rev}/manifests/custom-resources.yaml

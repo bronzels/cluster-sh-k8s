@@ -8,7 +8,7 @@ cd src
 yum install -y gcc gcc-c++ make
 
 cd /usr/src
-ln -s kernels/3.10.0-1160.80.1.el7.x86_64 linux
+ln -s kernels/3.10.0-1160.119.1.el7.x86_64 linux
 cd -
 make ## 编译驱动器源码
 make install ## 安装相应的驱动器程序
@@ -24,6 +24,6 @@ sync;reboot now
 
 #把内核需要update小版本升级到最新，不然虽然驱动加载成功，还是没有网卡
 uname -r
-#重启从3.10.0-1160.el7.x86_64切换到3.10.0-1160.80.1.el7.x86_64
+#重启从3.10.0-1160.el7.x86_64切换到3.10.0-1160.119.1.el7.x86_64
 #必要的话用升级大版本方式刷新grub2，
 uname -r
