@@ -1,15 +1,26 @@
 #cp
-runc_rev=1.1.4
+#runc_rev=1.1.4
 #runc_rev=1.1.3
+runc_rev=1.1.12
 curl -OL https://github.com/opencontainers/runc/releases/download/v${runc_rev}/runc.amd64
 #ansible copy to /root/
 #workers
 #mv runc.amd64 /usr/local/bin/runc && chmod +x /usr/local/bin/runc
-mv runc.amd64 /usr/bin/runc && chmod +x /usr/bin/runc
+mv runc.amd64 /usr/bin/runc && chmod 755 /usr/bin/runc
+
+#安装cni
+#cni_rev=1.1.1
+cni_rev=1.5.1
+wget -c https://github.com/containernetworking/plugins/releases/download/v${cni_rev}/cni-plugins-linux-amd64-v${cni_rev}.tgz
+#ansible copy to /root/
+#worker
+mkdir -p /opt/cni/bin
+tar xvf cni-plugins-linux-amd64-v${cni_rev}.tgz -C /opt/cni/bin/
 
 #cp
-containerd_rev=1.6.10
+#containerd_rev=1.6.10
 #containerd_rev=1.6.6
+containerd_rev=1.7.22
 curl -OL https://github.com/containerd/containerd/releases/download/v${containerd_rev}/containerd-${containerd_rev}-linux-amd64.tar.gz
 #ansible copy to /root/
 #workers
@@ -53,7 +64,7 @@ containerd config default > /etc/containerd/config.toml
 cat > config.toml.registry << EOF
       [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
         [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
-          endpoint = ["https://xxxxxx.mirror.aliyuncs.com", "https://registry-1.docker.io"]
+          endpoint = ["https://fxy8rj00.mirror.aliyuncs.com","https://docker.registry.cyou","https://docker-cf.registry.cyou","https://dockercf.jsdelivr.fyi","https://docker.jsdelivr.fyi","https://dockertest.jsdelivr.fyi","https://mirror.aliyuncs.com","https://dockerproxy.com","https://mirror.baidubce.com","https://docker.m.daocloud.io","https://docker.nju.edu.cn","https://docker.mirrors.sjtug.sjtu.edu.cn","https://docker.mirrors.ustc.edu.cn","https://mirror.iscas.ac.cn","https://docker.rainbond.cc"]
         [plugins."io.containerd.grpc.v1.cri".registry.mirrors."k8s.gcr.io"]
           endpoint = ["registry.aliyuncs.com/google_containers"]
         [plugins."io.containerd.grpc.v1.cri".registry.mirrors."harbor.my.org:1080"]
@@ -81,6 +92,75 @@ cp /etc/containerd/config.toml /etc/containerd/config.toml.root
 /root/replace-containerd-root.sh
 cat /etc/containerd/config.toml|grep "root = \""
 
+["https://fxy8rj00.mirror.aliyuncs.com",
+"https://docker.registry.cyou",
+"https://docker-cf.registry.cyou",
+"https://dockercf.jsdelivr.fyi",
+"https://docker.jsdelivr.fyi",
+"https://dockertest.jsdelivr.fyi",
+"https://mirror.aliyuncs.com",
+"https://dockerproxy.com",
+"https://mirror.baidubce.com",
+"https://docker.m.daocloud.io",
+"https://docker.nju.edu.cn",
+"https://docker.mirrors.sjtug.sjtu.edu.cn",
+"https://docker.mirrors.ustc.edu.cn",
+"https://mirror.iscas.ac.cn",
+"https://docker.rainbond.cc"]
+
+mkdir -p /etc/containerd/certs.d/docker.io
+cat > /etc/containerd/certs.d/docker.io/hosts.toml << EOF
+server = "https://docker.io"
+[host."https://fxy8rj00.mirror.aliyuncs.com"]
+  capabilities = ["pull", "resolve"]
+[host."https://docker.registry.cyou"]
+  capabilities = ["pull", "resolve"]
+[host."https://docker-cf.registry.cyou"]
+  capabilities = ["pull", "resolve"]
+[host."https://dockercf.jsdelivr.fyi"]
+  capabilities = ["pull", "resolve"]
+[host."https://docker.jsdelivr.fyi"]
+  capabilities = ["pull", "resolve"]
+[host."https://dockertest.jsdelivr.fyi"]
+  capabilities = ["pull", "resolve"]
+[host."https://mirror.aliyuncs.com"]
+  capabilities = ["pull", "resolve"]
+[host."https://dockerproxy.com"]
+  capabilities = ["pull", "resolve"]
+[host."https://mirror.baidubce.com"]
+  capabilities = ["pull", "resolve"]
+[host."https://docker.m.daocloud.io"]
+  capabilities = ["pull", "resolve"]
+[host."https://docker.nju.edu.cn"]
+  capabilities = ["pull", "resolve"]
+[host."https://docker.mirrors.sjtug.sjtu.edu.cn"]
+  capabilities = ["pull", "resolve"]
+[host."https://docker.mirrors.ustc.edu.cn"]
+  capabilities = ["pull", "resolve"]
+[host."https://mirror.iscas.ac.cn"]
+  capabilities = ["pull", "resolve"]
+[host."https://docker.rainbond.cc"]
+  capabilities = ["pull", "resolve"]
+EOF
+cat > /etc/containerd/certs.d/docker.io/hosts.toml << EOF
+server = "https://docker.io"
+[host."https://docker.1panel.live"]
+  capabilities = ["pull", "resolve"]
+EOF
+mkdir -p /etc/containerd/certs.d/k8s.gcr.io
+cat > /etc/containerd/certs.d/k8s.gcr.io/hosts.toml << EOF
+server = "https://registry.aliyuncs.com/google_containers"
+[host."https://registry.aliyuncs.com/google_containers"]
+  capabilities = ["pull", "resolve"]
+  skip_verify = true
+EOF
+mkdir -p /etc/containerd/certs.d/harbor.my.org:1080
+cat > /etc/containerd/certs.d/harbor.my.org:1080/hosts.toml << EOF
+server = "http://harbor.my.org:1080"
+[host."http://harbor.my.org:1080"]
+  capabilities = ["pull", "resolve", "push"]
+  skip_verify = true
+EOF
 
 cat <<EOF | sudo tee /etc/crictl.yaml
 runtime-endpoint: unix:///run/containerd/containerd.sock
@@ -119,13 +199,6 @@ wget -c https://github.com/containerd/nerdctl/releases/download/v${nerdctl_rev}/
 tar xvf nerdctl-${nerdctl_rev}-linux-amd64.tar.gz
 mv nerdctl /usr/local/bin/
 nerdctl version
-#安装cni
-cni_rev=1.1.1
-wget -c https://github.com/containernetworking/plugins/releases/download/v${cni_rev}/cni-plugins-linux-amd64-v${cni_rev}.tgz
-#ansible copy to /root/
-#worker
-mkdir -p /opt/cni/bin
-tar xvf cni-plugins-linux-amd64-v${cni_rev}.tgz -C /opt/cni/bin/
 #使用nerdct下载镜像启动容器
 #on one work
 nerdctl pull nginx
@@ -136,3 +209,10 @@ nerdctl stop nginx
 nerdctl ps -a
 nerdctl rm nginx
 nerdctl ps -a
+
+buildkit_version=0.16.0
+wget -c https://github.com/moby/buildkit/releases/download/v${buildkit_version}/buildkit-v${buildkit_version}.linux-amd64.tar.gz
+mkdir /usr/local/buildctl
+tar xzvf buildkit-v${buildkit_version}.linux-amd64.tar.gz  -C /usr/local/buildctl
+ln -s /usr/local/buildctl/bin/buildkitd /usr/local/bin/buildkitd
+ln -s /usr/local/buildctl/bin/buildctl /usr/local/bin/buildctl

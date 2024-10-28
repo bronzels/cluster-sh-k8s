@@ -157,7 +157,7 @@ sudo echo 'export PATH=$PATH:/Volumes/data/Applications/apache-maven/bin' >> /et
 
 sudo -s
 sudo echo 'export PATH=$PATH:/usr/local/go/bin' >> /etc/bashrc
-cat >> ~/.bash_profile << EOF
+cat >> ~/.zshrc << EOF
 export GOPATH=/Volumes/data/workspace/gopath
 export GOPROXY=https://goproxy.cn
 EOF
@@ -410,3 +410,10 @@ conda create -n triton_building_complex_pipelines python=3.8 -y
 ls /Volumes/data/envs/triton_building_complex_pipelines
 
 conda create -n openvino python=3.9 -y
+
+#为了tesseract ocr编译时能带上训练工具
+echo 'export HOMEBREW_BREW_GIT_REMOTE="https://mirrors.ustc.edu.cn/brew.git"' >> ~/.zshrc
+brew update
+#export HOMEBREW_BOTTLE_DOMAIN=https://mirrors.ustc.edu.cn/homebrew-bottles/bottles
+source ~/.zshrc
+brew install cairo pango icu4c autoconf libffi libarchive libpng

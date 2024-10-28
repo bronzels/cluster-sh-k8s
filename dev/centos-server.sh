@@ -87,3 +87,16 @@ yum install -y ansible sshpass
 
 rsync -av mdubu:/data0/cache /data0/cache
 ln -s /data0/cache /root/.cache
+
+yum install curl-devel expat-devel gettext-devel openssl-devel zlib-devel -y
+yum install perl-ExtUtils-MakeMaker -y
+GIT_VERSION=2.45.0
+wget -c https://github.com/git/git/archive/refs/tags/v2.45.0.tar.gz -O git-${GIT_VERSION}.tar.gz
+tar -xzf git-${GIT_VERSION}.tar.gz
+cd git-${GIT_VERSION}
+#conda activate sd，要在虚拟环境下编译
+make -j$(nproc --all) prefix=/usr/local all
+make prefix=/usr/local install
+cd ..
+git version
+
