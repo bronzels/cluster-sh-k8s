@@ -216,3 +216,18 @@ mkdir /usr/local/buildctl
 tar xzvf buildkit-v${buildkit_version}.linux-amd64.tar.gz  -C /usr/local/buildctl
 ln -s /usr/local/buildctl/bin/buildkitd /usr/local/bin/buildkitd
 ln -s /usr/local/buildctl/bin/buildctl /usr/local/bin/buildctl
+cat > /etc/systemd/system/buildkit.service << EOF
+[Unit]
+Description=BuildKit
+Documentation=https://github.com/moby/buildkit
+
+[Service]
+ExecStart=/usr/local/bin/buildkitd --oci-worker=false --containerd-worker=true
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl enable buildkit --now
+systemctl daemon-reload
+systemctl start buildkit
+
